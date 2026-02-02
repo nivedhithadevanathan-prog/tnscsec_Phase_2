@@ -1,0 +1,618 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model users {
+  id            Int       @id @default(autoincrement())
+  username      String?   @db.VarChar(75)
+  department_id Int?
+  district_id   Int?
+  zone_id       String?   @db.VarChar(100)
+  fullname      String?   @db.VarChar(100)
+  mobile        String?   @db.VarChar(75)
+  email         String?   @db.VarChar(100)
+  role_id       Int?      @default(3) @db.MediumInt
+  is_active     Boolean   @default(true)
+  is_deleted    Boolean   @default(false)
+  password      String?   @db.VarChar(100)
+  created_by    Int?
+  created_at    DateTime? @default(now()) @db.DateTime(0)
+  updated_by    Int?
+  updated_at    DateTime? @db.DateTime(0)
+
+  @@index([fullname], map: "fullname")
+  @@index([district_id], map: "jail_id")
+  @@index([role_id], map: "role_id")
+  @@index([username], map: "username")
+}
+
+model zone {
+  id        Int     @id @default(autoincrement())
+  name      String? @db.VarChar(255)
+  is_active Int?    @default(1)
+}
+
+model department {
+  id        Int     @id @default(autoincrement())
+  seo_id    Int?
+  jrcs      Int?
+  name      String? @db.VarChar(255)
+  image     Bytes?  @db.Blob
+  is_active Int     @default(1)
+}
+
+model district {
+  id        Int     @id @default(autoincrement())
+  name      String? @db.VarChar(255)
+  is_active Int?    @default(1)
+}
+
+model master_dist {
+  id        Int  @id @default(autoincrement())
+  deptid    Int
+  distid    Int
+  is_active Int? @default(1)
+}
+
+model master_zone {
+  id               Int     @id @default(autoincrement())
+  association_id   Int?
+  district_id      Int?
+  zone_id          Int?
+  association_name String? @db.VarChar(150)
+  is_active        Int     @default(1)
+}
+
+model reservation {
+  id         Int  @id @default(autoincrement())
+  rurel_id   Int? @default(0)
+  tot_voters Int  @default(0)
+  sc_st      Int? @default(0)
+  women      Int? @default(0)
+  general    Int? @default(0)
+  is_active  Int? @default(1)
+}
+
+model role {
+  id         Int       @id @default(autoincrement())
+  name       String?   @db.VarChar(75)
+  is_active  Boolean   @default(true)
+  is_deleted Boolean   @default(false)
+  created_at DateTime  @default(now()) @db.DateTime(0)
+  updated_at DateTime? @db.DateTime(0)
+}
+
+model form1 {
+  id                     Int                      @id @default(autoincrement())
+  uid                    Int
+  department_id          Int?
+  seo_id                 Int?
+  district_id            Int?
+  zone_id                Int?
+  remark                 String?                  @db.VarChar(150)
+  is_active              Int?                     @default(1)
+  selected_count         Int?                     @default(0)
+  non_selected_count     Int?                     @default(0)
+  form1_non_selected_soc form1_non_selected_soc[]
+  form1_selected_soc     form1_selected_soc[]
+  form2                  form2[]
+}
+
+model form1_non_selected_soc {
+  id           Int     @id @default(autoincrement())
+  form1_id     Int?
+  society_id   Int?
+  society_name String? @db.VarChar(255)
+  sc_st        Int?    @default(0)
+  women        Int?    @default(0)
+  general      Int?    @default(0)
+  tot_voters   Int?    @default(0)
+  form1        form1?  @relation(fields: [form1_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "form1_non_selected_soc_ibfk_1")
+
+  @@index([form1_id], map: "form1_id")
+}
+
+model form1_selected_soc {
+  id           Int     @id @default(autoincrement())
+  form1_id     Int?
+  society_id   Int?
+  society_name String? @db.VarChar(255)
+  sc_st        Int?    @default(0)
+  women        Int?    @default(0)
+  general      Int?    @default(0)
+  tot_voters   Int?    @default(0)
+  form1        form1?  @relation(fields: [form1_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "form1_selected_soc_ibfk_1")
+
+  @@index([form1_id], map: "form1_id")
+}
+
+model form2 {
+  id                     Int                      @id @default(autoincrement())
+  uid                    Int?
+  department_id          Int?
+  form1_id               Int
+  is_active              Boolean?                 @default(true)
+  district_id            Int?
+  zone_id                Int?
+  masterzone_count       Int?
+  remark                 String?                  @db.VarChar(255)
+  selected_soc_count     Int?
+  form1                  form1                    @relation(fields: [form1_id], references: [id], onUpdate: Restrict, map: "fk_form2_form1")
+  form2_non_selected_soc form2_non_selected_soc[]
+  form2_selected_soc     form2_selected_soc[]
+  form3                  form3[]
+
+  @@index([form1_id], map: "fk_form2_form1")
+}
+
+model form2_non_selected_soc {
+  id           Int     @id @default(autoincrement())
+  form2_id     Int
+  society_id   Int
+  society_name String? @db.VarChar(255)
+  form2        form2   @relation(fields: [form2_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "form2_non_selected_soc_ibfk_1")
+
+  @@index([form2_id], map: "form2_id")
+}
+
+model form2_selected_soc {
+  id           Int     @id @default(autoincrement())
+  form2_id     Int
+  society_id   Int
+  society_name String? @db.VarChar(255)
+  form2        form2   @relation(fields: [form2_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "form2_selected_soc_ibfk_1")
+
+  @@index([form2_id], map: "form2_id")
+}
+
+model form3 {
+  id                 Int               @id @default(autoincrement())
+  uid                Int
+  department_id      Int?
+  form2_id           Int?
+  is_active          Int?              @default(1)
+  district_id        Int?
+  zone_id            Int?
+  selected_soc_count Int?
+  remarks            String?           @db.VarChar(255)
+  created_at         DateTime?         @default(now()) @db.DateTime(0)
+  updated_at         DateTime?         @default(now()) @db.DateTime(0)
+  district_name      String?           @db.VarChar(255)
+  zone_name          String?           @db.VarChar(255)
+  form2              form2?            @relation(fields: [form2_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "fk_form3_form2")
+  form3_societies    form3_societies[]
+
+  @@index([form2_id], map: "fk_form3_form2")
+}
+
+model form3_societies {
+  id           Int     @id @default(autoincrement())
+  form3_id     Int
+  society_id   Int
+  society_name String? @db.VarChar(255)
+  ass_memlist  Int?
+  ero_claim    Int?
+  jcount       Int?
+  rcount       Int?
+  total        Int?
+  rural_id     Int?
+  tot_voters   Int?
+  form3        form3   @relation(fields: [form3_id], references: [id], onUpdate: Restrict, map: "form3_societies_ibfk_1")
+
+  @@index([form3_id], map: "form3_id")
+}
+
+model form4 {
+  id                          Int                           @id @default(autoincrement())
+  uid                         Int
+  department_id               Int?
+  district_id                 Int?
+  district_name               String?                       @db.VarChar(255)
+  zone_id                     Int?
+  zone_name                   String?                       @db.VarChar(255)
+  selected_soc_count          Int?                          @default(0)
+  filed_count                 Int?                          @default(0)
+  unfiled_count               Int?                          @default(0)
+  created_at                  DateTime                      @default(now()) @db.Timestamp(0)
+  form4_filed_soc_mem_count   form4_filed_soc_mem_count[]
+  form4_unfiled_soc_mem_count form4_unfiled_soc_mem_count[]
+}
+
+model form4_filed_soc_mem_count {
+  id                   Int                                       @id @default(autoincrement())
+  form4_id             Int
+  society_id           Int
+  society_name         String?                                   @db.VarChar(255)
+  rural_id             Int
+  rural_sc_st          Int?                                      @default(0)
+  rural_women          Int?                                      @default(0)
+  rural_general        Int?                                      @default(0)
+  rural_sc_st_dlg      Int?                                      @default(0)
+  rural_women_dlg      Int?                                      @default(0)
+  rural_general_dlg    Int?                                      @default(0)
+  rural_tot_voters     Int?                                      @default(0)
+  declared_sc_st       Int?                                      @default(0)
+  declared_women       Int?                                      @default(0)
+  declared_general     Int?                                      @default(0)
+  declared_sc_st_dlg   Int?                                      @default(0)
+  declared_women_dlg   Int?                                      @default(0)
+  declared_general_dlg Int?                                      @default(0)
+  declared_tot_voters  Int?                                      @default(0)
+  tot_voters           Int?                                      @default(0)
+  election_status      form4_filed_soc_mem_count_election_status
+  remarks              String?                                   @db.VarChar(255)
+  decision_at          DateTime                                  @default(now()) @db.Timestamp(0)
+  form10_society       form10_society[]
+  form4                form4                                     @relation(fields: [form4_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "fk_form4_filed_soc")
+  form5                form5[]
+  form9_society        form9_society[]
+
+  @@index([form4_id], map: "form4_id")
+  @@index([election_status], map: "idx_form4_election_status")
+}
+
+model form4_unfiled_soc_mem_count {
+  id           Int     @id @default(autoincrement())
+  form4_id     Int
+  society_id   Int
+  society_name String? @db.VarChar(255)
+  rural_id     Int
+  sc_st        Int?    @default(0)
+  sc_st_dlg    Int?    @default(0)
+  women        Int?    @default(0)
+  women_dlg    Int?    @default(0)
+  general      Int?    @default(0)
+  general_dlg  Int?    @default(0)
+  tot_voters   Int?    @default(0)
+  remarks      String? @db.VarChar(255)
+  form4        form4   @relation(fields: [form4_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "fk_form4_unfiled_soc")
+
+  @@index([form4_id], map: "form4_id")
+}
+
+model form5 {
+  id                        Int                       @id @default(autoincrement())
+  form4_filed_soc_id        Int
+  category_type             form5_category_type
+  member_name               String                    @db.VarChar(255)
+  aadhar_no                 String                    @db.VarChar(20)
+  is_active                 Boolean?                  @default(true)
+  created_at                DateTime                  @default(now()) @db.Timestamp(0)
+  updated_at                DateTime                  @default(now()) @db.Timestamp(0)
+  form10_candidate_status   form10_candidate_status[]
+  form10_society            form10_society[]
+  form4_filed_soc_mem_count form4_filed_soc_mem_count @relation(fields: [form4_filed_soc_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "fk_form5_to_form4filed")
+  form9_candidate_status    form9_candidate_status[]
+  form9_society             form9_society[]
+
+  @@index([form4_filed_soc_id], map: "fk_form5_to_form4filed")
+}
+
+model form6 {
+  id                     Int                      @id @default(autoincrement())
+  uid                    Int
+  department_id          Int?
+  district_id            Int?
+  zone_id                Int?
+  status                 form6_status?            @default(DRAFT)
+  created_at             DateTime                 @default(now()) @db.Timestamp(0)
+  submitted_at           DateTime?                @db.Timestamp(0)
+  form6_candidate_event  form6_candidate_event[]
+  form6_society_decision form6_society_decision[]
+}
+
+model form6_candidate_event {
+  id              Int                              @id @default(autoincrement())
+  form6_id        Int
+  form5_member_id Int
+  event_type      form6_candidate_event_event_type
+  event_at        DateTime                         @default(now()) @db.Timestamp(0)
+  event_by        Int
+  form6           form6                            @relation(fields: [form6_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "fk_form6_event")
+
+  @@index([form6_id], map: "fk_form6_event")
+}
+
+model form6_society_decision {
+  id                      Int                                     @id @default(autoincrement())
+  form6_id                Int
+  form4_filed_soc_id      Int
+  society_id              Int
+  society_name            String?                                 @db.VarChar(255)
+  election_action         form6_society_decision_election_action? @default(SHOW)
+  election_status         form6_society_decision_election_status?
+  final_sc_st_count       Int?                                    @default(0)
+  final_sc_st_dlg_count   Int?                                    @default(0)
+  final_women_count       Int?                                    @default(0)
+  final_women_dlg_count   Int?                                    @default(0)
+  final_general_count     Int?                                    @default(0)
+  final_general_dlg_count Int?                                    @default(0)
+  final_total_count       Int?                                    @default(0)
+  updated_at              DateTime                                @default(now()) @db.Timestamp(0)
+  form6                   form6                                   @relation(fields: [form6_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "fk_form6_soc")
+
+  @@index([form6_id], map: "fk_form6_soc")
+}
+
+model form7 {
+  id              Int               @id @default(autoincrement())
+  district_id     Int
+  created_at      DateTime          @default(now()) @db.Timestamp(0)
+  updated_at      DateTime          @default(now()) @db.Timestamp(0)
+  form7_societies form7_societies[]
+}
+
+model form7_societies {
+  id                       Int                                       @id @default(autoincrement())
+  form7_id                 Int
+  society_id               Int
+  society_name             String                                    @db.VarChar(255)
+  final_sc_st_count        Int?                                      @default(0)
+  final_women_count        Int?                                      @default(0)
+  final_general_count      Int?                                      @default(0)
+  final_sc_st_dlg_count    Int?                                      @default(0)
+  final_women_dlg_count    Int?                                      @default(0)
+  final_general_dlg_count  Int?                                      @default(0)
+  form3_total              Int?                                      @default(0)
+  casted_votes_count       Int?                                      @default(0)
+  voting_percentage        Decimal?                                  @default(0.00) @db.Decimal(5, 2)
+  ballot_box_count         Int?                                      @default(0)
+  stamp_count              Int?                                      @default(0)
+  polling_stations_count   Int?                                      @default(0)
+  election_officers_count  Int?                                      @default(0)
+  polling_suspension_count form7_societies_polling_suspension_count? @default(NO_ISSUES)
+  created_at               DateTime                                  @default(now()) @db.Timestamp(0)
+  form7                    form7                                     @relation(fields: [form7_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "fk_form7_society")
+  form8_polling_details    form8_polling_details[]
+
+  @@index([form7_id], map: "fk_form7_society")
+}
+
+model form8 {
+  id                    Int                     @id @default(autoincrement())
+  district_id           Int
+  district_name         String                  @db.VarChar(255)
+  created_at            DateTime?               @default(now()) @db.DateTime(0)
+  updated_at            DateTime?               @default(now()) @db.DateTime(0)
+  form8_final_result    form8_final_result[]
+  form8_polling_details form8_polling_details[]
+}
+
+model form8_final_result {
+  id               Int                              @id @default(autoincrement())
+  form8_id         Int
+  form7_society_id Int
+  form5_member_id  Int
+  category_type    form8_final_result_category_type
+  created_at       DateTime?                        @default(now()) @db.DateTime(0)
+  form8            form8                            @relation(fields: [form8_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "fk_form8_result_form8")
+
+  @@index([form8_id], map: "idx_form8_result_form8_id")
+  @@index([form5_member_id], map: "idx_form8_result_member_id")
+  @@index([form7_society_id], map: "idx_form8_result_society_id")
+}
+
+model form8_polling_details {
+  id                       Int             @id @default(autoincrement())
+  form8_id                 Int
+  form7_society_id         Int
+  ballot_votes_at_counting Int
+  valid_votes              Int
+  invalid_votes            Int
+  remarks                  String?         @db.Text
+  created_at               DateTime?       @default(now()) @db.DateTime(0)
+  form7_societies          form7_societies @relation(fields: [form7_society_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "fk_form8_polling_form7_society")
+  form8                    form8           @relation(fields: [form8_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "fk_form8_polling_form8")
+
+  @@index([form8_id], map: "idx_form8_polling_form8_id")
+  @@index([form7_society_id], map: "idx_form8_polling_society_id")
+}
+
+model form9 {
+  id                     Int                      @id @default(autoincrement())
+  uid                    Int
+  department_id          Int?
+  district_id            Int?
+  zone_id                Int?
+  status                 form9_status?            @default(DRAFT)
+  created_at             DateTime                 @default(now()) @db.Timestamp(0)
+  updated_at             DateTime                 @default(now()) @db.Timestamp(0)
+  form9_candidate_status form9_candidate_status[]
+  form9_society          form9_society[]
+}
+
+model form9_candidate_status {
+  id               Int                            @id @default(autoincrement())
+  form9_id         Int
+  form9_society_id Int
+  form5_member_id  Int
+  status           form9_candidate_status_status? @default(ELIGIBLE)
+  remarks          String?                        @db.VarChar(255)
+  created_at       DateTime                       @default(now()) @db.Timestamp(0)
+  updated_at       DateTime                       @default(now()) @db.Timestamp(0)
+  form5            form5                          @relation(fields: [form5_member_id], references: [id], onUpdate: Restrict, map: "fk_f9cs_form5")
+  form9            form9                          @relation(fields: [form9_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "fk_f9cs_form9")
+  form9_society    form9_society                  @relation(fields: [form9_society_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "fk_f9cs_society")
+
+  @@unique([form9_society_id, form5_member_id], map: "uq_f9_candidate")
+  @@index([form5_member_id], map: "fk_f9cs_form5")
+  @@index([form9_id], map: "fk_f9cs_form9")
+}
+
+model form9_society {
+  id                           Int                          @id @default(autoincrement())
+  form9_id                     Int
+  form4_filed_soc_id           Int
+  election_type                form9_society_election_type?
+  president_form5_candidate_id Int?
+  status                       form9_society_status?        @default(DRAFT)
+  created_at                   DateTime                     @default(now()) @db.Timestamp(0)
+  updated_at                   DateTime                     @default(now()) @db.Timestamp(0)
+  form9_candidate_status       form9_candidate_status[]
+  form4_filed_soc_mem_count    form4_filed_soc_mem_count    @relation(fields: [form4_filed_soc_id], references: [id], onUpdate: Restrict, map: "fk_f9soc_form4_filed")
+  form9                        form9                        @relation(fields: [form9_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "fk_f9soc_form9")
+  form5                        form5?                       @relation(fields: [president_form5_candidate_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "fk_f9soc_president")
+
+  @@index([form4_filed_soc_id], map: "fk_f9soc_form4_filed")
+  @@index([form9_id], map: "fk_f9soc_form9")
+  @@index([president_form5_candidate_id], map: "fk_f9soc_president")
+}
+
+model form10 {
+  id                      Int                       @id @default(autoincrement())
+  uid                     Int
+  department_id           Int?
+  district_id             Int?
+  zone_id                 Int?
+  status                  form10_status?            @default(DRAFT)
+  created_at              DateTime                  @default(now()) @db.Timestamp(0)
+  updated_at              DateTime                  @default(now()) @db.Timestamp(0)
+  form10_candidate_status form10_candidate_status[]
+  form10_society          form10_society[]
+}
+
+model form10_candidate_status {
+  id                Int                             @id @default(autoincrement())
+  form10_id         Int
+  form10_society_id Int
+  form5_member_id   Int
+  status            form10_candidate_status_status? @default(ELIGIBLE)
+  remarks           String?                         @db.VarChar(255)
+  created_at        DateTime                        @default(now()) @db.Timestamp(0)
+  updated_at        DateTime                        @default(now()) @db.Timestamp(0)
+  form10            form10                          @relation(fields: [form10_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "fk_f10cs_form10")
+  form5             form5                           @relation(fields: [form5_member_id], references: [id], onUpdate: Restrict, map: "fk_f10cs_form5")
+  form10_society    form10_society                  @relation(fields: [form10_society_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "fk_f10cs_society")
+
+  @@unique([form10_society_id, form5_member_id], map: "uq_f10_candidate")
+  @@index([form10_id], map: "fk_f10cs_form10")
+  @@index([form5_member_id], map: "fk_f10cs_form5")
+}
+
+model form10_society {
+  id                                Int                           @id @default(autoincrement())
+  form10_id                         Int
+  form4_filed_soc_id                Int
+  election_type                     form10_society_election_type?
+  vice_president_form5_candidate_id Int?
+  status                            form10_society_status?        @default(DRAFT)
+  created_at                        DateTime                      @default(now()) @db.Timestamp(0)
+  updated_at                        DateTime                      @default(now()) @db.Timestamp(0)
+  form10_candidate_status           form10_candidate_status[]
+  form10                            form10                        @relation(fields: [form10_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "fk_f10soc_form10")
+  form4_filed_soc_mem_count         form4_filed_soc_mem_count     @relation(fields: [form4_filed_soc_id], references: [id], onUpdate: Restrict, map: "fk_f10soc_form4_filed")
+  form5                             form5?                        @relation(fields: [vice_president_form5_candidate_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "fk_f10soc_vice_president")
+
+  @@index([form10_id], map: "fk_f10soc_form10")
+  @@index([form4_filed_soc_id], map: "fk_f10soc_form4_filed")
+  @@index([vice_president_form5_candidate_id], map: "fk_f10soc_vice_president")
+}
+
+enum form4_filed_soc_mem_count_election_status {
+  PENDING
+  DECLARED
+  UNDECLARED
+}
+
+enum form5_category_type {
+  SC_ST
+  WOMEN
+  GENERAL
+  SC_ST_DLG
+  WOMEN_DLG
+  GENERAL_DLG
+}
+
+enum form6_candidate_event_event_type {
+  ADDED
+  REMOVED
+  UPDATED
+}
+
+enum form6_status {
+  DRAFT
+  SUBMITTED
+  APPROVED
+  REJECTED
+}
+
+enum form6_society_decision_election_action {
+  SHOW
+  HIDE
+}
+
+enum form6_society_decision_election_status {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum form7_societies_polling_suspension_count {
+  NO_ISSUES
+  TEMPORARY
+  CANCELLED
+}
+
+enum form8_final_result_category_type {
+  SC_ST
+  SC_ST_DLG
+  WOMEN
+  WOMEN_DLG
+  GENERAL
+  GENERAL_DLG
+}
+
+enum form9_society_election_type {
+  REGULAR
+  BY_ELECTION
+}
+
+enum form9_candidate_status_status {
+  ELIGIBLE
+  INELIGIBLE
+  DISQUALIFIED
+}
+
+enum form9_status {
+  DRAFT
+  SUBMITTED
+  APPROVED
+  REJECTED
+}
+
+enum form9_society_status {
+  DRAFT
+  SUBMITTED
+  APPROVED
+  REJECTED
+}
+
+enum form10_society_election_type {
+  REGULAR
+  BY_ELECTION
+}
+
+enum form10_candidate_status_status {
+  ELIGIBLE
+  INELIGIBLE
+  DISQUALIFIED
+}
+
+enum form10_status {
+  DRAFT
+  SUBMITTED
+  APPROVED
+  REJECTED
+}
+
+enum form10_society_status {
+  DRAFT
+  SUBMITTED
+  APPROVED
+  REJECTED
+}
