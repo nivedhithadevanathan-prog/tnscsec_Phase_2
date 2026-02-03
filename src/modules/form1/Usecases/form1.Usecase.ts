@@ -1,0 +1,366 @@
+import { PrismaClient } from "@prisma/client";
+
+export const prisma = new PrismaClient();
+
+/**
+ * GET CHECKPOINT ZONES
+ */
+export const getCheckpointZonesUsecase = async (
+  userId: number | string,
+  selectedIds: number[] = []
+) => {
+  const uid = Number(userId);
+
+  if (!uid || Number.isNaN(uid)) {
+    throw new Error("Invalid user id");
+  }
+
+  const user = await prisma.users.findFirst({
+    where: { id: uid },
+    select: {
+      district_id: true,
+      zone_id: true,
+    },
+  });
+
+  if (!user?.district_id || !user?.zone_id) {
+    return {
+      total_zones: 0,
+      selected_soc: [],
+      non_selected_soc: [],
+    };
+  }
+
+  const allZones = await prisma.master_zone.findMany({
+    where: {
+      district_id: user.district_id,
+      zone_id: Number(user.zone_id),
+    },
+    select: {
+      id: true,
+      association_name: true,
+    },
+  });
+
+  const validZones = allZones.filter(
+    (z) => z.association_name !== null
+  );
+
+  return {
+    total_zones: validZones.length,
+    selected_soc: validZones.filter((z) =>
+      selectedIds.includes(z.id)
+    ),
+    non_selected_soc: validZones.filter(
+      (z) => !selectedIds.includes(z.id)
+    ),
+  };
+};
+
+/**
+ * SUBMIT FORM1
+ */
+export const submitForm1Usecase = async (payload: any) => {
+  const {
+    uid,
+    department_id,
+    district_id,
+    zone_id,
+    remark,
+    selected_soc = [],
+    non_selected_soc = [],
+    rural_details = [],
+  } = payload;
+
+  // 🔧 FIX: only scalar columns in form1 table
+  const form1 = await prisma.form1.create({
+    data: {
+      uid,
+      department_id,
+      district_id,
+      zone_id,
+      remark: remark || null,
+      selected_count: selected_soc.length,
+      non_selected_count: non_selected_soc.length,
+    },
+  });
+
+  const form1_id = form1.id;
+
+  if (selected_soc.length) {
+    await prisma.form1_selected_soc.createMany({
+      data: selected_soc.map((soc: any) => {
+        const rural = rural_details.find(
+          (r: any) => r.rurel_id === soc.id
+        );
+
+        return {
+          form1_id,
+          society_id: soc.id,
+          society_name: soc.association_name,
+          sc_st: rural?.sc_st ?? 0,
+          women: rural?.women ?? 0,
+          general: rural?.general ?? 0,
+          tot_voters: rural?.tot_voters ?? 0,
+        };
+      }),
+    });
+  }
+
+  if (non_selected_soc.length) {
+    await prisma.form1_non_selected_soc.createMany({
+      data: non_selected_soc.map((soc: any) => {
+        const rural = rural_details.find(
+          (r: any) => r.rurel_id === soc.id
+        );
+
+        return {
+          form1_id,
+          society_id: soc.id,
+          society_name: soc.association_name,
+          sc_st: rural?.sc_st ?? 0,
+          women: rural?.women ?? 0,
+          general: rural?.general ?? 0,
+          tot_voters: rural?.tot_voters ?? 0,
+        };
+      }),
+    });
+  }
+
+  return {
+    form1_id,
+    message: "Form1 stored successfully",
+  };
+};
+
+/**
+ * GET MASTER ZONES
+ */
+export const getMasterZonesUsecase = async (userId: number | string) => {
+  const uid = Number(userId);
+
+  if (!uid || Number.isNaN(uid)) {
+    throw new Error("Invalid user id");
+  }
+
+  const user = await prisma.users.findFirst({
+    where: { id: uid },
+    select: {
+      district_id: true,
+      zone_id: true,
+    },
+  });
+
+  if (!user?.district_id || !user?.zone_id) {
+    return [];
+  }
+
+  return prisma.master_zone.findMany({
+    where: {
+      district_id: user.district_id,
+      zone_id: Number(user.zone_id),
+    },
+    select: {
+      id: true,
+      association_name: true,
+    },
+  });
+};
+
+/**
+ * GET RURAL DETAILS
+ */
+export const getRuralDetailsUsecase = async (ids: number[]) => {
+  return prisma.reservation.findMany({
+    where: {
+      rurel_id: { in: ids },
+    },
+    select: {
+      rurel_id: true,
+      sc_st: true,
+      women: true,
+      general: true,
+      tot_voters: true,
+    },
+  });
+};
+
+/**
+ * GET FORM1 LIST
+ */
+export const getForm1ListUsecase = async (
+  userId: number,
+  districtName: string,
+  zoneName: string
+) => {
+  const form1List = await prisma.form1.findMany({
+    where: {
+      uid: userId,
+      is_active: 1,
+    },
+    orderBy: { id: "desc" },
+    include: {
+      selected_soc: true,
+      non_selected_soc: true,
+    },
+  });
+
+  if (!form1List.length) return [];
+
+  const departments = await prisma.department.findMany({
+    select: { id: true, name: true },
+  });
+
+  const deptMap = new Map(departments.map(d => [d.id, d.name]));
+
+  return form1List.map(f => ({
+    id: f.id,
+    department_id: f.department_id,
+    department_name: deptMap.get(f.department_id ?? 0) || null,
+    district_id: f.district_id,
+    district_name: districtName,
+    zone_id: f.zone_id,
+    zone_name: zoneName,
+    selected_count: f.selected_count,
+    non_selected_count: f.non_selected_count,
+    remark: f.remark,
+    selected_soc: f.selected_soc,
+    non_selected_soc: f.non_selected_soc,
+  }));
+};
+
+/**
+ * GET EDITABLE FORM1
+ */
+export const getEditableForm1Usecase = async (userId: number) => {
+  const form1 = await prisma.form1.findFirst({
+    where: {
+      uid: userId,
+      is_active: 1,
+    },
+    orderBy: { id: "desc" },
+    include: {
+      selected_soc: true,
+      non_selected_soc: true,
+    },
+  });
+
+  if (!form1) return null;
+
+  const form2Exists = await prisma.form2.findFirst({
+    where: { form1_id: form1.id },
+    select: { id: true },
+  });
+
+  return {
+    id: form1.id,
+    department_id: form1.department_id,
+    district_id: form1.district_id,
+    zone_id: form1.zone_id,
+    selected_count: form1.selected_count,
+    non_selected_count: form1.non_selected_count,
+    remark: form1.remark,
+    selected_soc: form1.selected_soc,
+    non_selected_soc: form1.non_selected_soc,
+    can_edit: !form2Exists,
+  };
+};
+
+/**
+ * EDIT FORM1
+ */
+export const editEditableForm1Usecase = async (payload: any) => {
+  const {
+    uid,
+    department_id,
+    district_id,
+    zone_id,
+    remark,
+    selected_soc = [],
+    non_selected_soc = [],
+    rural_details = [],
+  } = payload;
+
+  const form1 = await prisma.form1.findFirst({
+    where: { uid, is_active: 1 },
+    orderBy: { id: "desc" },
+  });
+
+  if (!form1) throw new Error("Form1 not found");
+
+  const form2Exists = await prisma.form2.findFirst({
+    where: { form1_id: form1.id },
+    select: { id: true },
+  });
+
+  if (form2Exists) {
+    throw new Error("Editing is not allowed after proceeding");
+  }
+
+  // 🔧 FIX: update only scalar fields
+  await prisma.form1.update({
+    where: { id: form1.id },
+    data: {
+      department_id,
+      district_id,
+      zone_id,
+      remark: remark || null,
+      selected_count: selected_soc.length,
+      non_selected_count: non_selected_soc.length,
+    },
+  });
+
+  // reset relations
+  await prisma.form1_selected_soc.deleteMany({
+    where: { form1_id: form1.id },
+  });
+
+  await prisma.form1_non_selected_soc.deleteMany({
+    where: { form1_id: form1.id },
+  });
+
+  if (selected_soc.length) {
+    await prisma.form1_selected_soc.createMany({
+      data: selected_soc.map((soc: any) => {
+        const rural = rural_details.find(
+          (r: any) => r.rurel_id === soc.id
+        );
+
+        return {
+          form1_id: form1.id,
+          society_id: soc.id,
+          society_name: soc.association_name,
+          sc_st: rural?.sc_st ?? 0,
+          women: rural?.women ?? 0,
+          general: rural?.general ?? 0,
+          tot_voters: rural?.tot_voters ?? 0,
+        };
+      }),
+    });
+  }
+
+  if (non_selected_soc.length) {
+    await prisma.form1_non_selected_soc.createMany({
+      data: non_selected_soc.map((soc: any) => {
+        const rural = rural_details.find(
+          (r: any) => r.rurel_id === soc.id
+        );
+
+        return {
+          form1_id: form1.id,
+          society_id: soc.id,
+          society_name: soc.association_name,
+          sc_st: rural?.sc_st ?? 0,
+          women: rural?.women ?? 0,
+          general: rural?.general ?? 0,
+          tot_voters: rural?.tot_voters ?? 0,
+        };
+      }),
+    });
+  }
+
+  return {
+    form1_id: form1.id,
+    message: "Form1 updated successfully",
+  };
+};

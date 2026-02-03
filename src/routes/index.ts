@@ -9,7 +9,7 @@ import authRoute from "../modules/auth/authRoute";
 
 
 
-import form1Route from "../modules/form1/form1Route";
+import form1Route from "../modules/form1/Routes/form1.Route";
 import form2Route from "../modules/form2/form2Routes";   
 import form3Route from "../modules/form3/form3Route";
 import form4Route from "../modules/form4/form4Routes";
