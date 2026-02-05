@@ -1,0 +1,110 @@
+import { PrismaClient } from "@prisma/client";
+
+export const prisma = new PrismaClient();
+
+import { form2Service, form2Services } from "../../form2/services/form2.Service";
+
+export const form2Usecases = {
+  /* ---------------------------------------------------------
+   * 1️⃣ GET — Fetch selected societies from Form1
+   * --------------------------------------------------------- */
+  async fetchForm1SelectedSocieties(form1_id: number) {
+    if (!form1_id) throw new Error("form1_id is required");
+
+    const form1 = await prisma.form1.findUnique({
+      where: { id: form1_id },
+      select: {
+        id: true,
+        department_id: true,
+        district_id: true,
+        zone_id: true,
+      },
+    });
+
+    if (!form1) return null;
+
+    const selected_soc = await prisma.form1_selected_soc.findMany({
+      where: { form1_id },
+    });
+
+    return {
+      form1_id: form1.id,
+      department_id: form1.department_id,
+      district_id: form1.district_id,
+      zone_id: form1.zone_id,
+      masterzone_count: selected_soc.length,
+      selected_soc,
+    };
+  },
+
+  /* ---------------------------------------------------------
+   * 2️⃣ CHECKBOX — Update selection
+   * --------------------------------------------------------- */
+ async checkboxSelectionUsecase(payload: {
+  uid: number;
+  form1_id: number;
+  selected_soc_ids: number[];
+}) {
+  const { uid, form1_id, selected_soc_ids } = payload;
+
+  if (!uid) throw new Error("uid is required");
+  if (!form1_id) throw new Error("form1_id is required");
+  if (!Array.isArray(selected_soc_ids)) {
+    throw new Error("selected_soc_ids must be an array");
+  }
+
+  return form2Service.handleCheckboxSelection(
+    uid,
+    form1_id,
+    selected_soc_ids
+  );
+},
+
+  /* ---------------------------------------------------------
+   * 3️⃣ SUBMIT — Create Form2
+   * --------------------------------------------------------- */
+  async submitForm2Usecase(payload: any) {
+    const form2Record = await form2Service.createForm2Parent(payload);
+
+    return form2Service.buildSubmitResponse(
+      form2Record,
+      payload.selected_soc_count
+    );
+  },
+
+  /* ---------------------------------------------------------
+   * 4️⃣ LIST — Form2 by user
+   * --------------------------------------------------------- */
+  async getForm2ListByUser(uid: number) {
+    if (!uid) throw new Error("uid is required");
+
+    return form2Services.getForm2ListByUser(uid);
+  },
+
+  /* ---------------------------------------------------------
+   * 5️⃣ EDITABLE — Latest Form2
+   * --------------------------------------------------------- */
+  async getEditableForm2(uid: number) {
+    if (!uid) throw new Error("uid is required");
+
+    return form2Services.getEditableForm2(uid);
+  },
+
+  /* ---------------------------------------------------------
+   * 6️⃣ EDIT — Edit Form2 (API-2)
+   * --------------------------------------------------------- */
+  async editForm2(payload: {
+    uid: number;
+    form2_id: number;
+    department_id?: number | null;
+    district_id?: number | null;
+    zone_id?: number | null;
+    masterzone_count?: number | null;
+    remark?: string | null;
+    selected_soc_ids: number[];
+  }) {
+    return form2Service.editForm2(payload);
+  },
+};
+
+export default form2Usecases;

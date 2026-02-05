@@ -7,21 +7,8 @@
     "esModuleInterop": true,
     "strict": true,
     "skipLibCheck": true,
-
     "forceConsistentCasingInFileNames": true,
-
-    "typeRoots": [
-      "./src/types",
-      "./node_modules/@types"
-    ],
-
-    "types": [
-      "node",
-      "multer"
-    ]
+    "types": ["node", "multer"]
   },
-
-  "include": [
-    "src/**/*"
-  ]
+  "include": ["src/**/*"]
 }
