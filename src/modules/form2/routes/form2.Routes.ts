@@ -7,14 +7,14 @@ import {
   getForm2ListByUser,
   getEditableForm2,
   editForm2,              // ✅ ADD
-} from "../../form2/controllers/form2.Controller";
+} from "../Controllers/form2.Controller";
 
 import { verifyToken } from "../../../middleware/auth.middleware";
 
 import {
   validate,
   editForm2Validation,    // ✅ ADD
-} from "../../form2/validations/form2.schema";
+} from "../Validations/form2.schema";
 
 const router = Router();
 

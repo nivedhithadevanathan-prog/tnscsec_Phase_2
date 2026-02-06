@@ -3,7 +3,7 @@ import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
 
 export const prisma = new PrismaClient();
-import { form2Usecases } from "../../form2/usecases/form2.Usecase";
+import { form2Usecases } from "../Usecases/form2.Usecase";
 import { AuthRequest } from "../../../middleware/auth.middleware";
 
 
@@ -97,7 +97,21 @@ export const checkboxForm2 = async (req: AuthRequest, res: Response) => {
 ========================================================= */
 export const submitForm2 = async (req: Request, res: Response) => {
   try {
-    const data = await form2Usecases.submitForm2Usecase(req.body);
+    const uid = Number((req as any).user?.uid);
+
+    if (!uid) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    const payload = {
+      ...req.body,
+      uid, // ✅ inject uid HERE
+    };
+
+    const data = await form2Usecases.submitForm2Usecase(payload);
 
     return res.status(200).json({
       success: true,
@@ -114,6 +128,8 @@ export const submitForm2 = async (req: Request, res: Response) => {
     });
   }
 };
+
+
 
 /* =========================================================
    4️⃣ GET — List Form2 by Logged-in User

@@ -5,24 +5,47 @@ export const prisma = new PrismaClient();
    SERVICE GROUP 1 — READ (GET / LIST / EDITABLE)
 ========================================================= */
 export const form2Services = {
-  async getForm2ListByUser(uid: number) {
-    return prisma.form2.findMany({
-      where: { uid, is_active: true },
-      orderBy: { id: "desc" },
-      include: {
-        selected_soc: { select: { society_id: true, society_name: true } },
-        non_selected_soc: { select: { society_id: true, society_name: true } },
+ async getForm2ListByUser(uid: number) {
+  const form2List = await prisma.form2.findMany({
+    where: { uid, is_active: true },
+    orderBy: { id: "desc" },
+    include: {
+      form2_selected_soc: {
+        select: { society_id: true, society_name: true },
       },
-    });
-  },
+      form2_non_selected_soc: {
+        select: { society_id: true, society_name: true },
+      },
+    },
+  });
+
+  return form2List.map(item => ({
+    id: item.id,
+    uid: item.uid, // ✅ THIS IS WHERE UID IS ADDED
+    form1_id: item.form1_id,
+
+    department_id: item.department_id,
+    district_id: item.district_id,
+    zone_id: item.zone_id,
+
+    masterzone_count: item.masterzone_count,
+    selected_soc_count: item.selected_soc_count,
+    remark: item.remark,
+    is_active: item.is_active,
+
+    selected_soc: item.form2_selected_soc,
+    non_selected_soc: item.form2_non_selected_soc,
+  }));
+},
+
 
   async getEditableForm2(uid: number) {
     return prisma.form2.findFirst({
       where: { uid, is_active: true },
       orderBy: { id: "desc" },
       include: {
-        selected_soc: true,
-        non_selected_soc: true,
+        form2_selected_soc: true,
+        form2_non_selected_soc: true,
       },
     });
   },
@@ -33,9 +56,38 @@ export const form2Services = {
 ========================================================= */
 export const form2Service = {
   /* ---------- SUBMIT ---------- */
-  async createForm2Parent(payload: any) {
-    return prisma.form2.create({ data: payload });
-  },
+ async createForm2Parent(payload: any) {
+  const {
+    uid,              // 🔥 REQUIRED
+    department_id,
+    district_id,
+    zone_id,
+    form1_id,
+    masterzone_count,
+    remark,
+    is_active,
+    selected_soc_count, // ✅ ADD THIS
+  } = payload;
+
+  if (!uid) {
+    throw new Error("uid is required to create Form2");
+  }
+
+  return prisma.form2.create({
+    data: {
+      uid,
+      department_id,
+      district_id,
+      zone_id,
+      form1_id,
+      masterzone_count,
+      remark,
+      is_active,
+      selected_soc_count, // ✅ SAVE TO DB
+    },
+  });
+},
+
 
   buildSubmitResponse(form2Record: any, selectedCount: number) {
     return {

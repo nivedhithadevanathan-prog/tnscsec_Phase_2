@@ -10,9 +10,9 @@ import authRoute from "../modules/auth/authRoute";
 
 
 import form1Route from "../modules/form1/Routes/form1.Route";
-import form2Route from "../modules/form2/routes/form2.Routes";   
-import form3Route from "../modules/form3/form3Route";
-import form4Route from "../modules/form4/form4Routes";
+import form2Route from "../modules/form2/Routes/form2.Routes";   
+import form3Route from "../modules/form3/Routes/form3.Route";
+import form4Route from "../modules/form4/Routes/form4.Routes";
 import form5Route from "../modules/form5/form5Routes";
 import form6Route from "../modules/form6/form6Routes";
 import form7Route from "../modules/form7/form7Route";

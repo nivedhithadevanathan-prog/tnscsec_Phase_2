@@ -2,7 +2,7 @@ import { PrismaClient } from "@prisma/client";
 
 export const prisma = new PrismaClient();
 
-import { form2Service, form2Services } from "../../form2/services/form2.Service";
+import { form2Service, form2Services } from "../Services/form2.Service";
 
 export const form2Usecases = {
   /* ---------------------------------------------------------
@@ -63,14 +63,51 @@ export const form2Usecases = {
   /* ---------------------------------------------------------
    * 3️⃣ SUBMIT — Create Form2
    * --------------------------------------------------------- */
-  async submitForm2Usecase(payload: any) {
-    const form2Record = await form2Service.createForm2Parent(payload);
+async submitForm2Usecase(payload: any) {
+  // ✅ FIX: compute selected count safely
+  const selectedCount =
+    payload.selected_soc?.length ??
+    payload.selected_soc_ids?.length ??
+    0;
 
-    return form2Service.buildSubmitResponse(
-      form2Record,
-      payload.selected_soc_count
-    );
-  },
+  // 1️⃣ Create parent Form2
+  const form2Record = await form2Service.createForm2Parent({
+    ...payload,
+    selected_soc_count: selectedCount,
+  });
+
+  const form2Id = form2Record.id;
+
+  // 2️⃣ Insert SELECTED societies
+  if (payload.selected_soc?.length) {
+    await prisma.form2_selected_soc.createMany({
+      data: payload.selected_soc.map((s: any) => ({
+        form2_id: form2Id,
+        society_id: s.society_id,
+        society_name: s.society_name,
+      })),
+    });
+  }
+
+  // 3️⃣ Insert NON-SELECTED societies
+  if (payload.non_selected_soc?.length) {
+    await prisma.form2_non_selected_soc.createMany({
+      data: payload.non_selected_soc.map((s: any) => ({
+        form2_id: form2Id,
+        society_id: s.society_id,
+        society_name: s.society_name,
+      })),
+    });
+  }
+
+  // 4️⃣ Return response
+  return form2Service.buildSubmitResponse(
+    form2Record,
+    selectedCount
+  );
+},
+
+
 
   /* ---------------------------------------------------------
    * 4️⃣ LIST — Form2 by user
