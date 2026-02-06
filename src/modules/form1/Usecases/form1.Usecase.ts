@@ -200,8 +200,8 @@ export const getForm1ListUsecase = async (
     },
     orderBy: { id: "desc" },
     include: {
-      selected_soc: true,
-      non_selected_soc: true,
+      form1_selected_soc: true,
+      form1_non_selected_soc: true,
     },
   });
 
@@ -224,8 +224,8 @@ export const getForm1ListUsecase = async (
     selected_count: f.selected_count,
     non_selected_count: f.non_selected_count,
     remark: f.remark,
-    selected_soc: f.selected_soc,
-    non_selected_soc: f.non_selected_soc,
+    selected_soc: f.form1_selected_soc,
+    non_selected_soc: f.form1_non_selected_soc,
   }));
 };
 
@@ -240,8 +240,8 @@ export const getEditableForm1Usecase = async (userId: number) => {
     },
     orderBy: { id: "desc" },
     include: {
-      selected_soc: true,
-      non_selected_soc: true,
+      form1_selected_soc: true,
+      form1_non_selected_soc: true,
     },
   });
 
@@ -260,8 +260,8 @@ export const getEditableForm1Usecase = async (userId: number) => {
     selected_count: form1.selected_count,
     non_selected_count: form1.non_selected_count,
     remark: form1.remark,
-    selected_soc: form1.selected_soc,
-    non_selected_soc: form1.non_selected_soc,
+    selected_soc: form1.form1_selected_soc,
+    non_selected_soc: form1.form1_non_selected_soc,
     can_edit: !form2Exists,
   };
 };

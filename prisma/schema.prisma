@@ -224,31 +224,31 @@ model form4 {
 }
 
 model form4_filed_soc_mem_count {
-  id                   Int                                       @id @default(autoincrement())
+  id                   Int                                        @id @default(autoincrement())
   form4_id             Int
   society_id           Int
-  society_name         String?                                   @db.VarChar(255)
+  society_name         String?                                    @db.VarChar(255)
   rural_id             Int
-  rural_sc_st          Int?                                      @default(0)
-  rural_women          Int?                                      @default(0)
-  rural_general        Int?                                      @default(0)
-  rural_sc_st_dlg      Int?                                      @default(0)
-  rural_women_dlg      Int?                                      @default(0)
-  rural_general_dlg    Int?                                      @default(0)
-  rural_tot_voters     Int?                                      @default(0)
-  declared_sc_st       Int?                                      @default(0)
-  declared_women       Int?                                      @default(0)
-  declared_general     Int?                                      @default(0)
-  declared_sc_st_dlg   Int?                                      @default(0)
-  declared_women_dlg   Int?                                      @default(0)
-  declared_general_dlg Int?                                      @default(0)
-  declared_tot_voters  Int?                                      @default(0)
-  tot_voters           Int?                                      @default(0)
-  election_status      form4_filed_soc_mem_count_election_status
-  remarks              String?                                   @db.VarChar(255)
-  decision_at          DateTime                                  @default(now()) @db.Timestamp(0)
+  rural_sc_st          Int?                                       @default(0)
+  rural_women          Int?                                       @default(0)
+  rural_general        Int?                                       @default(0)
+  rural_sc_st_dlg      Int?                                       @default(0)
+  rural_women_dlg      Int?                                       @default(0)
+  rural_general_dlg    Int?                                       @default(0)
+  rural_tot_voters     Int?                                       @default(0)
+  declared_sc_st       Int?                                       @default(0)
+  declared_women       Int?                                       @default(0)
+  declared_general     Int?                                       @default(0)
+  declared_sc_st_dlg   Int?                                       @default(0)
+  declared_women_dlg   Int?                                       @default(0)
+  declared_general_dlg Int?                                       @default(0)
+  declared_tot_voters  Int?                                       @default(0)
+  tot_voters           Int?                                       @default(0)
+  election_status      form4_filed_soc_mem_count_election_status?
+  remarks              String?                                    @db.VarChar(255)
+  decision_at          DateTime                                   @default(now()) @db.Timestamp(0)
   form10_society       form10_society[]
-  form4                form4                                     @relation(fields: [form4_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "fk_form4_filed_soc")
+  form4                form4                                      @relation(fields: [form4_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "fk_form4_filed_soc")
   form5                form5[]
   form9_society        form9_society[]
 
@@ -278,7 +278,7 @@ model form4_unfiled_soc_mem_count {
 model form5 {
   id                        Int                       @id @default(autoincrement())
   form4_filed_soc_id        Int
-  category_type             form5_category_type
+  category_type             form5_category_type?
   member_name               String                    @db.VarChar(255)
   aadhar_no                 String                    @db.VarChar(20)
   is_active                 Boolean?                  @default(true)
@@ -299,7 +299,7 @@ model form6 {
   department_id          Int?
   district_id            Int?
   zone_id                Int?
-  status                 form6_status?            @default(DRAFT)
+  status                 form6_status?
   created_at             DateTime                 @default(now()) @db.Timestamp(0)
   submitted_at           DateTime?                @db.Timestamp(0)
   form6_candidate_event  form6_candidate_event[]
@@ -307,13 +307,13 @@ model form6 {
 }
 
 model form6_candidate_event {
-  id              Int                              @id @default(autoincrement())
+  id              Int                               @id @default(autoincrement())
   form6_id        Int
   form5_member_id Int
-  event_type      form6_candidate_event_event_type
-  event_at        DateTime                         @default(now()) @db.Timestamp(0)
+  event_type      form6_candidate_event_event_type?
+  event_at        DateTime                          @default(now()) @db.Timestamp(0)
   event_by        Int
-  form6           form6                            @relation(fields: [form6_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "fk_form6_event")
+  form6           form6                             @relation(fields: [form6_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "fk_form6_event")
 
   @@index([form6_id], map: "fk_form6_event")
 }
@@ -324,7 +324,7 @@ model form6_society_decision {
   form4_filed_soc_id      Int
   society_id              Int
   society_name            String?                                 @db.VarChar(255)
-  election_action         form6_society_decision_election_action? @default(SHOW)
+  election_action         form6_society_decision_election_action?
   election_status         form6_society_decision_election_status?
   final_sc_st_count       Int?                                    @default(0)
   final_sc_st_dlg_count   Int?                                    @default(0)
@@ -365,7 +365,7 @@ model form7_societies {
   stamp_count              Int?                                      @default(0)
   polling_stations_count   Int?                                      @default(0)
   election_officers_count  Int?                                      @default(0)
-  polling_suspension_count form7_societies_polling_suspension_count? @default(NO_ISSUES)
+  polling_suspension_count form7_societies_polling_suspension_count?
   created_at               DateTime                                  @default(now()) @db.Timestamp(0)
   form7                    form7                                     @relation(fields: [form7_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "fk_form7_society")
   form8_polling_details    form8_polling_details[]
@@ -384,13 +384,13 @@ model form8 {
 }
 
 model form8_final_result {
-  id               Int                              @id @default(autoincrement())
+  id               Int                               @id @default(autoincrement())
   form8_id         Int
   form7_society_id Int
   form5_member_id  Int
-  category_type    form8_final_result_category_type
-  created_at       DateTime?                        @default(now()) @db.DateTime(0)
-  form8            form8                            @relation(fields: [form8_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "fk_form8_result_form8")
+  category_type    form8_final_result_category_type?
+  created_at       DateTime?                         @default(now()) @db.DateTime(0)
+  form8            form8                             @relation(fields: [form8_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "fk_form8_result_form8")
 
   @@index([form8_id], map: "idx_form8_result_form8_id")
   @@index([form5_member_id], map: "idx_form8_result_member_id")
@@ -419,7 +419,7 @@ model form9 {
   department_id          Int?
   district_id            Int?
   zone_id                Int?
-  status                 form9_status?            @default(DRAFT)
+  status                 form9_status?
   created_at             DateTime                 @default(now()) @db.Timestamp(0)
   updated_at             DateTime                 @default(now()) @db.Timestamp(0)
   form9_candidate_status form9_candidate_status[]
@@ -431,7 +431,7 @@ model form9_candidate_status {
   form9_id         Int
   form9_society_id Int
   form5_member_id  Int
-  status           form9_candidate_status_status? @default(ELIGIBLE)
+  status           form9_candidate_status_status?
   remarks          String?                        @db.VarChar(255)
   created_at       DateTime                       @default(now()) @db.Timestamp(0)
   updated_at       DateTime                       @default(now()) @db.Timestamp(0)
@@ -450,7 +450,7 @@ model form9_society {
   form4_filed_soc_id           Int
   election_type                form9_society_election_type?
   president_form5_candidate_id Int?
-  status                       form9_society_status?        @default(DRAFT)
+  status                       form9_society_status?
   created_at                   DateTime                     @default(now()) @db.Timestamp(0)
   updated_at                   DateTime                     @default(now()) @db.Timestamp(0)
   form9_candidate_status       form9_candidate_status[]
@@ -469,7 +469,7 @@ model form10 {
   department_id           Int?
   district_id             Int?
   zone_id                 Int?
-  status                  form10_status?            @default(DRAFT)
+  status                  form10_status?
   created_at              DateTime                  @default(now()) @db.Timestamp(0)
   updated_at              DateTime                  @default(now()) @db.Timestamp(0)
   form10_candidate_status form10_candidate_status[]
@@ -481,7 +481,7 @@ model form10_candidate_status {
   form10_id         Int
   form10_society_id Int
   form5_member_id   Int
-  status            form10_candidate_status_status? @default(ELIGIBLE)
+  status            form10_candidate_status_status?
   remarks           String?                         @db.VarChar(255)
   created_at        DateTime                        @default(now()) @db.Timestamp(0)
   updated_at        DateTime                        @default(now()) @db.Timestamp(0)
@@ -500,7 +500,7 @@ model form10_society {
   form4_filed_soc_id                Int
   election_type                     form10_society_election_type?
   vice_president_form5_candidate_id Int?
-  status                            form10_society_status?        @default(DRAFT)
+  status                            form10_society_status?
   created_at                        DateTime                      @default(now()) @db.Timestamp(0)
   updated_at                        DateTime                      @default(now()) @db.Timestamp(0)
   form10_candidate_status           form10_candidate_status[]
@@ -513,106 +513,100 @@ model form10_society {
   @@index([vice_president_form5_candidate_id], map: "fk_f10soc_vice_president")
 }
 
-enum form4_filed_soc_mem_count_election_status {
-  PENDING
-  DECLARED
-  UNDECLARED
-}
-
 enum form5_category_type {
-  SC_ST
-  WOMEN
-  GENERAL
-  SC_ST_DLG
-  WOMEN_DLG
-  GENERAL_DLG
-}
-
-enum form6_candidate_event_event_type {
-  ADDED
-  REMOVED
-  UPDATED
-}
-
-enum form6_status {
-  DRAFT
-  SUBMITTED
-  APPROVED
-  REJECTED
-}
-
-enum form6_society_decision_election_action {
-  SHOW
-  HIDE
-}
-
-enum form6_society_decision_election_status {
-  PENDING
-  APPROVED
-  REJECTED
-}
-
-enum form7_societies_polling_suspension_count {
-  NO_ISSUES
-  TEMPORARY
-  CANCELLED
-}
-
-enum form8_final_result_category_type {
-  SC_ST
-  SC_ST_DLG
-  WOMEN
-  WOMEN_DLG
-  GENERAL
-  GENERAL_DLG
-}
-
-enum form9_society_election_type {
-  REGULAR
-  BY_ELECTION
-}
-
-enum form9_candidate_status_status {
-  ELIGIBLE
-  INELIGIBLE
-  DISQUALIFIED
-}
-
-enum form9_status {
-  DRAFT
-  SUBMITTED
-  APPROVED
-  REJECTED
-}
-
-enum form9_society_status {
-  DRAFT
-  SUBMITTED
-  APPROVED
-  REJECTED
+  sc_st
+  women
+  general
+  sc_st_dlg
+  women_dlg
+  general_dlg
 }
 
 enum form10_society_election_type {
-  REGULAR
-  BY_ELECTION
+  UNOPPOSED
+  POLL
+}
+
+enum form6_candidate_event_event_type {
+  WITHDRAW
+  REINSTATE
+}
+
+enum form9_society_election_type {
+  UNOPPOSED
+  POLL
 }
 
 enum form10_candidate_status_status {
   ELIGIBLE
-  INELIGIBLE
-  DISQUALIFIED
+  REJECTED
+  WITHDRAWN
+  CONTESTING
+  ELECTED
+  LOST
+  NOT_SELECTED
+}
+
+enum form8_final_result_category_type {
+  SC_ST
+  WOMEN
+  GENERAL
+}
+
+enum form9_candidate_status_status {
+  ELIGIBLE
+  REJECTED
+  WITHDRAWN
+  CONTESTING
+  ELECTED
+  LOST
+  NOT_SELECTED
 }
 
 enum form10_status {
   DRAFT
   SUBMITTED
-  APPROVED
-  REJECTED
 }
 
 enum form10_society_status {
   DRAFT
+  FINALIZED
+}
+
+enum form6_status {
+  DRAFT
   SUBMITTED
-  APPROVED
-  REJECTED
+}
+
+enum form6_society_decision_election_action {
+  SHOW
+  STOP
+}
+
+enum form9_status {
+  DRAFT
+  SUBMITTED
+}
+
+enum form9_society_status {
+  DRAFT
+  FINALIZED
+}
+
+enum form6_society_decision_election_status {
+  QUALIFIED
+  UNQUALIFIED
+  UNOPPOSED
+}
+
+enum form7_societies_polling_suspension_count {
+  RULE_52_18
+  RULE_52A_6
+  NO_ISSUES
+}
+
+enum form4_filed_soc_mem_count_election_status {
+  QUALIFIED
+  UNOPPOSED
+  UNQUALIFIED
 }

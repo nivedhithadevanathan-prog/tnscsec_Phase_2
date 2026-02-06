@@ -31,7 +31,7 @@ async fetchForm2ForForm3(uid: number | string, fm2id?: number | string) {
       zone_id: true,
       masterzone_count: true,
       selected_soc_count: true,
-      selected_soc: {
+      form2_selected_soc: {
         select: {
           society_id: true,
           society_name: true,
@@ -48,7 +48,7 @@ async fetchForm2ForForm3(uid: number | string, fm2id?: number | string) {
     zone_id: row.zone_id,
     masterzone_count: row.masterzone_count,
     selected_soc_count: row.selected_soc_count,
-    selected_soc: row.selected_soc,
+    selected_soc: row.form2_selected_soc,
   }));
 },
 
