@@ -16,7 +16,7 @@ import form4Route from "../modules/form4/Routes/form4.Routes";
 import form5Route from "../modules/form5/Routes/form5.Routes";
 import form6Route from "../modules/form6/Routes/form6.Routes";
 import form7Route from "../modules/form7/Routes/form7.Route";
-// import form8Route from "../modules/form8/form8Routes";
+import form8Route from "../modules/form8/Routes/form8.Routes";
 // import form9Route from "../modules/form9/form9Routes";
 // import form10Route from "../modules/form10/form10Routes";
 
@@ -39,6 +39,6 @@ route.use("/api/form3", form3Route);
  route.use("/api/form5", form5Route);
  route.use("/api/form6", form6Route);
  route.use("/api/form7", form7Route);
-//  route.use("/api/form8", form8Route);
+ route.use("/api/form8", form8Route);
 // route.use("/api/form9", form9Route);
 // route.use("/api/form10", form10Route);

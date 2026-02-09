@@ -1,39 +1,88 @@
-// import Joi from "joi";
+import Joi from "joi";
 
-// export const getForm7PreviewSchema = Joi.object({});
+/* =====================================================
+ * COMMON ENUMS
+ * ===================================================== */
+const pollingSuspensionEnum = Joi.string().valid(
+  "RULE_52_18",
+  "RULE_52A_6",
+  "NO_ISSUES"
+);
 
+/* =====================================================
+ * PREVIEW (GET /preview)
+ * ===================================================== */
+export const previewForm7Validation = {
+  params: Joi.object({}),
+  query: Joi.object({}),
+  body: Joi.object({}),
+};
 
-// export const submitForm7Schema = Joi.object({
-//   societies: Joi.array()
-//     .items(
-//       Joi.object({
-//         society_id: Joi.number().integer().required(),
+/* =====================================================
+ * LIST (GET /list)
+ * ===================================================== */
+export const listForm7Validation = {
+  params: Joi.object({}),
+  query: Joi.object({}),
+  body: Joi.object({}),
+};
 
-//         society_name: Joi.string().required(),
+/* =====================================================
+ * EDITABLE (GET /editable)
+ * ===================================================== */
+export const editableForm7Validation = {
+  params: Joi.object({}),
+  query: Joi.object({}),
+  body: Joi.object({}),
+};
 
-//         final_sc_st_count: Joi.number().integer().min(0).required(),
-//         final_women_count: Joi.number().integer().min(0).required(),
-//         final_general_count: Joi.number().integer().min(0).required(),
+/* =====================================================
+ * SOCIETY OBJECT (Used in Submit & Edit)
+ * ===================================================== */
+const form7SocietySchema = Joi.object({
+  society_id: Joi.number().integer().required(),
+  society_name: Joi.string().trim().required(),
 
-//         form3_total: Joi.number().integer().min(0).required(),
+  final_sc_st_count: Joi.number().integer().min(0).required(),
+  final_women_count: Joi.number().integer().min(0).required(),
+  final_general_count: Joi.number().integer().min(0).required(),
 
-//         casted_votes_count: Joi.number().integer().min(0).required(),
+  final_sc_st_dlg_count: Joi.number().integer().min(0).required(),
+  final_women_dlg_count: Joi.number().integer().min(0).required(),
+  final_general_dlg_count: Joi.number().integer().min(0).required(),
 
-//         voting_percentage: Joi.number().min(0).max(100).required(),
+  form3_total: Joi.number().integer().min(0).required(),
+  casted_votes_count: Joi.number().integer().min(0).required(),
+  voting_percentage: Joi.number().min(0).max(100).required(),
 
-//         ballot_box_count: Joi.number().integer().min(0).required(),
+  ballot_box_count: Joi.number().integer().min(0).required(),
+  stamp_count: Joi.number().integer().min(0).required(),
+  polling_stations_count: Joi.number().integer().min(0).required(),
+  election_officers_count: Joi.number().integer().min(0).required(),
 
-//         stamp_count: Joi.number().integer().min(0).required(),
+  polling_suspension_count: pollingSuspensionEnum.required(),
+});
 
-//         polling_stations_count: Joi.number().integer().min(0).required(),
+/* =====================================================
+ * SUBMIT (POST /submit)
+ * ===================================================== */
+export const submitForm7Validation = {
+  body: Joi.object({
+    societies: Joi.array()
+      .items(form7SocietySchema)
+      .min(1)
+      .required(),
+  }),
+};
 
-//         election_officers_count: Joi.number().integer().min(0).required(),
-
-//         polling_suspension_count: Joi.string()
-//           .valid("RULE_52_18", "RULE_52A_6", "NO_ISSUES")
-//           .required()
-//       })
-//     )
-//     .min(1)
-//     .required()
-// });
+/* =====================================================
+ * EDIT (PUT /edit)
+ * ===================================================== */
+export const editForm7Validation = {
+  body: Joi.object({
+    societies: Joi.array()
+      .items(form7SocietySchema)
+      .min(1)
+      .required(),
+  }),
+};

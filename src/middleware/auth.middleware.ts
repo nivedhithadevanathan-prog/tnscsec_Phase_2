@@ -19,12 +19,13 @@ export const verifyToken = (req: AuthRequest, res: Response, next: NextFunction)
     const decoded: any = jwt.verify(token, JWT_SECRET);
 
     const userData = decoded.data ?? decoded;
-
     // 🔥 FINAL FIX: normalize user id
-    req.user = {
-      id: userData.id ?? userData.uid ?? userData.user_id,
-      ...userData
-    };
+   req.user = {
+    uid:userData.uid,
+    district_id:userData.districtId,
+    role: userData.role,
+};
+
 
     return next();
   } catch (err) {

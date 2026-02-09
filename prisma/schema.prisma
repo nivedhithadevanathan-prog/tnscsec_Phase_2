@@ -342,6 +342,7 @@ model form6_society_decision {
 model form7 {
   id              Int               @id @default(autoincrement())
   district_id     Int
+  district_name   String            @db.VarChar(255)
   created_at      DateTime          @default(now()) @db.Timestamp(0)
   updated_at      DateTime          @default(now()) @db.Timestamp(0)
   form7_societies form7_societies[]
@@ -547,12 +548,6 @@ enum form10_candidate_status_status {
   NOT_SELECTED
 }
 
-enum form8_final_result_category_type {
-  SC_ST
-  WOMEN
-  GENERAL
-}
-
 enum form9_candidate_status_status {
   ELIGIBLE
   REJECTED
@@ -609,4 +604,13 @@ enum form4_filed_soc_mem_count_election_status {
   QUALIFIED
   UNOPPOSED
   UNQUALIFIED
+}
+
+enum form8_final_result_category_type {
+  SC_ST
+  WOMEN
+  GENERAL
+  SC_ST_DLG
+  WOMEN_DLG
+  GENERAL_DLG
 }
