@@ -7,28 +7,46 @@ export interface AuthRequest extends Request {
 
 export const verifyToken = (req: AuthRequest, res: Response, next: NextFunction) => {
   const authHeader = req.headers.authorization;
-  const token = authHeader?.split(" ")[1];
 
-  if (!token) {
-    return res.status(401).json({ message: "Token missing" });
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res.status(401).json({
+      success: false,
+      statusCode: 401,
+      message: "Authorization header missing",
+      error: null,
+    });
   }
 
-  const JWT_SECRET = process.env.JWT_SECRET || "uthamapal12am";
+  const token = authHeader.split(" ")[1];
 
   try {
-    const decoded: any = jwt.verify(token, JWT_SECRET);
+    const decoded: any = jwt.verify(token, process.env.JWT_SECRET!);
 
-    const userData = decoded.data ?? decoded;
-    // 🔥 FINAL FIX: normalize user id
-   req.user = {
-    uid:userData.uid,
-    district_id:userData.districtId,
-    role: userData.role,
-};
+    const user = decoded.data ?? decoded;
 
+    if (!user?.uid && !user?.id) {
+      return res.status(401).json({
+        success: false,
+        statusCode: 401,
+        message: "Invalid token payload",
+        error: null,
+      });
+    }
 
-    return next();
+    req.user = {
+      uid: user.uid ?? user.id,
+      district_id: user.district_id ?? user.districtId ?? null,
+      role: user.role ?? null,
+    };
+
+    next();
   } catch (err) {
-    return res.status(401).json({ message: "Invalid token" });
+    return res.status(401).json({
+      success: false,
+      statusCode: 401,
+      message: "Invalid or expired token",
+      error: null,
+    });
   }
 };
+

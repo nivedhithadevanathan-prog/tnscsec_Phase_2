@@ -1,120 +1,247 @@
-// import { Request, Response } from "express";
-// import { Form9Usecase } from "./form9Usecase";
-// import { sendResponse, sendError } from "../../utils/response";
-// import {
-//   rejectSchema,
-//   withdrawSchema,
-//   finalizeSchema,
-//   submitSchema,
-//   initForm9Schema
-// } from "./form9Schema";
+import { Request, Response } from "express";
+import { sendResponse, sendError } from "../../../utils/response";
+import { Form9Usecase } from "../../form9/Usecases/form9.Usecase";
 
-// export const Form9Controller = {
+export const Form9Controller = {
 
-//   async getPreview(req: Request, res: Response) {
-//     try {
-//       const uid = Number((req as any).user?.uid);
-//       if (!uid) return sendError(res, 401, "Unauthorized");
+  /* =====================================================
+   * POST: FORM9 INIT
+   * ===================================================== */
+  async init(req: Request, res: Response) {
+    try {
+      const uid = Number((req as any).user.uid);
 
-//       const data = await Form9Usecase.getPreview(uid);
-//       return sendResponse(res, 200, "Form9 preview fetched", data);
-
-//     } catch (err: any) {
-//       return sendError(res, 500, err.message);
-//     }
-//   },
-
-  
-//   async init(req: Request, res: Response) {
-//     try {
-//       const uid = Number((req as any).user?.uid);
-//       if (!uid) return sendError(res, 401, "Unauthorized");
-
-//       const { error } = initForm9Schema.validate(req.body);
-//       if (error) return sendError(res, 400, error.message);
-
-//       const data = await Form9Usecase.init(uid);
-
-//       return sendResponse(
-//         res,
-//         200,
-//         "Form9 initialized successfully",
-//         data
-//       );
-
-//     } catch (err: any) {
-//       return sendError(res, 400, err.message);
-//     }
-//   },
-
-//   async reject(req: Request, res: Response) {
-//     try {
-//       const uid = Number((req as any).user?.uid);
-//       const { error } = rejectSchema.validate(req.body);
-//       if (error) return sendError(res, 400, error.message);
-
-//       await Form9Usecase.reject(req.body, uid);
-//       return sendResponse(res, 200, "Candidates rejected");
-
-//     } catch (e: any) {
-//       return sendError(res, 400, e.message);
-//     }
-//   },
-
-//   async withdraw(req: Request, res: Response) {
-//     try {
-//       const uid = Number((req as any).user?.uid);
-//       const { error } = withdrawSchema.validate(req.body);
-//       if (error) return sendError(res, 400, error.message);
-
-//       await Form9Usecase.withdraw(req.body, uid);
-//       return sendResponse(res, 200, "Candidates withdrawn");
-
-//     } catch (e: any) {
-//       return sendError(res, 400, e.message);
-//     }
-//   },
-
-//   async finalize(req: Request, res: Response) {
-//     try {
-//       const uid = Number((req as any).user?.uid);
-//       const { error } = finalizeSchema.validate(req.body);
-//       if (error) return sendError(res, 400, error.message);
-
-//       await Form9Usecase.finalize(req.body, uid);
-//       return sendResponse(res, 200, "Society finalized");
-
-//     } catch (e: any) {
-//       return sendError(res, 400, e.message);
-//     }
-//   },
-
-//   async submit(req: Request, res: Response) {
-//     try {
-//       const uid = Number((req as any).user?.uid);
-//       const { error } = submitSchema.validate(req.body);
-//       if (error) return sendError(res, 400, error.message);
-
-//       await Form9Usecase.submit(req.body.form9_id, uid);
-//       return sendResponse(res, 200, "Form9 submitted");
-
-//     } catch (e: any) {
-//       return sendError(res, 400, e.message);
-//     }
-//   },
+if (!uid) {
+  return sendError(res, 401, "Unauthorized");
+}
 
 
-//   async list(req: Request, res: Response) {
-//   try {
-//     const uid = Number((req as any).user?.uid);
-//     if (!uid) return sendError(res, 401, "Unauthorized");
+      const data = await Form9Usecase.init(uid);
 
-//     const data = await Form9Usecase.list(uid);
-//     return sendResponse(res, 200, "Form9 winners list fetched", data);
+      return sendResponse(
+        res,
+        201,
+        "Form9 initialized",
+        data
+      );
+    } catch (err: any) {
+      return sendError(
+        res,
+        err.statusCode || 500,
+        err.message || "Error initializing Form9"
+      );
+    }
+  },
 
-//   } catch (e: any) {
-//     return sendError(res, 400, e.message);
-//   }
-// }
+  /* =====================================================
+   * GET: FORM9 PREVIEW
+   * ===================================================== */
+  async preview(req: Request, res: Response) {
+    try {
+      const uid = Number((req as any).user?.uid);
+      if (!uid) return sendError(res, 401, "Unauthorized");
 
-// };
+      const data = await Form9Usecase.preview(uid);
+
+      return sendResponse(
+        res,
+        200,
+        "Form9 preview fetched",
+        data
+      );
+    } catch (err: any) {
+      return sendError(
+        res,
+        err.statusCode || 500,
+        err.message || "Error fetching Form9 preview"
+      );
+    }
+  },
+
+  /* =====================================================
+   * POST: FORM9 REJECT CANDIDATES (BULK)
+   * ===================================================== */
+  async reject(req: Request, res: Response) {
+    try {
+      const uid = Number((req as any).user?.uid);
+      if (!uid) return sendError(res, 401, "Unauthorized");
+
+      const {
+        form9_id,
+        form9_society_id,
+        candidates,
+      } = req.body;
+
+      if (!form9_id || !form9_society_id) {
+        return sendError(res, 400, "form9_id and form9_society_id are required");
+      }
+
+      if (!Array.isArray(candidates) || !candidates.length) {
+        return sendError(res, 400, "Candidates array is required");
+      }
+
+      await Form9Usecase.reject({
+        uid,
+        form9_id,
+        form9_society_id,
+        candidates,
+      });
+
+      return sendResponse(
+        res,
+        200,
+        "Candidates rejected",
+        null
+      );
+    } catch (err: any) {
+      return sendError(
+        res,
+        err.statusCode || 500,
+        err.message || "Error rejecting candidates"
+      );
+    }
+  },
+
+  /* =====================================================
+   * POST: FORM9 WITHDRAW CANDIDATES (BULK)
+   * ===================================================== */
+  async withdraw(req: Request, res: Response) {
+    try {
+      const uid = Number((req as any).user?.uid);
+      if (!uid) return sendError(res, 401, "Unauthorized");
+
+      const {
+        form9_id,
+        form9_society_id,
+        candidates,
+      } = req.body;
+
+      if (!form9_id || !form9_society_id) {
+        return sendError(res, 400, "form9_id and form9_society_id are required");
+      }
+
+      if (!Array.isArray(candidates) || !candidates.length) {
+        return sendError(res, 400, "Candidates array is required");
+      }
+
+      await Form9Usecase.withdraw({
+        uid,
+        form9_id,
+        form9_society_id,
+        candidates,
+      });
+
+      return sendResponse(
+        res,
+        200,
+        "Candidates withdrawn",
+        null
+      );
+    } catch (err: any) {
+      return sendError(
+        res,
+        err.statusCode || 500,
+        err.message || "Error withdrawing candidates"
+      );
+    }
+  },
+
+  /* =====================================================
+   * POST: FORM9 FINAL (PER SOCIETY)
+   * ===================================================== */
+  async final(req: Request, res: Response) {
+    try {
+      const uid = Number((req as any).user?.uid);
+      if (!uid) return sendError(res, 401, "Unauthorized");
+
+      const {
+        form9_id,
+        form9_society_id,
+      } = req.body;
+
+      if (!form9_id || !form9_society_id) {
+        return sendError(res, 400, "form9_id and form9_society_id are required");
+      }
+
+      const data = await Form9Usecase.final({
+        uid,
+        form9_id,
+        form9_society_id,
+      });
+
+      return sendResponse(
+        res,
+        200,
+        "Society finalized successfully",
+        data
+      );
+    } catch (err: any) {
+      return sendError(
+        res,
+        err.statusCode || 500,
+        err.message || "Error finalizing society"
+      );
+    }
+  },
+
+  /* =====================================================
+   * GET: FORM9 LIST (WINNERS)
+   * Works BEFORE & AFTER submit
+   * ===================================================== */
+  async list(req: Request, res: Response) {
+    try {
+      const uid = Number((req as any).user?.uid);
+      if (!uid) return sendError(res, 401, "Unauthorized");
+
+      const data = await Form9Usecase.list({ uid });
+
+      return sendResponse(
+        res,
+        200,
+        "Form9 winners list fetched",
+        data
+      );
+    } catch (err: any) {
+      return sendError(
+        res,
+        err.statusCode || 500,
+        err.message || "Error fetching Form9 list"
+      );
+    }
+  },
+
+  /* =====================================================
+   * POST: FORM9 SUBMIT
+   * ===================================================== */
+  async submit(req: Request, res: Response) {
+    try {
+      const uid = Number((req as any).user?.uid);
+      if (!uid) return sendError(res, 401, "Unauthorized");
+
+      const { form9_id } = req.body;
+
+      if (!form9_id) {
+        return sendError(res, 400, "form9_id is required");
+      }
+
+      const data = await Form9Usecase.submit({
+        uid,
+        form9_id,
+      });
+
+      return sendResponse(
+        res,
+        200,
+        "Form9 submitted successfully",
+        data // must be null
+      );
+    } catch (err: any) {
+      return sendError(
+        res,
+        err.statusCode || 500,
+        err.message || "Error submitting Form9"
+      );
+    }
+  },
+
+};
