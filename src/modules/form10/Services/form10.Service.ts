@@ -1,280 +1,258 @@
-// import prisma from "../../shared/prisma";
-// import {
-//   form10_status,
-//   form10_society_status,
-//   form10_candidate_status_status
-// } from "@prisma/client";
+import {
+  form10_status,
+  form10_society_status,
+  form10_candidate_status_status,
+  form10_society_election_type,
+} from "@prisma/client";
 
-// export const Form10Service = {
+export const Form10Service = {
 
-  
-//   async getPreview(uid: number) {
-//     const user = await prisma.users.findUnique({
-//       where: { id: uid },
-//       select: { district_id: true }
-//     });
-//     if (!user?.district_id) throw new Error("User district not found");
+  /* =====================================================
+   * FORM10 INIT
+   * ===================================================== */
 
-    
-//     const form9 = await prisma.form9.findFirst({
-//       where: {
-//         district_id: user.district_id,
-//         status: "SUBMITTED"
-//       },
-//       orderBy: { id: "desc" }
-//     });
-//     if (!form9) throw new Error("Form9 not submitted");
+  buildForm10(params: {
+    uid: number;
+    district_id: number | null;
+    zone_id?: number | null;
+    department_id?: number | null;
+  }) {
+    return {
+      uid: params.uid,
+      district_id: params.district_id ?? null,
+      zone_id: params.zone_id ?? null,
+      department_id: params.department_id ?? null,
+      status: form10_status.DRAFT,
+    };
+  },
 
-//     const presidentMap = new Map<number, number>();
+  buildInitialForm10Society() {
+    return {
+      election_type: null,
+      status: form10_society_status.DRAFT,
+    };
+  },
 
-//     const f9Societies = await prisma.form9_society.findMany({
-//       where: {
-//         form9_id: form9.id,
-//         status: "FINALIZED"
-//       }
-//     });
+  buildInitResponse(params: {
+    form10_id: number;
+    societies_count: number;
+  }) {
+    return {
+      form10_id: params.form10_id,
+      status: form10_status.DRAFT,
+      societies_count: params.societies_count,
+    };
+  },
 
-//     for (const s of f9Societies) {
-//       if (s.president_form5_candidate_id) {
-//         presidentMap.set(
-//           s.form4_filed_soc_id,
-//           s.president_form5_candidate_id
-//         );
-//       }
-//     }
 
-//     const societies = await prisma.form4_filed_soc_mem_count.findMany({
-//       where: { form4: { district_id: user.district_id } }
-//     });
 
-//     const response: any[] = [];
+  /* =====================================================
+   * PREVIEW BUILDER
+   * ===================================================== */
+  buildPreview(params: {
+    form4_filed_soc_id: number;
+    members: {
+      id: number;
+      member_name: string;
+      aadhar_no: string;
+      status?: form10_candidate_status_status | null;
+    }[];
+  }) {
 
-//     for (const soc of societies) {
-//       const excludedPresidentId = presidentMap.get(soc.id);
+    const pending: any[] = [];
+    const eligible: any[] = [];
+    const rejected: any[] = [];
+    const withdrawn: any[] = [];
+    const lost: any[] = [];
 
-//       const candidates = await prisma.form5.findMany({
-//         where: {
-//           form4_filed_soc_id: soc.id,
-//           is_active: true,
-//           id: excludedPresidentId ? { not: excludedPresidentId } : undefined
-//         }
-//       });
+    params.members.forEach(m => {
 
-//       response.push({
-//         form4_filed_soc_id: soc.id,
-//         society_id: soc.society_id, 
-//         society_name: soc.society_name,
-//         candidates
-//       });
-//     }
+      const row = {
+        form5_member_id: m.id,
+        member_name: m.member_name,
+        aadhar_no: m.aadhar_no,
+        status: m.status ?? null,
+      };
 
-//     return response;
-//   },
+      switch (row.status) {
 
-  
-//   async init(uid: number) {
-//     return prisma.$transaction(async (tx) => {
-//       const user = await tx.users.findUnique({
-//         where: { id: uid },
-//         select: { district_id: true, department_id: true, zone_id: true }
-//       });
-//       if (!user?.district_id) throw new Error("User district not found");
+        case null:
+          pending.push(row);
+          break;
 
-//       const societies = await tx.form4_filed_soc_mem_count.findMany({
-//         where: { form4: { district_id: user.district_id } }
-//       });
+        case form10_candidate_status_status.ELIGIBLE:
+          eligible.push(row);
+          break;
 
-//       const form10 = await tx.form10.create({
-//         data: {
-//           uid,
-//           department_id: user.department_id ?? null,
-//           district_id: user.district_id,
-//           zone_id: user.zone_id ? Number(user.zone_id) : null,
-//           status: form10_status.DRAFT
-//         }
-//       });
+        case form10_candidate_status_status.REJECTED:
+          rejected.push(row);
+          break;
 
-//       for (const soc of societies) {
-//         await tx.form10_society.create({
-//           data: {
-//             form10_id: form10.id,
-//             form4_filed_soc_id: soc.id,
-//             status: form10_society_status.DRAFT
-//           }
-//         });
-//       }
+        case form10_candidate_status_status.WITHDRAWN:
+          withdrawn.push(row);
+          break;
 
-//       return { form10_id: form10.id };
-//     });
-//   },
+        case form10_candidate_status_status.LOST:
+          lost.push(row);
+          break;
 
-  
-//   async rejectCandidates(payload: any, uid: number) {
-//     return prisma.$transaction(async (tx) => {
+        default:
+          pending.push(row);
+          break;
+      }
+    });
 
-//       const society = await tx.form10_society.findUnique({
-//         where: { id: payload.form10_society_id },
-//         select: { form10_id: true }
-//       });
-//       if (!society) throw new Error("Form10 society not found");
+    return {
+      form4_filed_soc_id: params.form4_filed_soc_id,
+      pending,
+      eligible,
+      rejected,
+      withdrawn,
+      lost,
+    };
+  },
 
-//       for (const c of payload.candidates) {
-//         await tx.form10_candidate_status.upsert({
-//           where: {
-//             form10_society_id_form5_member_id: {
-//               form10_society_id: payload.form10_society_id,
-//               form5_member_id: c.form5_member_id
-//             }
-//           },
-//           update: {
-//             status: form10_candidate_status_status.REJECTED,
-//             remarks: c.remarks ?? null
-//           },
-//           create: {
-//             form10_id: society.form10_id,
-//             form10_society_id: payload.form10_society_id,
-//             form5_member_id: c.form5_member_id,
-//             status: form10_candidate_status_status.REJECTED,
-//             remarks: c.remarks ?? null
-//           }
-//         });
-//       }
+/* =====================================================
+   * REJECT
+   * ===================================================== */
 
-//       return true;
-//     });
-//   },
+  buildRejectCandidateStatus(params: {
+    form10_id: number;
+    form10_society_id: number;
+    form5_member_id: number;
+    remarks?: string | null;
+  }) {
+    return {
+      form10_id: params.form10_id,
+      form10_society_id: params.form10_society_id,
+      form5_member_id: params.form5_member_id,
+      status: form10_candidate_status_status.REJECTED,
+      remarks: params.remarks ?? null,
+    };
+  },
 
-  
-//   async withdrawCandidates(payload: any, uid: number) {
-//     return prisma.$transaction(async (tx) => {
+  buildRejectResponse(params: {
+    rejected_count: number;
+  }) {
+    return {
+      rejected_count: params.rejected_count,
+    };
+  },
 
-//       const society = await tx.form10_society.findUnique({
-//         where: { id: payload.form10_society_id },
-//         select: { form10_id: true }
-//       });
-//       if (!society) throw new Error("Form10 society not found");
+ /* =====================================================
+   * WITHDRAW
+   * ===================================================== */
 
-//       for (const c of payload.candidates) {
-//         await tx.form10_candidate_status.upsert({
-//           where: {
-//             form10_society_id_form5_member_id: {
-//               form10_society_id: payload.form10_society_id,
-//               form5_member_id: c.form5_member_id
-//             }
-//           },
-//           update: {
-//             status: form10_candidate_status_status.WITHDRAWN,
-//             remarks: c.remarks ?? null
-//           },
-//           create: {
-//             form10_id: society.form10_id,
-//             form10_society_id: payload.form10_society_id,
-//             form5_member_id: c.form5_member_id,
-//             status: form10_candidate_status_status.WITHDRAWN,
-//             remarks: c.remarks ?? null
-//           }
-//         });
-//       }
+  buildWithdrawCandidateStatus(params: {
+    form10_id: number;
+    form10_society_id: number;
+    form5_member_id: number;
+    remarks?: string | null;
+  }) {
+    return {
+      form10_id: params.form10_id,
+      form10_society_id: params.form10_society_id,
+      form5_member_id: params.form5_member_id,
+      status: form10_candidate_status_status.WITHDRAWN,
+      remarks: params.remarks ?? null,
+    };
+  },
 
-//       return true;
-//     });
-//   },
+  buildWithdrawResponse() {
+    return null;
+  },
 
-  
-//   async finalizeSociety(payload: any, uid: number) {
-//     return prisma.$transaction(async (tx) => {
+/* =====================================================
+   * FINAL SOCIETY
+   * ===================================================== */
 
-//       const society = await tx.form10_society.findUnique({
-//         where: { id: payload.form10_society_id }
-//       });
-//       if (!society) throw new Error("Invalid society");
+  decideElectionType(activeCandidatesCount: number) {
+    if (activeCandidatesCount <= 0) {
+      throw {
+        statusCode: 400,
+        message: "No active candidates found",
+      };
+    }
 
-//       if (!payload.vice_president_form5_candidate_id) {
-//         throw new Error("Vice-President must be selected");
-//       }
+    if (activeCandidatesCount === 1) {
+      return form10_society_election_type.UNOPPOSED;
+    }
 
-//       await tx.form10_society.update({
-//         where: { id: payload.form10_society_id },
-//         data: {
-//           election_type: payload.election_type,
-//           vice_president_form5_candidate_id:
-//             payload.vice_president_form5_candidate_id,
-//           status: form10_society_status.FINALIZED
-//         }
-//       });
+    return form10_society_election_type.POLL;
+  },
 
-//       return true;
-//     });
-//   },
+  buildFinalSocietyUpdate(params: {
+    election_type: form10_society_election_type;
+    vice_president_form5_candidate_id?: number | null;
+  }) {
+    return {
+      status: form10_society_status.FINALIZED,
+      election_type: params.election_type,
+      vice_president_form5_candidate_id:
+        params.vice_president_form5_candidate_id ?? null,
+    };
+  },
 
- 
-//   async submitForm10(form10_id: number, uid: number) {
-//     return prisma.$transaction(async (tx) => {
+  buildFinalResponse(params: {
+    form10_id: number;
+    form10_society_id: number;
+    election_type: form10_society_election_type;
+  }) {
+    return {
+      form10_id: params.form10_id,
+      form10_society_id: params.form10_society_id,
+      election_type: params.election_type,
+    };
+  },
 
-//       const pending = await tx.form10_society.findMany({
-//         where: {
-//           form10_id,
-//           status: { not: form10_society_status.FINALIZED }
-//         }
-//       });
+ /* =====================================================
+   * SUBMIT
+   * ===================================================== */
 
-//       if (pending.length) {
-//         throw new Error("All societies must be finalized");
-//       }
+  buildSubmitForm10Update() {
+    return {
+      status: form10_status.SUBMITTED,
+    };
+  },
 
-//       await tx.form10.update({
-//         where: { id: form10_id },
-//         data: { status: form10_status.SUBMITTED }
-//       });
+  buildSubmitResponse() {
+    return null;
+  },
 
-//       return true;
-//     });
-//   },
+/* =====================================================
+ * LIST (VICE PRESIDENT)
+ * ===================================================== */
+buildListSociety(params: {
+  form10_society_id: number;
+  form4_filed_soc_id: number;
+  society_id: number;
+  society_name: string;
+  election_type: any;
+  vice_president_winner: {
+    form5_member_id: number;
+    member_name: string;
+    aadhar_no: string;
+  } | null;
+  is_draft_visible: boolean;
+}) {
+  return {
+    form10_society_id: params.form10_society_id,
+    form4_filed_soc_id: params.form4_filed_soc_id,
+    society_id: params.society_id,
+    society_name: params.society_name,
+    election_type: params.election_type,
+    vice_president_winner: params.vice_president_winner,
+    draft: params.is_draft_visible === true ? false : true,
+  };
+},
 
-  
-//   async list(uid: number) {
-//     const user = await prisma.users.findUnique({
-//       where: { id: uid },
-//       select: { district_id: true }
-//     });
-//     if (!user?.district_id) throw new Error("User district not found");
+buildListResponse(params: {
+  societies: any[];
+}) {
+  return params.societies;
+},
 
-//     const form10 = await prisma.form10.findFirst({
-//       where: {
-//         district_id: user.district_id,
-//         status: form10_status.SUBMITTED
-//       },
-//       orderBy: { id: "desc" }
-//     });
 
-//     if (!form10) return [];
+};
 
-//     const societies = await prisma.form10_society.findMany({
-//       where: {
-//         form10_id: form10.id,
-//         status: form10_society_status.FINALIZED
-//       },
-//       include: {
-//         form4_filed_soc_mem_count: true,
-//         form5: true
-//       }
-//     });
 
-//     return societies.map(soc => ({
-//       form10_society_id: soc.id,
-//       form4_filed_soc_id: soc.form4_filed_soc_id,
-//       society_id: soc.form4_filed_soc_mem_count.society_id,
-//       society_name: soc.form4_filed_soc_mem_count.society_name,
-//       election_type: soc.election_type,
-//       vice_president_winner: soc.form5
-//         ? {
-//             form5_member_id: soc.form5.id,
-//             member_name: soc.form5.member_name,
-//             aadhar_no: soc.form5.aadhar_no,
-//             category_type: soc.form5.category_type
-//           }
-//         : null
-//     }));
-//   }
-
-// };

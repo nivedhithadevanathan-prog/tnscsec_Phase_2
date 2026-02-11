@@ -19,7 +19,7 @@ import form7Route from "../modules/form7/Routes/form7.Route";
 import form8Route from "../modules/form8/Routes/form8.Routes";
 import form9Route from "../modules/form9/Routes/form9.Routes";
 import { verifyToken } from "../middleware/auth.middleware";
-// import form10Route from "../modules/form10/form10Routes";
+import form10Route from "../modules/form10/Routes/form10.Routes";
 
 
 export const route = Router();
@@ -42,4 +42,4 @@ route.use("/api/form3", form3Route);
  route.use("/api/form7", form7Route);
  route.use("/api/form8", form8Route);
 route.use("/api/form9", verifyToken, form9Route);
-// route.use("/api/form10", form10Route);
+route.use("/api/form10", form10Route);

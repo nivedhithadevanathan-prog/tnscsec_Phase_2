@@ -1,111 +1,296 @@
-// import { Request, Response } from "express";
-// import { Form10Usecase } from "./form10Usecase";
-// import { sendResponse, sendError } from "../../utils/response";
-// import {
-//   rejectSchema,
-//   withdrawSchema,
-//   finalizeSchema,
-//   submitSchema,
-//   initForm10Schema
-// } from "./form10Schema";
+import { Request, Response } from "express";
+import { sendResponse, sendError } from "../../../utils/response";
+import { Form10Usecase } from "../../form10/Usecases/form10.Usecase";
 
-// export const Form10Controller = {
+export const Form10Controller = {
 
-//   async getPreview(req: Request, res: Response) {
-//     try {
-//       const uid = Number((req as any).user?.uid);
-//       if (!uid) return sendError(res, 401, "Unauthorized");
+  /* =====================================================
+   * POST: FORM10 INIT
+   * ===================================================== */
+  async init(req: Request, res: Response) {
+    try {
+      const uid = Number((req as any).user?.uid);
 
-//       const data = await Form10Usecase.getPreview(uid);
-//       return sendResponse(res, 200, "Form10 preview fetched", data);
+      if (!uid) {
+        return sendError(res, 401, "Unauthorized");
+      }
 
-//     } catch (err: any) {
-//       return sendError(res, 500, err.message);
-//     }
-//   },
+      const data = await Form10Usecase.init(uid);
 
-//   async init(req: Request, res: Response) {
-//     try {
-//       const uid = Number((req as any).user?.uid);
-//       if (!uid) return sendError(res, 401, "Unauthorized");
+      return sendResponse(
+        res,
+        201,
+        "Form10 initialized",
+        data
+      );
 
-//       const { error } = initForm10Schema.validate(req.body);
-//       if (error) return sendError(res, 400, error.message);
+    } catch (err: any) {
+      return sendError(
+        res,
+        err.statusCode || 500,
+        err.message || "Error initializing Form10"
+      );
+    }
+  },
 
-//       const data = await Form10Usecase.init(uid);
-//       return sendResponse(res, 200, "Form10 initialized successfully", data);
 
-//     } catch (err: any) {
-//       return sendError(res, 400, err.message);
-//     }
-//   },
+  /* =====================================================
+   * GET: FORM10 PREVIEW
+   * ===================================================== */
+  async preview(req: Request, res: Response) {
+    try {
+      const uid = Number((req as any).user?.uid);
 
-//   async reject(req: Request, res: Response) {
-//     try {
-//       const uid = Number((req as any).user?.uid);
-//       const { error } = rejectSchema.validate(req.body);
-//       if (error) return sendError(res, 400, error.message);
+      if (!uid) {
+        return sendError(res, 401, "Unauthorized");
+      }
 
-//       await Form10Usecase.reject(req.body, uid);
-//       return sendResponse(res, 200, "Candidates rejected");
+      const data = await Form10Usecase.preview(uid);
 
-//     } catch (e: any) {
-//       return sendError(res, 400, e.message);
-//     }
-//   },
+      return sendResponse(
+        res,
+        200,
+        "Form10 preview fetched",
+        data
+      );
 
-//   async withdraw(req: Request, res: Response) {
-//     try {
-//       const uid = Number((req as any).user?.uid);
-//       const { error } = withdrawSchema.validate(req.body);
-//       if (error) return sendError(res, 400, error.message);
+    } catch (err: any) {
+      return sendError(
+        res,
+        err.statusCode || 500,
+        err.message || "Error fetching Form10 preview"
+      );
+    }
+  },
 
-//       await Form10Usecase.withdraw(req.body, uid);
-//       return sendResponse(res, 200, "Candidates withdrawn");
+  /* =====================================================
+   * POST: FORM10 REJECT CANDIDATES (BULK)
+   * ===================================================== */
+  async reject(req: Request, res: Response) {
+    try {
+      const uid = Number((req as any).user?.uid);
 
-//     } catch (e: any) {
-//       return sendError(res, 400, e.message);
-//     }
-//   },
+      if (!uid) {
+        return sendError(res, 401, "Unauthorized");
+      }
 
-//   async finalize(req: Request, res: Response) {
-//     try {
-//       const uid = Number((req as any).user?.uid);
-//       const { error } = finalizeSchema.validate(req.body);
-//       if (error) return sendError(res, 400, error.message);
+      const {
+        form10_id,
+        form10_society_id,
+        candidates,
+      } = req.body;
 
-//       await Form10Usecase.finalize(req.body, uid);
-//       return sendResponse(res, 200, "Society finalized");
+      if (!form10_id || !form10_society_id) {
+        return sendError(
+          res,
+          400,
+          "form10_id and form10_society_id are required"
+        );
+      }
 
-//     } catch (e: any) {
-//       return sendError(res, 400, e.message);
-//     }
-//   },
+      if (!Array.isArray(candidates) || !candidates.length) {
+        return sendError(
+          res,
+          400,
+          "Candidates array is required"
+        );
+      }
 
-//   async submit(req: Request, res: Response) {
-//     try {
-//       const uid = Number((req as any).user?.uid);
-//       const { error } = submitSchema.validate(req.body);
-//       if (error) return sendError(res, 400, error.message);
+      await Form10Usecase.reject({
+        uid,
+        form10_id,
+        form10_society_id,
+        candidates,
+      });
 
-//       await Form10Usecase.submit(req.body.form10_id, uid);
-//       return sendResponse(res, 200, "Form10 submitted");
+      return sendResponse(
+        res,
+        200,
+        "Candidates rejected",
+        null
+      );
 
-//     } catch (e: any) {
-//       return sendError(res, 400, e.message);
-//     }
-//   },
+    } catch (err: any) {
+      return sendError(
+        res,
+        err.statusCode || 500,
+        err.message || "Error rejecting candidates"
+      );
+    }
+  },
 
-//   async list(req: Request, res: Response) {
-//     try {
-//       const uid = Number((req as any).user?.uid);
-//       if (!uid) return sendError(res, 401, "Unauthorized");
 
-//       const data = await Form10Usecase.list(uid);
-//       return sendResponse(res, 200, "Form10 winners list fetched", data);
+  /* =====================================================
+ * POST: FORM10 WITHDRAW CANDIDATES (BULK)
+ * ===================================================== */
+async withdraw(req: Request, res: Response) {
+  try {
+    const uid = Number((req as any).user?.uid);
 
-//     } catch (e: any) {
-//       return sendError(res, 400, e.message);
-//     }
-//   }
-// };
+    if (!uid) {
+      return sendError(res, 401, "Unauthorized");
+    }
+
+    const {
+      form10_id,
+      form10_society_id,
+      candidates,
+    } = req.body;
+
+    if (!form10_id || !form10_society_id) {
+      return sendError(
+        res,
+        400,
+        "form10_id and form10_society_id are required"
+      );
+    }
+
+    if (!Array.isArray(candidates) || !candidates.length) {
+      return sendError(
+        res,
+        400,
+        "Candidates array is required"
+      );
+    }
+
+    await Form10Usecase.withdraw({
+      uid,
+      form10_id,
+      form10_society_id,
+      candidates,
+    });
+
+    return sendResponse(
+      res,
+      200,
+      "Candidates withdrawn",
+      null
+    );
+
+  } catch (err: any) {
+    return sendError(
+      res,
+      err.statusCode || 500,
+      err.message || "Error withdrawing candidates"
+    );
+  }
+},
+
+/* =====================================================
+ * POST: FORM10 FINAL (PER SOCIETY)
+ * ===================================================== */
+async final(req: Request, res: Response) {
+  try {
+    const uid = Number((req as any).user?.uid);
+
+    if (!uid) {
+      return sendError(res, 401, "Unauthorized");
+    }
+
+    const {
+      form10_id,
+      form10_society_id,
+    } = req.body;
+
+    if (!form10_id || !form10_society_id) {
+      return sendError(
+        res,
+        400,
+        "form10_id and form10_society_id are required"
+      );
+    }
+
+    const data = await Form10Usecase.final({
+      uid,
+      form10_id,
+      form10_society_id,
+    });
+
+    return sendResponse(
+      res,
+      200,
+      "Society finalized successfully",
+      data
+    );
+
+  } catch (err: any) {
+    return sendError(
+      res,
+      err.statusCode || 500,
+      err.message || "Error finalizing society"
+    );
+  }
+},
+
+/* =====================================================
+ * POST: FORM10 SUBMIT
+ * ===================================================== */
+async submit(req: Request, res: Response) {
+  try {
+    const uid = Number((req as any).user?.uid);
+
+    if (!uid) {
+      return sendError(res, 401, "Unauthorized");
+    }
+
+    const { form10_id } = req.body;
+
+    if (!form10_id) {
+      return sendError(
+        res,
+        400,
+        "form10_id is required"
+      );
+    }
+
+    const data = await Form10Usecase.submit({
+      uid,
+      form10_id,
+    });
+
+    return sendResponse(
+      res,
+      200,
+      "Form10 submitted successfully",
+      data   // should return null
+    );
+
+  } catch (err: any) {
+    return sendError(
+      res,
+      err.statusCode || 500,
+      err.message || "Error submitting Form10"
+    );
+  }
+},
+
+/* =====================================================
+ * GET: FORM10 LIST (VICE PRESIDENT RESULTS)
+ * ===================================================== */
+async list(req: Request, res: Response) {
+  try {
+    const uid = Number((req as any).user?.uid);
+
+    if (!uid) {
+      return sendError(res, 401, "Unauthorized");
+    }
+
+    const data = await Form10Usecase.list({ uid });
+
+    return sendResponse(
+      res,
+      200,
+      "Form10 Vice-President list fetched",
+      data
+    );
+
+  } catch (err: any) {
+    return sendError(
+      res,
+      err.statusCode || 500,
+      err.message || "Error fetching Form10 list"
+    );
+  }
+},
+
+};

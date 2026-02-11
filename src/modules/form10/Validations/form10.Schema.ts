@@ -1,37 +1,74 @@
-// import Joi from "joi";
+import Joi from "joi";
 
-// export const rejectSchema = Joi.object({
-//   form10_id: Joi.number().required(),
-//   form10_society_id: Joi.number().required(),
-//   candidates: Joi.array().items(
-//     Joi.object({
-//       form5_member_id: Joi.number().required(),
-//       remarks: Joi.string().allow("", null)
-//     })
-//   ).min(1).required()
-// });
+export const initForm10Schema = {
+  body: Joi.object({}).unknown(false),
+};
 
-// export const withdrawSchema = Joi.object({
-//   form10_id: Joi.number().required(),
-//   form10_society_id: Joi.number().required(),
-//   candidates: Joi.array().items(
-//     Joi.object({
-//       form5_member_id: Joi.number().required(),
-//       remarks: Joi.string().allow("", null)
-//     })
-//   ).min(1).required()
-// });
+export const previewForm10Schema = {
+  query: Joi.object({}).unknown(false),
+};
 
-// export const finalizeSchema = Joi.object({
-//   form10_society_id: Joi.number().required(),
-//   election_type: Joi.string()
-//     .valid("UNOPPOSED", "POLL")
-//     .required(),
-//   vice_president_form5_candidate_id: Joi.number().required()
-// });
+export const rejectForm10Schema = {
+  body: Joi.object({
+    form10_id: Joi.number().integer().required(),
 
-// export const submitSchema = Joi.object({
-//   form10_id: Joi.number().required()
-// });
+    form10_society_id: Joi.number().integer().required(),
 
-// export const initForm10Schema = Joi.object({}).required();
+    candidates: Joi.array()
+      .items(
+        Joi.object({
+          form5_member_id: Joi.number().integer().required(),
+          remarks: Joi.string().allow("", null),
+        })
+      )
+      .min(1)
+      .required(),
+  }).unknown(false),
+};
+
+export const withdrawForm10Schema = {
+  body: Joi.object({
+    form10_id: Joi.number().integer().required(),
+
+    form10_society_id: Joi.number().integer().required(),
+
+    candidates: Joi.array()
+      .items(
+        Joi.object({
+          form5_member_id: Joi.number().integer().required(),
+          remarks: Joi.string().allow("", null),
+        })
+      )
+      .min(1)
+      .required(),
+  }).unknown(false),
+};
+
+export const finalForm10Schema = {
+  body: Joi.object({
+    form10_id: Joi.number()
+      .integer()
+      .positive()
+      .required(),
+
+    form10_society_id: Joi.number()
+      .integer()
+      .positive()
+      .required(),
+  }).unknown(false),
+};
+
+export const submitForm10Schema = {
+  body: Joi.object({
+    form10_id: Joi.number()
+      .integer()
+      .positive()
+      .required(),
+  }).unknown(false),
+};
+
+
+
+export const listForm10Schema = {
+  query: Joi.object({}).unknown(false),
+};
