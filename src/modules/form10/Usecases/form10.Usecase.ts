@@ -10,9 +10,7 @@ const prisma = new PrismaClient();
 
 export const Form10Usecase = {
 
-  /* =====================================================
-   * INIT
-   * ===================================================== */
+  /*INIT*/
   async init(uid: number | string) {
 
     const userId = Number(uid);
@@ -21,7 +19,7 @@ export const Form10Usecase = {
       throw { statusCode: 400, message: "Invalid user id" };
     }
 
-    // 1️⃣ Validate user & fetch mapping
+    //Validate user & fetch mapping
     const user = await prisma.users.findFirst({
       where: { id: userId },
       select: {
@@ -35,7 +33,7 @@ export const Form10Usecase = {
       throw { statusCode: 400, message: "User district not found" };
     }
 
-    // 2️⃣ Check existing draft
+    //Check existing draft
     const existing = await prisma.form10.findFirst({
       where: {
         uid: userId,
@@ -50,7 +48,7 @@ export const Form10Usecase = {
       });
     }
 
-    // 3️⃣ Fetch societies
+    //Fetch societies
     const societies = await prisma.form4_filed_soc_mem_count.findMany({
       select: { id: true },
     });
@@ -59,7 +57,7 @@ export const Form10Usecase = {
       throw { statusCode: 400, message: "No societies found" };
     }
 
-    // 4️⃣ Transaction
+    //Transaction
     return await prisma.$transaction(async (tx) => {
 
       const form10 = await tx.form10.create({
@@ -92,12 +90,10 @@ export const Form10Usecase = {
     });
   },
 
-  /* =====================================================
-   * PREVIEW
-   * ===================================================== */
+  /*PREVIEW*/
   async preview(uid: number) {
 
-    // 1️⃣ Validate user
+    //Validate user
     const user = await prisma.users.findFirst({
       where: { id: uid },
       select: { district_id: true },
@@ -107,7 +103,7 @@ export const Form10Usecase = {
       throw { statusCode: 400, message: "User district not found" };
     }
 
-    // 2️⃣ Fetch societies
+    //Fetch societies
     const societies = await prisma.form4_filed_soc_mem_count.findMany({
       select: {
         id: true,
@@ -120,9 +116,7 @@ export const Form10Usecase = {
 
     for (const soc of societies) {
 
-      /* =====================================================
-       * 🔴 STEP A: Fetch President from Form9 (Exclude Them)
-       * ===================================================== */
+      /*Fetch President from Form9 (Exclude Them)*/
       const president = await prisma.form9_society.findFirst({
         where: {
           form4_filed_soc_id: soc.id,
@@ -135,9 +129,7 @@ export const Form10Usecase = {
 
       const presidentId = president?.president_form5_candidate_id ?? null;
 
-      /* =====================================================
-       * STEP B: Fetch Active Members (Exclude President)
-       * ===================================================== */
+      /*Fetch Active Members (Exclude President)*/
       const members = await prisma.form5.findMany({
         where: {
           form4_filed_soc_id: soc.id,
@@ -153,9 +145,7 @@ export const Form10Usecase = {
         },
       });
 
-      /* =====================================================
-       * STEP C: Fetch Candidate Statuses (Form10)
-       * ===================================================== */
+      /*Fetch Candidate Statuses (Form10)*/
       const statuses = await prisma.form10_candidate_status.findMany({
         where: {
           form10_society: {
@@ -172,9 +162,7 @@ export const Form10Usecase = {
         statuses.map(s => [s.form5_member_id, s.status ?? null])
       );
 
-      /* =====================================================
-       * STEP D: Build Preview
-       * ===================================================== */
+      /*Build Preview*/
       const preview = Form10Service.buildPreview({
         form4_filed_soc_id: soc.id,
         members: members.map(m => ({
@@ -195,9 +183,7 @@ export const Form10Usecase = {
     return response;
   },
 
-/* =====================================================
-   * REJECT (BULK)
-   * ===================================================== */
+/*REJECT*/
   async reject(params: {
     uid: number;
     form10_id: number;
@@ -210,9 +196,7 @@ export const Form10Usecase = {
 
     const { uid, form10_id, form10_society_id, candidates } = params;
 
-    /* =====================================================
-       1️⃣ Validate Form10 ownership + DRAFT status
-    ===================================================== */
+    /*Validate Form10 ownership + DRAFT status*/
     const form10 = await prisma.form10.findFirst({
       where: { id: form10_id, uid },
       select: { status: true },
@@ -226,9 +210,7 @@ export const Form10Usecase = {
       throw { statusCode: 400, message: "Form10 not editable" };
     }
 
-    /* =====================================================
-       2️⃣ Validate Society belongs to Form10
-    ===================================================== */
+    /*Validate Society belongs to Form10*/
     const society = await prisma.form10_society.findFirst({
       where: { id: form10_society_id, form10_id },
       select: { form4_filed_soc_id: true },
@@ -238,9 +220,7 @@ export const Form10Usecase = {
       throw { statusCode: 404, message: "Form10 society not found" };
     }
 
-    /* =====================================================
-       3️⃣ 🔴 Fetch President from Form9 (Exclude Them)
-    ===================================================== */
+    /*Fetch President from Form9 (Exclude Them)*/
     const president = await prisma.form9_society.findFirst({
       where: {
         form4_filed_soc_id: society.form4_filed_soc_id,
@@ -253,14 +233,12 @@ export const Form10Usecase = {
 
     const presidentId = president?.president_form5_candidate_id ?? null;
 
-    /* =====================================================
-       4️⃣ Transaction (Bulk Reject)
-    ===================================================== */
+    /*Transaction (Bulk Reject)*/
     return await prisma.$transaction(async (tx) => {
 
       for (const c of candidates) {
 
-        /* 🔴 President safety check */
+        /*President safety check*/
         if (presidentId && c.form5_member_id === presidentId) {
           throw {
             statusCode: 400,
@@ -310,9 +288,7 @@ export const Form10Usecase = {
     });
   },
 
-  /* =====================================================
- * WITHDRAW (BULK)
- * ===================================================== */
+  /*WITHDRAW (BULK)*/
 async withdraw(params: {
   uid: number;
   form10_id: number;
@@ -325,9 +301,7 @@ async withdraw(params: {
 
   const { uid, form10_id, form10_society_id, candidates } = params;
 
-  /* =====================================================
-     1️⃣ Validate Form10 ownership + DRAFT status
-  ===================================================== */
+  /*Validate Form10 ownership + DRAFT status*/
   const form10 = await prisma.form10.findFirst({
     where: { id: form10_id, uid },
     select: { status: true },
@@ -341,9 +315,7 @@ async withdraw(params: {
     throw { statusCode: 400, message: "Form10 not editable" };
   }
 
-  /* =====================================================
-     2️⃣ Validate Society belongs to Form10
-  ===================================================== */
+  /*Validate Society belongs to Form10*/
   const society = await prisma.form10_society.findFirst({
     where: { id: form10_society_id, form10_id },
     select: { form4_filed_soc_id: true },
@@ -353,9 +325,7 @@ async withdraw(params: {
     throw { statusCode: 404, message: "Form10 society not found" };
   }
 
-  /* =====================================================
-     3️⃣ 🔴 Fetch President from Form9 (Exclude Them)
-  ===================================================== */
+  /*Fetch President from Form9 (Exclude Them)*/
   const president = await prisma.form9_society.findFirst({
     where: {
       form4_filed_soc_id: society.form4_filed_soc_id,
@@ -368,14 +338,12 @@ async withdraw(params: {
 
   const presidentId = president?.president_form5_candidate_id ?? null;
 
-  /* =====================================================
-     4️⃣ Transaction (Bulk Withdraw)
-  ===================================================== */
+  /*Transaction (Bulk Withdraw)*/
   return await prisma.$transaction(async (tx) => {
 
     for (const c of candidates) {
 
-      /* 🔴 President safety check */
+      /*President safety check */
       if (presidentId && c.form5_member_id === presidentId) {
         throw {
           statusCode: 400,
@@ -423,9 +391,7 @@ async withdraw(params: {
   });
 },
 
-/* =====================================================
- * FINAL (PER SOCIETY)
- * ===================================================== */
+/*FINAL (PER SOCIETY)*/
 async final(params: {
   uid: number;
   form10_id: number;
@@ -434,9 +400,7 @@ async final(params: {
 
   const { uid, form10_id, form10_society_id } = params;
 
-  /* =====================================================
-     1️⃣ Validate Form10 ownership + DRAFT
-  ===================================================== */
+  /*Validate Form10 ownership + DRAFT*/
   const form10 = await prisma.form10.findFirst({
     where: { id: form10_id, uid },
     select: { status: true },
@@ -450,9 +414,7 @@ async final(params: {
     throw { statusCode: 400, message: "Form10 not editable" };
   }
 
-  /* =====================================================
-     2️⃣ Validate society belongs to Form10
-  ===================================================== */
+  /*Validate society belongs to Form10*/
   const society = await prisma.form10_society.findFirst({
     where: { id: form10_society_id, form10_id },
     select: { status: true, form4_filed_soc_id: true },
@@ -466,9 +428,7 @@ async final(params: {
     throw { statusCode: 400, message: "Society already finalized" };
   }
 
-  /* =====================================================
-     3️⃣ 🔴 Fetch President from Form9 (Exclude Them)
-  ===================================================== */
+  /*Fetch President from Form9 (Exclude Them)*/
   const president = await prisma.form9_society.findFirst({
     where: {
       form4_filed_soc_id: society.form4_filed_soc_id,
@@ -481,16 +441,14 @@ async final(params: {
 
   const presidentId = president?.president_form5_candidate_id ?? null;
 
-  /* =====================================================
-     4️⃣ Get ACTIVE candidates (Exclude President)
-  ===================================================== */
+  /*Get ACTIVE candidates (Exclude President)*/
   const activeCandidates = await prisma.form5.findMany({
     where: {
       form4_filed_soc_id: society.form4_filed_soc_id,
       is_active: true,
 
       ...(presidentId && {
-        id: { not: presidentId },   // 🔴 PRESIDENT EXCLUDED
+        id: { not: presidentId },   
       }),
 
       OR: [
@@ -521,9 +479,7 @@ async final(params: {
     throw { statusCode: 400, message: "No active candidates found" };
   }
 
-  /* =====================================================
-     5️⃣ Decide Election Type
-  ===================================================== */
+  /*Decide Election Type*/
   const electionType =
     Form10Service.decideElectionType(activeCandidates.length);
 
@@ -532,9 +488,7 @@ async final(params: {
       ? activeCandidates[0].id
       : null;
 
-  /* =====================================================
-     6️⃣ Update Society
-  ===================================================== */
+  /*Update Society*/
   await prisma.form10_society.update({
     where: { id: form10_society_id },
     data: Form10Service.buildFinalSocietyUpdate({
@@ -543,9 +497,7 @@ async final(params: {
     }),
   });
 
-  /* =====================================================
-     7️⃣ Return Response
-  ===================================================== */
+  /*Return Response*/
   return Form10Service.buildFinalResponse({
     form10_id,
     form10_society_id,
@@ -553,9 +505,7 @@ async final(params: {
   });
 },
 
-/* =====================================================
- * SUBMIT
- * ===================================================== */
+/*SUBMIT*/
 async submit(params: {
   uid: number;
   form10_id: number;
@@ -563,9 +513,7 @@ async submit(params: {
 
   const { uid, form10_id } = params;
 
-  /* =====================================================
-     1️⃣ Validate Form10 ownership + DRAFT
-  ===================================================== */
+  /*Validate Form10 ownership + DRAFT*/
   const form10 = await prisma.form10.findFirst({
     where: { id: form10_id, uid },
     select: { status: true },
@@ -579,9 +527,7 @@ async submit(params: {
     throw { statusCode: 400, message: "Only DRAFT can be submitted" };
   }
 
-  /* =====================================================
-     2️⃣ Ensure all societies are FINALIZED
-  ===================================================== */
+  /*Ensure all societies are FINALIZED*/
   const pendingSocieties = await prisma.form10_society.count({
     where: {
       form10_id,
@@ -596,30 +542,22 @@ async submit(params: {
     };
   }
 
-  /* =====================================================
-     3️⃣ Update Form10 status
-  ===================================================== */
+  /*Update Form10 status*/
   await prisma.form10.update({
     where: { id: form10_id },
     data: Form10Service.buildSubmitForm10Update(),
   });
 
-  /* =====================================================
-     4️⃣ Return response
-  ===================================================== */
+  /*Return response*/
   return Form10Service.buildSubmitResponse();
 },
 
-/* =====================================================
- * LIST (VICE PRESIDENT RESULTS)
- * ===================================================== */
+/*LIST (VICE PRESIDENT RESULTS)*/
 async list(params: { uid: number }) {
 
   const { uid } = params;
 
-  /* =====================================================
-     1️⃣ Get Latest Form10 for User
-  ===================================================== */
+  /*Get Latest Form10 for User*/
   const form10 = await prisma.form10.findFirst({
     where: { uid },
     orderBy: { id: "desc" },
@@ -630,9 +568,7 @@ async list(params: { uid: number }) {
     throw { statusCode: 404, message: "No Form10 found" };
   }
 
-  /* =====================================================
-     2️⃣ Fetch Societies
-  ===================================================== */
+  /*Fetch Societies*/
   const societies = await prisma.form10_society.findMany({
     where: { form10_id: form10.id },
     include: {
@@ -641,9 +577,7 @@ async list(params: { uid: number }) {
     },
   });
 
-  /* =====================================================
-     3️⃣ Build Response
-  ===================================================== */
+  /*Build Response*/
   return societies.map((soc) =>
     Form10Service.buildListSociety({
       form10_society_id: soc.id,

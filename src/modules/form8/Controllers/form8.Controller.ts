@@ -10,11 +10,7 @@ import {
 
 export const Form8Controller = {
 
-  /**
-   * =====================================================
-   * GET: Preview Form8 (Vote Counting)
-   * =====================================================
-   */
+  /*GET Preview Form8*/
   async previewForm8(req: Request, res: Response) {
     try {
       const request = req as any;
@@ -35,11 +31,7 @@ export const Form8Controller = {
     }
   },
 
-  /**
-   * =====================================================
-   * GET: Checkbox Preview (Auto-selection)
-   * =====================================================
-   */
+  /*Checkbox Preview*/
   async checkboxPreview(req: Request, res: Response) {
     try {
       const user = (req as any).user;
@@ -64,14 +56,7 @@ export const Form8Controller = {
     }
   },
 
-  /**
-   * =====================================================
-   * POST: Save Final Result (Winners)
-   * Supports:
-   * - SC_ST / WOMEN / GENERAL
-   * - SC_ST_DLG / WOMEN_DLG / GENERAL_DLG
-   * =====================================================
-   */
+  /*POST: Save Final Result (Winners)*/
   async saveFinalResult(req: Request, res: Response) {
     try {
       const user = (req as any).user;
@@ -112,11 +97,7 @@ export const Form8Controller = {
     }
   },
 
-  /**
-   * =====================================================
-   * POST: Submit Form8 (Polling Details)
-   * =====================================================
-   */
+  /*POST: Submit Form8 (Polling Details)*/
   async submitForm8(req: Request, res: Response) {
     try {
       const user = (req as any).user;
@@ -165,11 +146,7 @@ export const Form8Controller = {
     }
   },
 
-  /**
-   * =====================================================
-   * GET: Form8 List (Submitted Data)
-   * =====================================================
-   */
+  /*GET Form8 List*/
   async listForm8(req: Request, res: Response) {
     try {
       const user = (req as any).user;

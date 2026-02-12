@@ -9,9 +9,7 @@ import {
 
 export const Form4Controller = {
 
-  /**
-   * 1️⃣ Load Form4 base data
-   */
+  /*Load Form4 base data*/
   async loadForm4(req: Request, res: Response) {
     try {
       const uid = Number((req as any).user?.uid);
@@ -25,9 +23,7 @@ export const Form4Controller = {
     }
   },
 
-  /**
-   * 2️⃣ Checkbox preview
-   */
+  /*Checkbox preview*/
   async checkboxUpdate(req: Request, res: Response) {
     try {
       const { error, value } = checkboxSchema.validate(req.body, {
@@ -58,9 +54,7 @@ export const Form4Controller = {
     }
   },
 
-  /**
-   * 3️⃣ Submit Form4 (CREATE)
-   */
+  /*Submit Form4*/
   async submitForm4(req: Request, res: Response) {
     try {
       const { error, value } = submitSchema.validate(req.body, {
@@ -95,9 +89,7 @@ export const Form4Controller = {
     }
   },
 
-  /**
-   * 4️⃣ List all Form4 by logged-in user
-   */
+  /*List all Form4 by logged-in user*/
   async getForm4List(req: Request, res: Response) {
     try {
       const uid = Number((req as any).user?.uid);
@@ -117,9 +109,7 @@ export const Form4Controller = {
     }
   },
 
-  /**
-   * 5️⃣ Get Form4 details by ID (read-only)
-   */
+  /*Get Form4 details by ID (read-only)*/
   async getForm4Details(req: Request, res: Response) {
     try {
       const form4_id = Number(req.params.form4_id);
@@ -145,9 +135,7 @@ export const Form4Controller = {
     }
   },
 
-  /**
-   * 6️⃣ Editable Form4 (Review + Prefill)
-   */
+  /*Editable Form4*/
   async getEditableForm4(req: Request, res: Response) {
     try {
       const uid = Number((req as any).user?.uid);
@@ -171,9 +159,7 @@ export const Form4Controller = {
     }
   },
 
-  /**
-   * 7️⃣ Edit Form4 (UPDATE before Form5)
-   */
+  /* Edit Form4*/
   async editForm4(req: Request, res: Response) {
     try {
       const { error, value } = editForm4Schema.validate(req.body, {

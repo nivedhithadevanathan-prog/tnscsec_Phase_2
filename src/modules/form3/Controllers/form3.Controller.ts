@@ -1,10 +1,7 @@
 import { Request, Response } from "express";
 import { form3Usecases } from "../../form3/Usecases/form3.Usecase";
 
-/* ============================================================
-   GET API — Fetch Form2 list for Form3
-   URL: /api/form3/form2-list
-   ============================================================ */
+/*GET Form2 list for Form3*/
 export const getForm2ListForForm3 = async (req: any, res: Response) => {
   try {
     const uid = req.user?.id;
@@ -35,10 +32,7 @@ export const getForm2ListForForm3 = async (req: any, res: Response) => {
   }
 };
 
-/* ============================================================
-   GET API — Fetch Form3 list by logged-in user
-   URL: /api/form3/list
-   ============================================================ */
+/*GET Form3 list by logged in user*/
 export const getForm3ListByUser = async (req: any, res: Response) => {
   try {
     const uid = req.user?.id;
@@ -68,10 +62,7 @@ export const getForm3ListByUser = async (req: any, res: Response) => {
   }
 };
 
-/* ============================================================
-   GET API — Fetch Editable (Latest) Form3
-   URL: /api/form3/editable
-   ============================================================ */
+/*GET Editable*/
 export const getEditableForm3 = async (req: any, res: Response) => {
   try {
     const uid = req.user?.id;
@@ -109,10 +100,7 @@ export const getEditableForm3 = async (req: any, res: Response) => {
   }
 };
 
-/* ============================================================
-   POST API — Submit Form3
-   URL: /api/form3/submit
-   ============================================================ */
+/*POST Submit Form3*/
 export const submitForm3 = async (req: Request, res: Response) => {
   try {
     const result = await form3Usecases.submitForm3Usecase(req.body);
@@ -126,10 +114,7 @@ export const submitForm3 = async (req: Request, res: Response) => {
   }
 };
 
-/* ============================================================
-   PUT API — Edit & Submit Form3 Again
-   URL: /api/form3/edit
-   ============================================================ */
+/*PUT Edit & Submit Form3 Again*/
 export const updateForm3 = async (req: any, res: Response) => {
   try {
     const uid = req.user?.id;

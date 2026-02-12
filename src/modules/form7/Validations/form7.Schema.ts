@@ -1,44 +1,34 @@
 import Joi from "joi";
 
-/* =====================================================
- * COMMON ENUMS
- * ===================================================== */
+/*COMMON ENUMS*/
 const pollingSuspensionEnum = Joi.string().valid(
   "RULE_52_18",
   "RULE_52A_6",
   "NO_ISSUES"
 );
 
-/* =====================================================
- * PREVIEW (GET /preview)
- * ===================================================== */
+/*PREVIEW*/
 export const previewForm7Validation = {
   params: Joi.object({}),
   query: Joi.object({}),
   body: Joi.object({}),
 };
 
-/* =====================================================
- * LIST (GET /list)
- * ===================================================== */
+/*LIST*/
 export const listForm7Validation = {
   params: Joi.object({}),
   query: Joi.object({}),
   body: Joi.object({}),
 };
 
-/* =====================================================
- * EDITABLE (GET /editable)
- * ===================================================== */
+/*EDITABLE*/
 export const editableForm7Validation = {
   params: Joi.object({}),
   query: Joi.object({}),
   body: Joi.object({}),
 };
 
-/* =====================================================
- * SOCIETY OBJECT (Used in Submit & Edit)
- * ===================================================== */
+/*SOCIETY OBJECT*/
 const form7SocietySchema = Joi.object({
   society_id: Joi.number().integer().required(),
   society_name: Joi.string().trim().required(),
@@ -63,9 +53,7 @@ const form7SocietySchema = Joi.object({
   polling_suspension_count: pollingSuspensionEnum.required(),
 });
 
-/* =====================================================
- * SUBMIT (POST /submit)
- * ===================================================== */
+/*SUBMIT*/
 export const submitForm7Validation = {
   body: Joi.object({
     societies: Joi.array()
@@ -75,9 +63,7 @@ export const submitForm7Validation = {
   }),
 };
 
-/* =====================================================
- * EDIT (PUT /edit)
- * ===================================================== */
+/*EDIT*/
 export const editForm7Validation = {
   body: Joi.object({
     societies: Joi.array()

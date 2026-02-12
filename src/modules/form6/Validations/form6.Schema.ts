@@ -1,39 +1,27 @@
 import Joi from "joi";
 
-/* =====================================================
- * 1️⃣ INIT FORM-6
- * POST /form6/init
- * ===================================================== */
+/*INIT FORM-6*/
 export const initForm6Validation = {
   body: Joi.object({}).optional(),
   params: Joi.object({}).optional(),
   query: Joi.object({}).optional(),
 };
 
-/* =====================================================
- * 2️⃣ PREVIEW FORM-6 (DRAFT)
- * GET /form6/preview
- * ===================================================== */
+// PREVIEW FORM-6
 export const loadForm6PreviewValidation = {
   body: Joi.object({}).optional(),
   params: Joi.object({}).optional(),
   query: Joi.object({}).optional(),
 };
 
-/* =====================================================
- * 3️⃣ EDITABLE FORM-6 (AFTER SUBMIT)
- * GET /form6/editable
- * ===================================================== */
+/*EDITABLE FORM-6*/
 export const getEditableForm6Validation = {
   body: Joi.object({}).optional(),
   params: Joi.object({}).optional(),
   query: Joi.object({}).optional(),
 };
 
-/* =====================================================
- * 4️⃣ UPDATE / EDIT FORM-6
- * PUT /form6/edit
- * ===================================================== */
+/*UPDATE EDIT*/
 export const editForm6Validation = {
   body: Joi.object({
     societies: Joi.array()
@@ -55,10 +43,7 @@ export const editForm6Validation = {
   query: Joi.object({}).optional(),
 };
 
-/* =====================================================
- * 5️⃣ CANDIDATE WITHDRAW
- * POST /form6/candidate-withdraw
- * ===================================================== */
+/*CANDIDATE WITHDRAW*/
 export const withdrawCandidateValidation = {
   body: Joi.object({
     form4_filed_soc_id: Joi.number()
@@ -73,10 +58,7 @@ export const withdrawCandidateValidation = {
   query: Joi.object({}).optional(),
 };
 
-/* =====================================================
- * 6️⃣ CANDIDATE REINSTATE
- * POST /form6/candidate-reinstate
- * ===================================================== */
+/*CANDIDATE REINSTATE*/
 export const reinstateCandidateValidation = {
   body: Joi.object({
     form4_filed_soc_id: Joi.number()
@@ -91,10 +73,7 @@ export const reinstateCandidateValidation = {
   query: Joi.object({}).optional(),
 };
 
-/* =====================================================
- * 7️⃣ SOCIETY DECISION (SHOW / STOP)
- * POST /form6/society-decision
- * ===================================================== */
+/*SOCIETY DECISION*/
 export const societyDecisionValidation = {
   body: Joi.object({
     form4_filed_soc_id: Joi.number()
@@ -109,20 +88,14 @@ export const societyDecisionValidation = {
   query: Joi.object({}).optional(),
 };
 
-/* =====================================================
- * 8️⃣ SUBMIT FORM-6
- * POST /form6/submit
- * ===================================================== */
+/*SUBMIT FORM-6*/
 export const submitForm6Validation = {
   body: Joi.object({}).optional(),
   params: Joi.object({}).optional(),
   query: Joi.object({}).optional(),
 };
 
-/* =====================================================
- * 9️⃣ LIST FORM-6 (SUBMITTED LIST)
- * GET /form6/list
- * ===================================================== */
+/*LIST FORM-6*/
 export const listForm6Validation = {
   body: Joi.object({}).optional(),
   params: Joi.object({}).optional(),

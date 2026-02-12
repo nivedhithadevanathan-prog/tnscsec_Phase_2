@@ -7,9 +7,7 @@ import {
 
 export const Form9Service = {
 
-  /* =====================================================
-   * PREVIEW BUILDER
-   * ===================================================== */
+  /*PREVIEW BUILDER*/
   buildPreview(params: {
     form4_filed_soc_id: number;
     members: {
@@ -66,9 +64,7 @@ export const Form9Service = {
     };
   },
 
-  /* =====================================================
-   * FORM9 INIT
-   * ===================================================== */
+  /*FORM9 INIT*/
  buildForm9(params: {
   uid: number;
   district_id: number | null;
@@ -104,9 +100,7 @@ export const Form9Service = {
     };
   },
 
-  /* =====================================================
-   * REJECT
-   * ===================================================== */
+  /*REJECT*/
   buildRejectCandidateStatus(params: {
     form9_id: number;
     form9_society_id: number;
@@ -126,9 +120,7 @@ export const Form9Service = {
     return null;
   },
 
-  /* =====================================================
-   * WITHDRAW
-   * ===================================================== */
+  /*WITHDRAW*/
   buildWithdrawCandidateStatus(params: {
     form9_id: number;
     form9_society_id: number;
@@ -148,9 +140,7 @@ export const Form9Service = {
     return null;
   },
 
-  /* =====================================================
-   * FINAL SOCIETY
-   * ===================================================== */
+  /*FINAL SOCIETY*/
   decideElectionType(activeCandidatesCount: number) {
     if (activeCandidatesCount <= 0) {
       throw {
@@ -190,9 +180,7 @@ export const Form9Service = {
     };
   },
 
-  /* =====================================================
-   * SUBMIT
-   * ===================================================== */
+  /*SUBMIT*/
   buildSubmitForm9Update() {
     return {
       status: form9_status.SUBMITTED,
@@ -203,9 +191,7 @@ export const Form9Service = {
     return null;
   },
 
-  /* =====================================================
-   * LIST (WINNERS)
-   * ===================================================== */
+  /*LIST (WINNERS)*/
   buildListSociety(params: {
     form9_society_id: number;
     form4_filed_soc_id: number;

@@ -10,9 +10,7 @@ import {
   editEditableForm1Usecase,
 } from "../../form1/Usecases/form1.Usecase";
 
-/**
- * GET CHECKPOINT ZONES
- */
+/*GET CHECKPOINT ZONES*/
 export const getCheckpointZones = async (req: Request, res: Response) => {
   try {
     const user = (req as any).user;
@@ -44,9 +42,7 @@ export const getCheckpointZones = async (req: Request, res: Response) => {
   }
 };
 
-/**
- * SUBMIT FORM 1
- */
+/*SUBMIT FORM 1*/
 export const submitForm1 = async (req: Request, res: Response) => {
   try {
     const user = (req as any).user;
@@ -84,9 +80,7 @@ export const submitForm1 = async (req: Request, res: Response) => {
   }
 };
 
-/**
- * GET MASTER ZONES
- */
+/*GET MASTER ZONES*/
 export const getMasterZones = async (req: Request, res: Response) => {
   try {
     const user = (req as any).user;
@@ -116,9 +110,7 @@ export const getMasterZones = async (req: Request, res: Response) => {
   }
 };
 
-/**
- * GET RURAL DETAILS
- */
+/*GET RURAL DETAILS*/
 export const getRuralDetails = async (req: Request, res: Response) => {
   try {
     const ids: number[] = req.body.associationIds;
@@ -140,9 +132,7 @@ export const getRuralDetails = async (req: Request, res: Response) => {
   }
 };
 
-/**
- * GET FORM1 LIST
- */
+/* GET FORM1 LIST*/
 export const getForm1List = async (req: Request, res: Response) => {
   try {
     const user = (req as any).user;
@@ -155,7 +145,7 @@ export const getForm1List = async (req: Request, res: Response) => {
       });
     }
 
-    const uid = Number(user.uid); // ✅ FIX HERE
+    const uid = Number(user.uid); 
 
     const data = await getForm1ListUsecase(
       uid,
@@ -179,9 +169,7 @@ export const getForm1List = async (req: Request, res: Response) => {
 };
 
 
-/**
- * GET EDITABLE FORM1
- */
+/*GET EDITABLE FORM1*/
 export const getEditableForm1 = async (req: Request, res: Response) => {
   try {
     const user = (req as any).user;
@@ -194,7 +182,7 @@ export const getEditableForm1 = async (req: Request, res: Response) => {
       });
     }
 
-    const uid = Number(user.uid); // ✅ FIX HERE
+    const uid = Number(user.uid); 
 
     const data = await getEditableForm1Usecase(uid);
 
@@ -213,9 +201,7 @@ export const getEditableForm1 = async (req: Request, res: Response) => {
   }
 };
 
-/**
- * EDIT FORM1
- */
+/*EDIT FORM1*/
 export const editForm1 = async (req: Request, res: Response) => {
   try {
     const user = (req as any).user;

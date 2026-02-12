@@ -1,14 +1,7 @@
 import Joi from "joi";
 
-/* ======================================================
-   1️⃣ Load Form4 (GET /form4)
-   No body
-====================================================== */
 export const loadForm4Schema = Joi.object({});
 
-/* ======================================================
-   2️⃣ Checkbox Preview (POST /form4/checkbox)
-====================================================== */
 export const checkboxSchema = Joi.object({
   selected_ids: Joi.array()
     .items(Joi.number().integer().positive())
@@ -16,9 +9,6 @@ export const checkboxSchema = Joi.object({
     .required(),
 });
 
-/* ======================================================
-   Shared Society Object (used in submit & edit)
-====================================================== */
 const societySchema = Joi.object({
   society_id: Joi.number().required(),
   society_name: Joi.string().allow(null, ""),
@@ -62,13 +52,9 @@ const societySchema = Joi.object({
   remarks: Joi.string().optional().allow(null, ""),
 });
 
-/* ======================================================
-   3️⃣ Submit Form4 (POST /form4/submit)
-====================================================== */
+/*Submit Form4*/
 export const submitSchema = Joi.object({
-  /**
-   * form4_id OPTIONAL (used only if update is triggered internally)
-   */
+  
   form4_id: Joi.number().optional().allow(null),
 
   department_id: Joi.number().optional().allow(null),
@@ -77,23 +63,16 @@ export const submitSchema = Joi.object({
   zone_id: Joi.number().optional().allow(null),
   zone_name: Joi.string().allow(null, ""),
 
-  /**
-   * Society list
-   */
+  
   form1_selected_list: Joi.array()
     .items(societySchema)
     .min(1)
     .required(),
 });
 
-/* ======================================================
-   7️⃣ Edit Form4 (PUT /form4)
-   Same as submit, but form4_id is REQUIRED
-====================================================== */
+/*Edit Form4*/
 export const editForm4Schema = Joi.object({
-  /**
-   * REQUIRED for edit
-   */
+ 
   form4_id: Joi.number()
     .integer()
     .positive()
@@ -111,21 +90,13 @@ export const editForm4Schema = Joi.object({
     .required(),
 });
 
-/* ======================================================
-   4️⃣ List Form4 (GET /form4/list)
-   No body
-====================================================== */
+/*List Form4*/
 export const listForm4Schema = Joi.object({});
 
-/* ======================================================
-   6️⃣ Editable Form4 (GET /form4/editable)
-   No body
-====================================================== */
+/*Editable Form4*/
 export const getEditableForm4Schema = Joi.object({});
 
-/* ======================================================
-   5️⃣ Get Form4 Details (GET /form4/:form4_id)
-====================================================== */
+/*Get Form4 Details*/
 export const getForm4DetailsSchema = Joi.object({
   form4_id: Joi.number()
     .integer()

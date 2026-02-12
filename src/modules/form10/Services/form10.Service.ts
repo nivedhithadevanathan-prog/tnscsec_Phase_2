@@ -7,9 +7,7 @@ import {
 
 export const Form10Service = {
 
-  /* =====================================================
-   * FORM10 INIT
-   * ===================================================== */
+  /*FORM10 INIT*/
 
   buildForm10(params: {
     uid: number;
@@ -46,9 +44,7 @@ export const Form10Service = {
 
 
 
-  /* =====================================================
-   * PREVIEW BUILDER
-   * ===================================================== */
+  /*PREVIEW BUILDER*/
   buildPreview(params: {
     form4_filed_soc_id: number;
     members: {
@@ -112,9 +108,7 @@ export const Form10Service = {
     };
   },
 
-/* =====================================================
-   * REJECT
-   * ===================================================== */
+/*REJECT*/
 
   buildRejectCandidateStatus(params: {
     form10_id: number;
@@ -139,9 +133,7 @@ export const Form10Service = {
     };
   },
 
- /* =====================================================
-   * WITHDRAW
-   * ===================================================== */
+ /*WITHDRAW*/
 
   buildWithdrawCandidateStatus(params: {
     form10_id: number;
@@ -162,9 +154,7 @@ export const Form10Service = {
     return null;
   },
 
-/* =====================================================
-   * FINAL SOCIETY
-   * ===================================================== */
+/*FINAL SOCIETY*/
 
   decideElectionType(activeCandidatesCount: number) {
     if (activeCandidatesCount <= 0) {
@@ -205,9 +195,7 @@ export const Form10Service = {
     };
   },
 
- /* =====================================================
-   * SUBMIT
-   * ===================================================== */
+ /*SUBMIT*/
 
   buildSubmitForm10Update() {
     return {
@@ -219,9 +207,7 @@ export const Form10Service = {
     return null;
   },
 
-/* =====================================================
- * LIST (VICE PRESIDENT)
- * ===================================================== */
+/*(VICE PRESIDENT)*/
 buildListSociety(params: {
   form10_society_id: number;
   form4_filed_soc_id: number;

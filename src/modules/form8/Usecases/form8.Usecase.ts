@@ -1,11 +1,7 @@
 import { Form8Service } from "../../form8/Services/form8.Service";
 import { form5_category_type } from "@prisma/client";
 
-/**
- * =====================================================
- * PREVIEW API USECASE
- * =====================================================
- */
+/*PREVIEW API USECASE*/
 
 interface PreviewPayload {
   uid: number;
@@ -96,11 +92,7 @@ export const Form8PreviewUsecase = {
   },
 };
 
-/**
- * =====================================================
- * CHECKBOX PREVIEW USECASE
- * =====================================================
- */
+/*CHECKBOX PREVIEW USECASE*/
 
 export const Form8CheckboxUsecase = {
   async checkboxPreview(district_id: number) {
@@ -115,7 +107,7 @@ export const Form8CheckboxUsecase = {
       const members =
         await Form8Service.getMembers(soc.id);
 
-      // ✅ FILTER NULL category_type (TS + runtime safe)
+      //FILTER NULL category_type (TS + runtime safe)
      const validMembers = members
   .filter((m) => m.category_type !== null)
   .map((m) => ({
@@ -146,11 +138,7 @@ export const Form8CheckboxUsecase = {
   },
 };
 
-/**
- * =====================================================
- * FINAL RESULT SAVE USECASE (WINNERS + DLG)
- * =====================================================
- */
+/*FINAL RESULT SAVE USECASE (WINNERS + DLG)*/
 
 export const Form8FinalResultUsecase = {
   async saveFinalResult(data: {
@@ -200,11 +188,7 @@ export const Form8FinalResultUsecase = {
   },
 };
 
-/**
- * =====================================================
- * SUBMIT FORM8 USECASE (POLLING DETAILS)
- * =====================================================
- */
+/*SUBMIT FORM8 USECASE (POLLING DETAILS)*/
 
 interface SubmitPayload {
   uid: number;
@@ -238,11 +222,7 @@ export const Form8SubmitUsecase = {
   },
 };
 
-/**
- * =====================================================
- * FORM8 LIST USECASE
- * =====================================================
- */
+/*FORM8 LIST USECASE*/
 
 interface Form8ListPayload {
   uid: number;

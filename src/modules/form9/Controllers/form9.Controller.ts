@@ -4,9 +4,7 @@ import { Form9Usecase } from "../../form9/Usecases/form9.Usecase";
 
 export const Form9Controller = {
 
-  /* =====================================================
-   * POST: FORM9 INIT
-   * ===================================================== */
+  /*POST FORM9 INIT*/
   async init(req: Request, res: Response) {
     try {
       const uid = Number((req as any).user.uid);
@@ -33,9 +31,7 @@ if (!uid) {
     }
   },
 
-  /* =====================================================
-   * GET: FORM9 PREVIEW
-   * ===================================================== */
+  /*GET FORM9 PREVIEW*/
   async preview(req: Request, res: Response) {
     try {
       const uid = Number((req as any).user?.uid);
@@ -58,9 +54,7 @@ if (!uid) {
     }
   },
 
-  /* =====================================================
-   * POST: FORM9 REJECT CANDIDATES (BULK)
-   * ===================================================== */
+  /*POST FORM9 REJECT CANDIDATES*/
   async reject(req: Request, res: Response) {
     try {
       const uid = Number((req as any).user?.uid);
@@ -102,9 +96,7 @@ if (!uid) {
     }
   },
 
-  /* =====================================================
-   * POST: FORM9 WITHDRAW CANDIDATES (BULK)
-   * ===================================================== */
+  /*POST FORM9 WITHDRAW CANDIDATES*/
   async withdraw(req: Request, res: Response) {
     try {
       const uid = Number((req as any).user?.uid);
@@ -146,9 +138,7 @@ if (!uid) {
     }
   },
 
-  /* =====================================================
-   * POST: FORM9 FINAL (PER SOCIETY)
-   * ===================================================== */
+  /*POST FORM9 FINAL (PER SOCIETY)*/
   async final(req: Request, res: Response) {
     try {
       const uid = Number((req as any).user?.uid);
@@ -184,10 +174,7 @@ if (!uid) {
     }
   },
 
-  /* =====================================================
-   * GET: FORM9 LIST (WINNERS)
-   * Works BEFORE & AFTER submit
-   * ===================================================== */
+  /*GET FORM9 LIST (WINNERS)*/
   async list(req: Request, res: Response) {
     try {
       const uid = Number((req as any).user?.uid);
@@ -210,9 +197,7 @@ if (!uid) {
     }
   },
 
-  /* =====================================================
-   * POST: FORM9 SUBMIT
-   * ===================================================== */
+  /*POST FORM9 SUBMIT*/
   async submit(req: Request, res: Response) {
     try {
       const uid = Number((req as any).user?.uid);
@@ -233,7 +218,7 @@ if (!uid) {
         res,
         200,
         "Form9 submitted successfully",
-        data // must be null
+        data 
       );
     } catch (err: any) {
       return sendError(

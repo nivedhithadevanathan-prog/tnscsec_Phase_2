@@ -13,30 +13,21 @@ import { verifyToken } from "../../../middleware/auth.middleware";
 
 const router = Router();
 
-/* =====================================================
- * FORM9 INIT
- * POST /form9/init
- * ===================================================== */
+/*FORM9 INIT*/
 router.post(
   "/init", verifyToken,
   validate(initForm9Schema),
   Form9Controller.init
 );
 
-/* =====================================================
- * FORM9 PREVIEW
- * GET /form9/preview
- * ===================================================== */
+/*FORM9 PREVIEW*/
 router.get(
   "/preview",
   validate(previewForm9Schema),
   Form9Controller.preview
 );
 
-/* =====================================================
- * FORM9 REJECT CANDIDATES
- * POST /form9/reject
- * ===================================================== */
+/*FORM9 REJECT CANDIDATES*/
 router.post(
   "/reject",
   verifyToken,
@@ -45,39 +36,27 @@ router.post(
 );
 
 
-/* =====================================================
- * FORM9 WITHDRAW CANDIDATES
- * POST /form9/withdraw
- * ===================================================== */
+/*FORM9 WITHDRAW CANDIDATES*/
 router.post(
   "/withdraw",
   validate(withdrawForm9Schema),
   Form9Controller.withdraw
 );
 
-/* =====================================================
- * FORM9 FINAL (PER SOCIETY)
- * POST /form9/final
- * ===================================================== */
+/*FORM9 FINAL (PER SOCIETY)*/
 router.post(
   "/final",
   validate(finalForm9Schema),
   Form9Controller.final
 );
 
-/* =====================================================
- * FORM9 LIST (WINNERS LIST)
- * GET /form9/list
- * ===================================================== */
+/*FORM9 LIST (WINNERS LIST)*/
 router.get(
   "/list",
   Form9Controller.list
 );
 
-/* =====================================================
- * FORM9 SUBMIT
- * POST /form9/submit
- * ===================================================== */
+/*FORM9 SUBMIT*/
 router.post(
   "/submit",
   validate(listForm9Schema),

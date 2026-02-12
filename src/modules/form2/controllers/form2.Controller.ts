@@ -8,9 +8,7 @@ import { AuthRequest } from "../../../middleware/auth.middleware";
 
 
 
-/* =========================================================
-   1️⃣ GET — Fetch Form1 Selected Societies (Used for Form2)
-========================================================= */
+/*GET Form1 Selected Societies(Used for Form2)*/
 export const getForm2SelectedSocieties = async (req: Request, res: Response) => {
   try {
     const form1_id = Number(req.query.form1_id ?? req.body.form1_id);
@@ -49,13 +47,11 @@ export const getForm2SelectedSocieties = async (req: Request, res: Response) => 
   }
 };
 
-/* =========================================================
-   2️⃣ POST — Checkbox Selection
-========================================================= */
+/*POST Checkbox Selection*/
 export const checkboxForm2 = async (req: AuthRequest, res: Response) => {
   try {
     const { form1_id, selected_soc_ids } = req.body;
-    const uid = req.user?.uid; // 🔐 now VALID
+    const uid = req.user?.uid;
 
     if (!uid) {
       return res.status(401).json({
@@ -92,9 +88,7 @@ export const checkboxForm2 = async (req: AuthRequest, res: Response) => {
 };
 
 
-/* =========================================================
-   3️⃣ POST — Submit Form2
-========================================================= */
+/*POST Submit Form2*/
 export const submitForm2 = async (req: Request, res: Response) => {
   try {
     const uid = Number((req as any).user?.uid);
@@ -108,7 +102,7 @@ export const submitForm2 = async (req: Request, res: Response) => {
 
     const payload = {
       ...req.body,
-      uid, // ✅ inject uid HERE
+      uid, 
     };
 
     const data = await form2Usecases.submitForm2Usecase(payload);
@@ -131,9 +125,7 @@ export const submitForm2 = async (req: Request, res: Response) => {
 
 
 
-/* =========================================================
-   4️⃣ GET — List Form2 by Logged-in User
-========================================================= */
+/*GET Form2 by Logged in User*/
 export const getForm2ListByUser = async (req: Request, res: Response) => {
   try {
     const uid = Number((req as any).user?.uid);
@@ -164,9 +156,7 @@ export const getForm2ListByUser = async (req: Request, res: Response) => {
   }
 };
 
-/* =========================================================
-   5️⃣ GET — Editable Form2 (Latest)
-========================================================= */
+/*GET Editable Form2*/
 export const getEditableForm2 = async (req: Request, res: Response) => {
   try {
     const uid = Number((req as any).user?.uid);
@@ -205,9 +195,7 @@ export const getEditableForm2 = async (req: Request, res: Response) => {
   }
 };
 
-/* =========================================================
-   6️⃣ PUT — Edit Form2 (Before Form3)
-========================================================= */
+/*PUT Edit Form2*/
 export const editForm2 = async (req: Request, res: Response) => {
   try {
     const payload = req.body;

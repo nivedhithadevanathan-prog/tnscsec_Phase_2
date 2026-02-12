@@ -1,18 +1,11 @@
 import Joi from "joi";
 import { Request, Response, NextFunction } from "express";
 
-/* ============================================================
-   GET API Validation  
-   (User-based → uid comes from token, but kept for consistency)
-   ============================================================ */
 export const form3GetValidation = Joi.object({
   uid: Joi.number().integer().required(),
 });
 
-/* ============================================================
-   SUBMIT API Validation  
-   URL: /api/form3/submit
-   ============================================================ */
+/*SUBMIT Validation*/
 export const submitForm3Validation = Joi.object({
   uid: Joi.number().required(),
 
@@ -49,12 +42,8 @@ export const submitForm3Validation = Joi.object({
     .required(),
 });
 
-/* ============================================================
-   EDIT / UPDATE API Validation  
-   URL: /api/form3/edit
-   ============================================================ */
+/*EDIT Validation*/
 export const updateForm3Validation = Joi.object({
-  // ❌ uid should NOT be here
   form3_id: Joi.number().required(),
 
   remarks: Joi.string().allow(null, "").optional(),
@@ -65,14 +54,12 @@ export const updateForm3Validation = Joi.object({
         society_id: Joi.number().required(),
         society_name: Joi.string().required(),
 
-        // ✅ FIXED TYPES
         ass_memlist: Joi.number().allow(null).optional(),
         ero_claim: Joi.number().allow(null).optional(),
 
         jcount: Joi.number().allow(null).optional(),
         rcount: Joi.number().allow(null).optional(),
 
-        // optional (not required in body)
         total: Joi.number().allow(null).optional(),
         rural_id: Joi.number().allow(null).optional(),
         tot_voters: Joi.number().allow(null).optional(),
@@ -83,9 +70,7 @@ export const updateForm3Validation = Joi.object({
 });
 
 
-/* ============================================================
-   COMMON VALIDATION MIDDLEWARE
-   ============================================================ */
+/*COMMON VALIDATION MIDDLEWARE*/
 export const validate =
   (schema: Joi.ObjectSchema) =>
   (req: Request, res: Response, next: NextFunction) => {

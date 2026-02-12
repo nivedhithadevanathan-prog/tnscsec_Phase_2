@@ -1,8 +1,12 @@
 import Joi from "joi";
-/*CHECKPOINT ZONES*/ export const checkpointZonesSchema = Joi.object({
+
+/*CHECKPOINT ZONES*/ 
+export const checkpointZonesSchema = Joi.object({
   selectedIds: Joi.array().items(Joi.number().integer().positive()).default([]),
 });
-/*FORM1 SUBMIT*/ export const form1SubmitSchema = Joi.object({
+
+/*FORM1 SUBMIT*/ 
+export const form1SubmitSchema = Joi.object({
   remark: Joi.string().max(150).optional(),
   selected_soc: Joi.array()
     .items(
@@ -32,7 +36,9 @@ import Joi from "joi";
     )
     .required(),
 });
-/*RURAL DETAILS REQUEST SCHEMA*/ export const ruralDetailsRequestSchema =
+
+/*RURAL DETAILS REQUEST SCHEMA*/ 
+export const ruralDetailsRequestSchema =
   Joi.object({
     associationIds: Joi.array()
       .items(Joi.number().integer().positive())

@@ -4,9 +4,7 @@ import { Form7Service } from "../../form7/Services/form7.Service";
 export const prisma = new PrismaClient();
 
 export const Form7Usecase = {
-  /* =====================================================
-   * 1️⃣ PREVIEW FORM7 (Before Submit)
-   * ===================================================== */
+  /*PREVIEW FORM7*/
   async preview(uid: number) {
     const user = await Form7Service.getUserDistrict(uid);
     if (user?.district_id == null) {
@@ -110,9 +108,7 @@ export const Form7Usecase = {
     };
   },
 
-  /* =====================================================
-   * 2️⃣ SUBMIT FORM7
-   * ===================================================== */
+  /*SUBMIT FORM7*/
   async submit(payload: any) {
   const { uid, societies: inputSocieties } = payload;
 
@@ -190,7 +186,6 @@ export const Form7Usecase = {
       final_women_count: declaredWomen,
       final_general_count: declaredGeneral,
 
-      // ✅ CORRECT DLG CALCULATION
       final_sc_st_dlg_count:
         declaredSc > ruralSc ? declaredSc - ruralSc : 0,
 
@@ -237,9 +232,7 @@ export const Form7Usecase = {
 },
 
 
-  /* =====================================================
-   * 3️⃣ LIST FORM7
-   * ===================================================== */
+  /*LIST FORM7*/
   async list(uid: number) {
     const user = await Form7Service.getUserDistrict(uid);
     if (user?.district_id == null) {
@@ -254,9 +247,7 @@ export const Form7Usecase = {
     return form7 ? [form7] : [];
   },
 
-  /* =====================================================
-   * 4️⃣ EDITABLE FORM7
-   * ===================================================== */
+  /*EDITABLE FORM7*/
   async editable(uid: number) {
     const user = await Form7Service.getUserDistrict(uid);
     if (user?.district_id == null) {
@@ -278,9 +269,7 @@ export const Form7Usecase = {
     return { form7, societies };
   },
 
-  /* =====================================================
-   * 5️⃣ EDIT FORM7
-   * ===================================================== */
+  /*EDIT FORM7*/
   async edit(payload: any) {
     const { uid, societies: inputSocieties } = payload;
 

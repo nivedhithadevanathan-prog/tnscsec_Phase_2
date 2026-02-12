@@ -4,9 +4,7 @@ import { Form10Usecase } from "../../form10/Usecases/form10.Usecase";
 
 export const Form10Controller = {
 
-  /* =====================================================
-   * POST: FORM10 INIT
-   * ===================================================== */
+  /*POST FORM10 INIT*/
   async init(req: Request, res: Response) {
     try {
       const uid = Number((req as any).user?.uid);
@@ -34,9 +32,7 @@ export const Form10Controller = {
   },
 
 
-  /* =====================================================
-   * GET: FORM10 PREVIEW
-   * ===================================================== */
+  /*GET FORM10 PREVIEW*/
   async preview(req: Request, res: Response) {
     try {
       const uid = Number((req as any).user?.uid);
@@ -63,9 +59,7 @@ export const Form10Controller = {
     }
   },
 
-  /* =====================================================
-   * POST: FORM10 REJECT CANDIDATES (BULK)
-   * ===================================================== */
+  /*POST FORM10 REJECT CANDIDATES*/
   async reject(req: Request, res: Response) {
     try {
       const uid = Number((req as any).user?.uid);
@@ -120,9 +114,7 @@ export const Form10Controller = {
   },
 
 
-  /* =====================================================
- * POST: FORM10 WITHDRAW CANDIDATES (BULK)
- * ===================================================== */
+  /*POST FORM10 WITHDRAW CANDIDATES*/
 async withdraw(req: Request, res: Response) {
   try {
     const uid = Number((req as any).user?.uid);
@@ -176,9 +168,7 @@ async withdraw(req: Request, res: Response) {
   }
 },
 
-/* =====================================================
- * POST: FORM10 FINAL (PER SOCIETY)
- * ===================================================== */
+/*POST FORM10 FINAL (PER SOCIETY)*/
 async final(req: Request, res: Response) {
   try {
     const uid = Number((req as any).user?.uid);
@@ -222,9 +212,7 @@ async final(req: Request, res: Response) {
   }
 },
 
-/* =====================================================
- * POST: FORM10 SUBMIT
- * ===================================================== */
+/*POST FORM10 SUBMIT*/
 async submit(req: Request, res: Response) {
   try {
     const uid = Number((req as any).user?.uid);
@@ -252,7 +240,7 @@ async submit(req: Request, res: Response) {
       res,
       200,
       "Form10 submitted successfully",
-      data   // should return null
+      data   
     );
 
   } catch (err: any) {
@@ -264,9 +252,7 @@ async submit(req: Request, res: Response) {
   }
 },
 
-/* =====================================================
- * GET: FORM10 LIST (VICE PRESIDENT RESULTS)
- * ===================================================== */
+/*GET FORM10 LIST*/
 async list(req: Request, res: Response) {
   try {
     const uid = Number((req as any).user?.uid);

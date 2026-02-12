@@ -7,9 +7,8 @@ import {
 import { sendResponse, sendError } from "../../../utils/response";
 
 export const Form5Controller = {
-  /**
-   * 1️⃣ GET Eligible Societies for Form5
-   */
+
+  /*GET Eligible Societies for Form5*/
   async getEligibleSocieties(req: Request, res: Response) {
     try {
       const uid = Number((req as any).user?.uid);
@@ -33,9 +32,7 @@ export const Form5Controller = {
     }
   },
 
-  /**
-   * 2️⃣ POST Submit Form5 (First submission)
-   */
+  /*POST Submit Form5*/
   async submitForm5(req: Request, res: Response) {
     try {
       const { error, value } = form5SubmitSchema.validate(req.body, {
@@ -75,9 +72,7 @@ export const Form5Controller = {
     }
   },
 
-  /**
-   * 3️⃣ GET Form5 List (Read-only Review)
-   */
+  /*GET Form5 List*/
   async getForm5List(req: Request, res: Response) {
     try {
       const uid = Number((req as any).user?.uid);
@@ -101,9 +96,7 @@ export const Form5Controller = {
     }
   },
 
-  /**
-   * 4️⃣ GET Editable Form5 (Review + Prefill for Edit)
-   */
+  /*GET Editable Form5*/
   async getEditableForm5(req: Request, res: Response) {
     try {
       const uid = Number((req as any).user?.uid);
@@ -127,9 +120,7 @@ export const Form5Controller = {
     }
   },
 
-  /**
-   * 5️⃣ PUT Edit Form5 (Edit & Submit Again)
-   */
+  /*PUT Edit Form5*/
   async editForm5(req: Request, res: Response) {
     try {
       const { error, value } = form5EditSchema.validate(req.body, {

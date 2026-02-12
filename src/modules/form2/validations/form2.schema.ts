@@ -2,9 +2,7 @@
 import Joi from "joi";
 import { Request, Response, NextFunction } from "express";
 
-/* =========================================================
-   1️⃣ GET — Fetch Form1 Selected Societies
-========================================================= */
+/*GET Form1 Selected Societies*/
 export const getForm2Validation = Joi.object({
   form1_id: Joi.number().required().messages({
     "any.required": "form1_id is required",
@@ -12,9 +10,7 @@ export const getForm2Validation = Joi.object({
   }),
 });
 
-/* =========================================================
-   2️⃣ POST — Checkbox Selection
-========================================================= */
+/*POST Checkbox Selection*/
 export const checkboxForm2Validation = Joi.object({
   form2_id: Joi.number().required().messages({
     "any.required": "form2_id is required",
@@ -30,9 +26,7 @@ export const checkboxForm2Validation = Joi.object({
     }),
 });
 
-/* =========================================================
-   3️⃣ POST — Submit Form2
-========================================================= */
+/*POST Submit Form2*/
 export const submitForm2Validation = Joi.object({
   uid: Joi.number().required().messages({
     "any.required": "uid is required",
@@ -65,20 +59,13 @@ export const submitForm2Validation = Joi.object({
     }),
 });
 
-/* =========================================================
-   4️⃣ GET — Form2 LIST (By Logged-in User)
-   ✔ No body / query validation needed
-========================================================= */
+/*GET Form2 LIST*/
 export const getForm2ListValidation = Joi.object({});
 
-/* =========================================================
-   5️⃣ GET — Editable Form2 (API-1)
-========================================================= */
+/*GET Editable Form2*/
 export const getEditableForm2Validation = Joi.object({});
 
-/* =========================================================
-   6️⃣ PUT — Edit Form2 (API-2)
-========================================================= */
+/*PUT Edit Form2*/
 export const editForm2Validation = Joi.object({
   uid: Joi.number().required().messages({
     "any.required": "uid is required",
@@ -106,9 +93,7 @@ export const editForm2Validation = Joi.object({
     }),
 });
 
-/* =========================================================
-   COMMON VALIDATION MIDDLEWARE (SINGLE SOURCE ✅)
-========================================================= */
+/*COMMON VALIDATION MIDDLEWARE*/
 export const validate =
   (schema: Joi.ObjectSchema) =>
   (req: Request, res: Response, next: NextFunction) => {

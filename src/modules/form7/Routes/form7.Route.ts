@@ -14,12 +14,7 @@ import {
 
 const router = Router();
 
-/**
- * =====================================================
- * 1️⃣ GET: Form7 Preview (Before Submit)
- * =====================================================
- * READ-ONLY
- */
+/*GET Form7 Preview*/
 router.get(
   "/preview",
   verifyToken,
@@ -27,11 +22,7 @@ router.get(
   Form7Controller.preview
 );
 
-/**
- * =====================================================
- * 2️⃣ POST: Submit Form7
- * =====================================================
- */
+/*POST Submit Form7*/
 router.post(
   "/submit",
   verifyToken,
@@ -39,11 +30,7 @@ router.post(
   Form7Controller.submit
 );
 
-/**
- * =====================================================
- * 3️⃣ GET: Form7 List (All submitted Form7)
- * =====================================================
- */
+/*GET Form7 List*/
 router.get(
   "/list",
   verifyToken,
@@ -51,11 +38,7 @@ router.get(
   Form7Controller.list
 );
 
-/**
- * =====================================================
- * 4️⃣ GET: Editable Form7 (Review Screen)
- * =====================================================
- */
+/*GET Editable Form7*/
 router.get(
   "/editable",
   verifyToken,
@@ -63,11 +46,7 @@ router.get(
   Form7Controller.editable
 );
 
-/**
- * =====================================================
- * 5️⃣ PUT: Edit Form7 (Before Final Confirm)
- * =====================================================
- */
+/*PUT Edit Form7*/
 router.put(
   "/edit",
   verifyToken,

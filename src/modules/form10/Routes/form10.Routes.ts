@@ -15,10 +15,7 @@ import { submitForm10Schema } from "../Validations/form10.Schema";
 
 const router = Router();
 
-/* =====================================================
- * FORM10 INIT
- * POST /form10/init
- * ===================================================== */
+/*FORM10 INIT*/
 router.post(
   "/init",
   verifyToken,
@@ -26,10 +23,7 @@ router.post(
   Form10Controller.init
 );
 
-/* =====================================================
- * FORM10 PREVIEW
- * GET /form10/preview
- * ===================================================== */
+/*FORM10 PREVIEW*/
 router.get(
   "/preview",
   verifyToken,
@@ -37,10 +31,7 @@ router.get(
   Form10Controller.preview
 );
 
-/* =====================================================
- * FORM10 REJECT CANDIDATES
- * POST /form10/reject
- * ===================================================== */
+/*FORM10 REJECT CANDIDATES*/
 router.post(
   "/reject",
   verifyToken,
@@ -49,10 +40,7 @@ router.post(
 );
 
 
-/* =====================================================
- * FORM10 WITHDRAW CANDIDATES
- * POST /form10/withdraw
- * ===================================================== */
+/*FORM10 WITHDRAW CANDIDATES*/
 router.post(
   "/withdraw",
   verifyToken,
@@ -60,10 +48,7 @@ router.post(
   Form10Controller.withdraw
 );
 
-/* =====================================================
- * FORM10 FINAL (PER SOCIETY)
- * POST /form10/final
- * ===================================================== */
+/*FORM10 FINAL (PER SOCIETY)*/
 router.post(
   "/final",
   verifyToken,
@@ -71,10 +56,7 @@ router.post(
   Form10Controller.final
 );
 
-/* =====================================================
- * FORM10 SUBMIT
- * POST /form10/submit
- * ===================================================== */
+/*FORM10 SUBMIT*/
 router.post(
   "/submit",
   verifyToken,
@@ -82,10 +64,7 @@ router.post(
   Form10Controller.submit
 );
 
-/* =====================================================
- * FORM10 LIST
- * GET /form10/list
- * ===================================================== */
+/*FORM10 LIST*/
 router.get(
   "/list",
   verifyToken,

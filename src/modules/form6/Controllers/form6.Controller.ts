@@ -4,10 +4,7 @@ import { sendResponse, sendError } from "../../../utils/response";
 
 export const form6Controller = {
 
-  /* =====================================================
-   * 1️⃣ INIT FORM-6
-   * POST /form6/init
-   * ===================================================== */
+  /*INIT FORM-6*/
   async initForm6(req: Request, res: Response) {
     try {
       const uid = Number((req as any).user?.uid);
@@ -26,10 +23,7 @@ export const form6Controller = {
     }
   },
 
-  /* =====================================================
-   * 2️⃣ PREVIEW FORM-6 (LIVE VIEW)
-   * GET /form6/preview
-   * ===================================================== */
+  /*PREVIEW FORM-6*/
   async loadForm6Preview(req: Request, res: Response) {
     try {
       const uid = Number((req as any).user?.uid);
@@ -48,10 +42,7 @@ export const form6Controller = {
     }
   },
 
-  /* =====================================================
-   * 3️⃣ EDITABLE FORM-6 (REVIEW SCREEN AFTER SUBMIT)
-   * GET /form6/editable
-   * ===================================================== */
+  /*EDITABLE FORM-6*/
   async getEditableForm6(req: Request, res: Response) {
     try {
       const uid = Number((req as any).user?.uid);
@@ -70,10 +61,7 @@ export const form6Controller = {
     }
   },
 
-  /* =====================================================
-   * 4️⃣ LIST FORM-6 (SUBMITTED LIST)
-   * GET /form6/list
-   * ===================================================== */
+  /*LIST FORM-6*/
   async listForm6(req: Request, res: Response) {
     try {
       const uid = Number((req as any).user?.uid);
@@ -92,10 +80,7 @@ export const form6Controller = {
     }
   },
 
-  /* =====================================================
-   * 5️⃣ CANDIDATE WITHDRAW / REINSTATE
-   * POST /form6/candidate-withdraw
-   * ===================================================== */
+  /*CANDIDATE WITHDRAW / REINSTATE*/
   async withdrawCandidate(req: Request, res: Response) {
     try {
       const uid = Number((req as any).user?.uid);
@@ -128,10 +113,7 @@ export const form6Controller = {
     }
   },
 
-  /* =====================================================
-   * 6️⃣ SOCIETY DECISION (SHOW / STOP)
-   * POST /form6/society-decision
-   * ===================================================== */
+  /*SOCIETY DECISION*/
   async societyDecision(req: Request, res: Response) {
     try {
       const uid = Number((req as any).user?.uid);
@@ -164,10 +146,7 @@ export const form6Controller = {
     }
   },
 
-  /* =====================================================
-   * 7️⃣ EDIT FORM-6 (UPDATE ONCE BEFORE CONFIRM)
-   * PUT /form6/edit
-   * ===================================================== */
+  /*EDIT FORM-6*/
   async editForm6(req: Request, res: Response) {
     try {
       const uid = Number((req as any).user?.uid);
@@ -195,10 +174,7 @@ export const form6Controller = {
     }
   },
 
-  /* =====================================================
-   * 8️⃣ SUBMIT FORM-6
-   * POST /form6/submit
-   * ===================================================== */
+  /*SUBMIT FORM-6*/
   async submitForm6(req: Request, res: Response) {
     try {
       const uid = Number((req as any).user?.uid);

@@ -23,16 +23,14 @@ export interface Form6ViewResponse {
     zone_id: number | null;
     fullname?: string;
   };
-  societies: any[]; // keep any if structure is already stable
+  societies: any[]; 
 }
 
 
 
 export const Form6Service = {
 
-  /* =====================================================
-   * 1️⃣ INIT FORM-6
-   * ===================================================== */
+  /*INIT FORM-6*/
   async initForm6(uid: number) {
     let form6 = await prisma.form6.findFirst({
       where: { uid },
@@ -70,9 +68,7 @@ export const Form6Service = {
     };
   },
 
-  /* =====================================================
-   * 2️⃣ PREVIEW FORM-6 (LIVE VIEW)
-   * ===================================================== */
+  /*PREVIEW FORM-6*/
   async loadForm6Preview(uid: number): Promise<Form6ViewResponse> {
   return this._buildForm6View(uid, false);
 },
@@ -80,9 +76,7 @@ export const Form6Service = {
 
  
 
-  /* =====================================================
-   * 4️⃣ LIST FORM-6 (SUBMITTED)
-   * ===================================================== */
+  /*LIST FORM-6*/
   async listForm6(uid: number) {
     const forms = await prisma.form6.findMany({
       where: {
@@ -115,9 +109,7 @@ export const Form6Service = {
     }));
   },
 
-  /* =====================================================
-   * 5️⃣ CANDIDATE WITHDRAW
-   * ===================================================== */
+  /*CANDIDATE WITHDRAW*/
   async withdrawCandidate(payload: {
     uid: number;
     form4_filed_soc_id: number;
@@ -155,10 +147,7 @@ export const Form6Service = {
     return { withdrawn_member_id: form5_member_id };
   },
 
-  /* =====================================================
-   * 6️⃣ SOCIETY DECISION (SHOW / STOP)
-   * + COUNTS + ELECTION STATUS
-   * ===================================================== */
+  /*SOCIETY DECISION*/
   async societyDecision(payload: {
     uid: number;
     form4_filed_soc_id: number;
@@ -211,7 +200,7 @@ export const Form6Service = {
       });
     }
 
-    /* ---------- Recalculate counts ---------- */
+    /*Recalculate counts*/
     const members = await prisma.form5.findMany({
       where: { form4_filed_soc_id, is_active: true },
       select: { id: true, category_type: true },
@@ -295,9 +284,7 @@ export const Form6Service = {
     };
   },
 
-  /* =====================================================
-   * 7️⃣ EDIT FORM-6 (AFTER SUBMIT, BEFORE CONFIRM)
-   * ===================================================== */
+  /*EDIT FORM-6*/
   async editForm6(payload: {
     uid: number;
     societies: { form4_filed_soc_id: number; election_action: "SHOW" | "STOP" }[];
@@ -336,9 +323,7 @@ export const Form6Service = {
     };
   },
 
-  /* =====================================================
-   * 8️⃣ SUBMIT FORM-6
-   * ===================================================== */
+  /*SUBMIT FORM-6*/
   async submitForm6(uid: number) {
     const form6 = await prisma.form6.findFirst({
       where: { uid },
@@ -371,9 +356,7 @@ export const Form6Service = {
     };
   },
 
-/* =====================================================
- * EDITABLE FORM-6 (AFTER SUBMIT)
- * ===================================================== */
+/*EDITABLE FORM-6*/
 async getEditableForm6(uid: number) {
   const form6 = await prisma.form6.findFirst({
     where: { uid },
@@ -388,14 +371,11 @@ async getEditableForm6(uid: number) {
     throw new Error("Form6 is not submitted yet");
   }
 
-  // Reuse preview logic (safe & DRY)
   return this.loadForm6Preview(uid);
 },
 
 
-  /* =====================================================
-   * INTERNAL HELPER (shared preview/editable)
-   * ===================================================== */
+  /*INTERNAL HELPER*/
  async _buildForm6View(uid: number, allowSubmitted: boolean) {
 
   const form6 = await prisma.form6.findFirst({
@@ -413,10 +393,7 @@ async getEditableForm6(uid: number) {
     throw new Error("Form6 not submitted yet");
   }
 
-  // -----------------------------
-  // 👇 THIS PART WAS MISSING
-  // -----------------------------
-
+  
   const form4 = await prisma.form4.findFirst({
     where: { uid },
     orderBy: { created_at: "desc" },
@@ -428,17 +405,14 @@ async getEditableForm6(uid: number) {
       })
     : [];
 
-  // members, events, decisionMap, withdrawn logic...
-  // build `societies` array EXACTLY like your preview API
+ 
 
 const societies = filedSocieties.map((soc) => ({
   form4_filed_soc_id: soc.id,
   society_id: soc.society_id,
   society_name: soc.society_name,
 }));
-  // -----------------------------
-  // ✅ NOW societies EXISTS
-  // -----------------------------
+   
 
   return {
     form6: {

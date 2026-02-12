@@ -2,9 +2,7 @@ import { PrismaClient } from "@prisma/client";
 
 export const prisma = new PrismaClient();
 
-/* ======================================================
-   Election status helper
-====================================================== */
+/*Election status helper*/
 type ElectionStatus = "QUALIFIED" | "UNOPPOSED" | "UNQUALIFIED";
 
 function evaluateElectionStatus(
@@ -25,14 +23,10 @@ function evaluateElectionStatus(
   return "UNQUALIFIED";
 }
 
-/* ======================================================
-   Form4 Service
-====================================================== */
+/*Form4 Service*/
 export const Form4Service = {
 
-  /* ======================================================
-     1️⃣ Load Form4 base data
-  ====================================================== */
+  /*Load Form4 base data*/
   async loadForm4(uid: number) {
     const userMeta = await prisma.users.findFirst({
       where: { id: uid },
@@ -119,9 +113,7 @@ export const Form4Service = {
     return { userMeta, selectedSocList };
   },
 
-  /* ======================================================
-     2️⃣ Checkbox preview
-  ====================================================== */
+  /*Checkbox preview*/
   async getCheckboxPreview(uid: number, selectedIds: number[]) {
     const { selectedSocList } = await this.loadForm4(uid);
 
@@ -131,9 +123,7 @@ export const Form4Service = {
     };
   },
 
-  /* ======================================================
-     3️⃣ Submit Form4 (CREATE / UPDATE)
-  ====================================================== */
+  /*Submit Form4*/
   async submitForm4(payload: any) {
     const {
       uid,
@@ -151,7 +141,7 @@ export const Form4Service = {
 
     for (const item of form1_selected_list) {
 
-      /* ---------- UNFILED ---------- */
+      /*UNFILED*/
       if (!item.selected) {
         unfiledArr.push({
           society_id: item.society_id,
@@ -172,7 +162,7 @@ export const Form4Service = {
         continue;
       }
 
-      /* ---------- FILED ---------- */
+      /*FILED*/
       const rural_sc_st = Number(item.rural_sc_st ?? 0);
       const rural_women = Number(item.rural_women ?? 0);
       const rural_general = Number(item.rural_general ?? 0);
@@ -218,7 +208,7 @@ export const Form4Service = {
 
     const selectedCount = form1_selected_list.length;
 
-    /* ---------- UPDATE ---------- */
+    /*UPDATE*/
     if (form4_id) {
       await prisma.form4.update({
         where: { id: Number(form4_id) },
@@ -257,7 +247,7 @@ export const Form4Service = {
       return { form4_id };
     }
 
-    /* ---------- CREATE ---------- */
+    /*CREATE*/
     const newForm4 = await prisma.form4.create({
       data: {
         uid,
@@ -287,9 +277,7 @@ export const Form4Service = {
     return { form4_id: newForm4.id };
   },
 
-  /* ======================================================
-     7️⃣ Edit Form4
-  ====================================================== */
+  /*Edit Form4*/
   async editForm4(payload: any) {
     const { uid, form4_id } = payload;
 
@@ -319,9 +307,7 @@ export const Form4Service = {
     return this.submitForm4(payload);
   },
 
-  /* ======================================================
-     5️⃣ Get Form4 details
-  ====================================================== */
+  /*Get Form4 details*/
   async getForm4Details(form4_id: number) {
     const form4 = await prisma.form4.findUnique({
       where: { id: form4_id },
@@ -340,9 +326,7 @@ export const Form4Service = {
     };
   },
 
-  /* ======================================================
-     4️⃣ List Form4 by user
-  ====================================================== */
+  /*List Form4 by user*/
   async getForm4ListByUser(uid: number) {
     const form4List = await prisma.form4.findMany({
       where: { uid },
@@ -365,9 +349,7 @@ export const Form4Service = {
     return result;
   },
 
-  /* ======================================================
-     6️⃣ Editable Form4
-  ====================================================== */
+  /*Editable Form4*/
   async getEditableForm4(uid: number) {
     const form4 = await prisma.form4.findFirst({
       where: { uid },

@@ -10,12 +10,10 @@ import {
 
 export const Form9Usecase = {
 
-  /* =====================================================
-   * PREVIEW
-   * ===================================================== */
+  /*PREVIEW*/
   async preview(uid: number) {
 
-    // 1. Validate user
+    //Validate user
     const user = await prisma.users.findFirst({
       where: { id: uid },
       select: { district_id: true },
@@ -25,7 +23,7 @@ export const Form9Usecase = {
       throw { statusCode: 400, message: "User district not found" };
     }
 
-    // 2. Fetch societies
+    //Fetch societies
     const societies = await prisma.form4_filed_soc_mem_count.findMany({
       select: {
         id: true,
@@ -38,7 +36,7 @@ export const Form9Usecase = {
 
     for (const soc of societies) {
 
-      // 3. Fetch members
+      //Fetch members
       const members = await prisma.form5.findMany({
         where: {
           form4_filed_soc_id: soc.id,
@@ -51,7 +49,7 @@ export const Form9Usecase = {
         },
       });
 
-      // 4. Fetch candidate statuses (can be empty)
+      //Fetch candidate statuses
       const statuses = await prisma.form9_candidate_status.findMany({
         where: {
           form9_society: {
@@ -89,9 +87,7 @@ export const Form9Usecase = {
     return response;
   },
 
-  /* =====================================================
-   * INIT
-   * ===================================================== */
+  /*INIT*/
  async init(uid: number | string) {
 const userId = Number(uid);
 if (!userId) {
@@ -171,9 +167,7 @@ if (!userId) {
     });
   },
 
-  /* =====================================================
-   * REJECT (BULK)
-   * ===================================================== */
+  /*REJECT (BULK)*/
   async reject(params: {
   uid: number;
   form9_id: number;
@@ -208,7 +202,7 @@ if (!userId) {
   }
 
   return await prisma.$transaction(async (tx) => {
-    // 🔹 CASE 1: Reject specific candidates
+    //CASE 1: Reject specific candidates
     if (candidates && candidates.length > 0) {
       for (const c of candidates) {
         const member = await tx.form5.findFirst({
@@ -250,7 +244,7 @@ if (!userId) {
       return { rejected_count: candidates.length };
     }
 
-    // 🔹 CASE 2: Reject ALL pending candidates in society
+    //CASE 2: Reject ALL pending candidates in society
     const pendingCandidates = await tx.form9_candidate_status.findMany({
       where: {
         form9_society_id,
@@ -282,9 +276,7 @@ if (!userId) {
 },
 
 
-  /* =====================================================
-   * WITHDRAW (BULK)
-   * ===================================================== */
+  /*WITHDRAW (BULK)*/
   async withdraw(params: {
     uid: number;
     form9_id: number;
@@ -340,12 +332,8 @@ if (!userId) {
     return null;
   },
 
-  /* =====================================================
-   * FINAL
-   * ===================================================== */
- /* =====================================================
- * FINAL
- * ===================================================== */
+  
+ /*FINAL*/
 async final(params: {
   uid: number;
   form9_id: number;
@@ -372,7 +360,7 @@ async final(params: {
   if (society.status === form9_society_status.FINALIZED)
     throw { statusCode: 400, message: "Society already finalized" };
 
-  /* ✅ CORRECT ACTIVE CANDIDATE LOGIC */
+  /*CORRECT ACTIVE CANDIDATE LOGIC */
   const activeCandidates = await prisma.form5.findMany({
     where: {
       form4_filed_soc_id: society.form4_filed_soc_id,
@@ -431,9 +419,7 @@ async final(params: {
 },
 
 
-  /* =====================================================
-   * SUBMIT
-   * ===================================================== */
+  /*SUBMIT*/
   async submit(params: {
     uid: number;
     form9_id: number;
@@ -472,9 +458,7 @@ async final(params: {
     return Form9Service.buildSubmitResponse();
   },
 
-  /* =====================================================
-   * LIST (WINNERS)
-   * ===================================================== */
+  /*LIST (WINNERS)*/
   async list(params: { uid: number }) {
   const { uid } = params;
 

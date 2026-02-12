@@ -2,13 +2,8 @@ import { PrismaClient } from "@prisma/client";
 
 export const prisma = new PrismaClient()
 export const Form7Service = {
-  /* =====================================================
-   * COMMON HELPERS
-   * ===================================================== */
-
-  /**
-   * 1️⃣ Get user's district_id
-   */
+  
+  /*Get user's district_id*/
   async getUserDistrict(uid: number) {
     return prisma.users.findFirst({
       where: { id: uid },
@@ -18,9 +13,7 @@ export const Form7Service = {
     });
   },
 
-  /**
-   * 2️⃣ Get district details
-   */
+  /*Get district details*/
   async getDistrictById(district_id: number) {
     return prisma.district.findFirst({
       where: { id: district_id },
@@ -32,9 +25,7 @@ export const Form7Service = {
     });
   },
 
-  /**
-   * 3️⃣ Get latest SUBMITTED Form6
-   */
+  /*Get latest SUBMITTED Form6*/
   async getLatestSubmittedForm6(uid: number) {
     return prisma.form6.findFirst({
       where: {
@@ -47,9 +38,7 @@ export const Form7Service = {
     });
   },
 
-  /**
-   * 4️⃣ Get societies from Form6 (decision table)
-   */
+  /*Get societies from Form6*/
   async getForm6Societies(form6_id: number) {
     return prisma.form6_society_decision.findMany({
       where: { form6_id },
@@ -60,9 +49,7 @@ export const Form7Service = {
     });
   },
 
-  /**
-   * 5️⃣ Get rural voter counts from Form4
-   */
+  /*Get rural voter counts from Form4*/
   async getForm4SocietyCounts(society_id: number) {
     return prisma.form4_filed_soc_mem_count.findFirst({
       where: { society_id },
@@ -81,9 +68,7 @@ export const Form7Service = {
     });
   },
 
-  /**
-   * 6️⃣ Get final declared counts from Form6 decision
-   */
+  /*Get final declared counts from Form6 decision*/
   async getForm6SocietyDecision(
     form6_id: number,
     society_id: number
@@ -104,9 +89,7 @@ export const Form7Service = {
     });
   },
 
-  /**
-   * 7️⃣ Get latest active Form3
-   */
+  /*Get latest active Form3*/
   async getLatestForm3(uid: number) {
     return prisma.form3.findFirst({
       where: {
@@ -122,13 +105,9 @@ export const Form7Service = {
     });
   },
 
-  /* =====================================================
-   * SUBMIT / EDIT HELPERS
-   * ===================================================== */
+  /*SUBMIT/EDIT*/
 
-  /**
-   * 8️⃣ Check existing Form7 for district
-   */
+  /*Check existing Form7 for district*/
   async getExistingForm7(district_id: number) {
     return prisma.form7.findFirst({
       where: { district_id },
@@ -136,9 +115,7 @@ export const Form7Service = {
     });
   },
 
-  /**
-   * 9️⃣ Create Form7 parent
-   */
+  /*Create Form7 parent*/
   async createForm7(data: {
     district_id: number;
     district_name: string;
@@ -151,9 +128,7 @@ export const Form7Service = {
     });
   },
 
-  /**
-   * 🔟 Bulk insert Form7 societies
-   */
+  /*Bulk insert Form7 societies*/
   async createForm7Societies(
     form7_id: number,
     societies: {
@@ -213,22 +188,16 @@ export const Form7Service = {
     });
   },
 
-  /**
-   * 1️⃣1️⃣ Delete Form7 societies (used in edit)
-   */
+  /*Delete Form7 societies*/
   async deleteForm7Societies(form7_id: number) {
     return prisma.form7_societies.deleteMany({
       where: { form7_id },
     });
   },
 
-  /* =====================================================
-   * LIST / EDITABLE HELPERS
-   * ===================================================== */
+  /*LIST / EDITABLE*/
 
-  /**
-   * 1️⃣2️⃣ Get latest Form7 by district
-   */
+  /*Get latest Form7 by district*/
   async getLatestForm7ByDistrict(district_id: number) {
     return prisma.form7.findFirst({
       where: { district_id },
@@ -236,9 +205,7 @@ export const Form7Service = {
     });
   },
 
-  /**
-   * 1️⃣3️⃣ Get Form7 societies (review / list / editable)
-   */
+  /*Get Form7 societies (review / list / editable*/
   async getForm7Societies(form7_id: number) {
     return prisma.form7_societies.findMany({
       where: { form7_id },

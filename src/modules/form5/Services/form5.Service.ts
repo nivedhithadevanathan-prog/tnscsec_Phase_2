@@ -2,9 +2,7 @@ import { PrismaClient } from "@prisma/client";
 
 export const prisma = new PrismaClient()
 export const Form5Service = {
-  /* =========================================================
-     1️⃣ GET Eligible Societies (before submit)
-     ========================================================= */
+  /*GET Eligible Societies*/
   async getEligibleSocietiesByUser(uid: number) {
     const form4 = await prisma.form4.findFirst({
       where: { uid },
@@ -51,9 +49,7 @@ export const Form5Service = {
 
   },
 
-  /* =========================================================
-     2️⃣ POST Submit Form5 (First submit)
-     ========================================================= */
+  /*POST Submit Form5*/
   async submitMembers(payload: any) {
     const { uid, members } = payload;
 
@@ -83,7 +79,7 @@ export const Form5Service = {
     const countMap = new Map<string, number>();
 
     for (const m of members) {
-      if (!m.category_type) continue; // category optional in DB
+      if (!m.category_type) continue; 
 
       const soc = filedSocMap.get(m.form4_filed_soc_id);
       if (!soc) {
@@ -117,9 +113,7 @@ export const Form5Service = {
     return { success: true, count: members.length };
   },
 
-  /* =========================================================
-     3️⃣ GET Form5 LIST (Read-only review)
-     ========================================================= */
+  /*GET Form5 LIST*/
   async getForm5ListByUser(uid: number) {
     const form4 = await prisma.form4.findFirst({
       where: { uid },
@@ -192,17 +186,12 @@ export const Form5Service = {
     };
   },
 
-  /* =========================================================
-     4️⃣ GET Editable Form5 (Prefill for edit)
-     ========================================================= */
+  /*GET Editable Form5*/
   async getEditableForm5(uid: number) {
-    // Same logic as list, but minimal metadata
     return this.getForm5ListByUser(uid);
   },
 
-  /* =========================================================
-     5️⃣ PUT Edit Form5 (Edit & submit again)
-     ========================================================= */
+  /*PUT Edit Form5*/
   async editForm5(payload: any) {
     const { uid, members } = payload;
 
@@ -223,7 +212,6 @@ export const Form5Service = {
 
     const filedSocIds = filedSocieties.map((s) => s.id);
 
-    // Soft-disable old rows
     await prisma.form5.updateMany({
       where: {
         form4_filed_soc_id: { in: filedSocIds },
@@ -232,7 +220,6 @@ export const Form5Service = {
       data: { is_active: false },
     });
 
-    // Insert new rows
     await prisma.form5.createMany({
       data: members,
       skipDuplicates: true,

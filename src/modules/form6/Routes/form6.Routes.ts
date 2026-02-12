@@ -15,10 +15,7 @@ import {
 
 const router = Router();
 
-/* =====================================================
- * 1️⃣ INIT FORM-6
- * POST /form6/init
- * ===================================================== */
+/*INIT FORM-6*/
 router.post(
   "/init",
   verifyToken,
@@ -26,10 +23,7 @@ router.post(
   form6Controller.initForm6
 );
 
-/* =====================================================
- * 2️⃣ PREVIEW FORM-6 (LIVE VIEW)
- * GET /form6/preview
- * ===================================================== */
+/*PREVIEW FORM-6*/
 router.get(
   "/preview",
   verifyToken,
@@ -37,10 +31,7 @@ router.get(
   form6Controller.loadForm6Preview
 );
 
-/* =====================================================
- * 3️⃣ EDITABLE FORM-6 (REVIEW SCREEN)
- * GET /form6/editable
- * ===================================================== */
+/*EDITABLE FORM-6*/
 router.get(
   "/editable",
   verifyToken,
@@ -48,10 +39,7 @@ router.get(
   form6Controller.getEditableForm6
 );
 
-/* =====================================================
- * 4️⃣ LIST FORM-6 (SUBMITTED LIST)
- * GET /form6/list
- * ===================================================== */
+/*LIST FORM-6*/
 router.get(
   "/list",
   verifyToken,
@@ -59,10 +47,7 @@ router.get(
   form6Controller.listForm6
 );
 
-/* =====================================================
- * 5️⃣ CANDIDATE WITHDRAW / REINSTATE
- * POST /form6/candidate-withdraw
- * ===================================================== */
+/*CANDIDATE WITHDRAW / REINSTATE*/
 router.post(
   "/candidate-withdraw",
   verifyToken,
@@ -70,10 +55,7 @@ router.post(
   form6Controller.withdrawCandidate
 );
 
-/* =====================================================
- * 6️⃣ SOCIETY DECISION (SHOW / STOP)
- * POST /form6/society-decision
- * ===================================================== */
+/*SOCIETY DECISION (SHOW / STOP)*/
 router.post(
   "/society-decision",
   verifyToken,
@@ -81,10 +63,7 @@ router.post(
   form6Controller.societyDecision
 );
 
-/* =====================================================
- * 7️⃣ EDIT FORM-6 (UPDATE ONCE BEFORE CONFIRM)
- * PUT /form6/edit
- * ===================================================== */
+/*EDIT FORM-6*/
 router.put(
   "/edit",
   verifyToken,
@@ -92,10 +71,7 @@ router.put(
   form6Controller.editForm6
 );
 
-/* =====================================================
- * 8️⃣ SUBMIT FORM-6
- * POST /form6/submit
- * ===================================================== */
+/*SUBMIT FORM-6*/
 router.post(
   "/submit",
   verifyToken,

@@ -2,9 +2,7 @@ import { PrismaClient } from "@prisma/client";
 
 export const prisma = new PrismaClient();
 
-/**
- * GET CHECKPOINT ZONES
- */
+/*GET CHECKPOINT ZONES*/
 export const getCheckpointZonesUsecase = async (
   userId: number | string,
   selectedIds: number[] = []
@@ -57,9 +55,7 @@ export const getCheckpointZonesUsecase = async (
   };
 };
 
-/**
- * SUBMIT FORM1
- */
+/*SUBMIT FORM1*/
 export const submitForm1Usecase = async (payload: any) => {
   const {
     uid,
@@ -72,7 +68,6 @@ export const submitForm1Usecase = async (payload: any) => {
     rural_details = [],
   } = payload;
 
-  // 🔧 FIX: only scalar columns in form1 table
   const form1 = await prisma.form1.create({
     data: {
       uid,
@@ -133,9 +128,7 @@ export const submitForm1Usecase = async (payload: any) => {
   };
 };
 
-/**
- * GET MASTER ZONES
- */
+/*GET MASTER ZONES*/
 export const getMasterZonesUsecase = async (userId: number | string) => {
   const uid = Number(userId);
 
@@ -167,9 +160,7 @@ export const getMasterZonesUsecase = async (userId: number | string) => {
   });
 };
 
-/**
- * GET RURAL DETAILS
- */
+/*GET RURAL DETAILS*/
 export const getRuralDetailsUsecase = async (ids: number[]) => {
   return prisma.reservation.findMany({
     where: {
@@ -185,9 +176,7 @@ export const getRuralDetailsUsecase = async (ids: number[]) => {
   });
 };
 
-/**
- * GET FORM1 LIST
- */
+/*GET FORM1 LIST*/
 export const getForm1ListUsecase = async (
   userId: number,
   districtName: string,
@@ -229,9 +218,7 @@ export const getForm1ListUsecase = async (
   }));
 };
 
-/**
- * GET EDITABLE FORM1
- */
+/*GET EDITABLE FORM1*/
 export const getEditableForm1Usecase = async (userId: number) => {
   const form1 = await prisma.form1.findFirst({
     where: {
@@ -266,9 +253,7 @@ export const getEditableForm1Usecase = async (userId: number) => {
   };
 };
 
-/**
- * EDIT FORM1
- */
+/*EDIT FORM1*/
 export const editEditableForm1Usecase = async (payload: any) => {
   const {
     uid,

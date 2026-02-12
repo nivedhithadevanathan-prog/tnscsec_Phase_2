@@ -5,20 +5,16 @@ import { form3Service } from "../../form3/Services/form3.Service";
 
 export const form3Usecases = {
 
-  /* ============================================================
-     1️⃣ GET USECASE — Fetch Form2 list for Form3
-     ============================================================ */
+  /*GET Form2 list for Form3*/
   async getForm2ListForForm3(uid: number, fm2id?: number | string) {
     return await form3Service.fetchForm2ForForm3(uid, fm2id);
   },
 
-  /* ============================================================
-     2️⃣ GET USECASE — Fetch Form3 list by logged-in user
-     ============================================================ */
+  /*GET Form3 list by logged-in user*/
   async getForm3ListByUser(uid: number) {
     const form3List = await form3Service.fetchForm3ListByUser(uid);
 
-    // If no records, return empty array (consistent behavior)
+    // If no records, return empty array
     if (!form3List || form3List.length === 0) {
       return [];
     }
@@ -26,16 +22,12 @@ export const form3Usecases = {
     return form3List;
   },
 
-  /* ============================================================
-     3️⃣ GET USECASE — Fetch Editable (Latest) Form3
-     ============================================================ */
+  /*GET Editable*/
   async getEditableForm3(uid: number) {
     return await form3Service.fetchEditableForm3(uid);
   },
 
-  /* ============================================================
-     4️⃣ SUBMIT USECASE — Submit Form3
-     ============================================================ */
+  /*Submit Form3*/
   async submitForm3Usecase(payload: any) {
     const {
       uid,
@@ -57,9 +49,7 @@ export const form3Usecases = {
       throw new Error("selected_soc must be an array");
     }
 
-    /* ----------------------------------------------------------
-       1️⃣ Create Form3 parent
-       ---------------------------------------------------------- */
+    /*Create Form3 parent*/
     const form3Record = await form3Service.createForm3Parent({
       uid,
       form2_id,
@@ -72,23 +62,17 @@ export const form3Usecases = {
       selected_soc_count: selected_soc.length,
     });
 
-    /* ----------------------------------------------------------
-       2️⃣ Insert Form3 societies
-       ---------------------------------------------------------- */
+    /*Insert Form3 societies*/
     await form3Service.insertForm3Societies(
       form3Record.id,
       selected_soc
     );
 
-    /* ----------------------------------------------------------
-       3️⃣ Build & return response
-       ---------------------------------------------------------- */
+    /*Build & return response*/
     return form3Service.buildSubmitResponse(form3Record);
   },
 
-  /* ============================================================
-     5️⃣ PUT USECASE — Update Form3 (Edit & Submit Again)
-     ============================================================ */
+  /*PUT Update Form3*/
   async updateForm3Usecase(payload: any) {
     const {
       uid,

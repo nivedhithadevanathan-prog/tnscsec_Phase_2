@@ -17,40 +17,28 @@ import {
 
 const router = Router();
 
-/* ============================================================
-   GET — Fetch Form2 list for Form3
-   URL: /api/form3/form2-list
-   ============================================================ */
+/*GET Form2 list for Form3*/
 router.get(
   "/form2-list",
   verifyToken,
   getForm2ListForForm3
 );
 
-/* ============================================================
-   GET — Fetch Form3 list by logged-in user
-   URL: /api/form3/list
-   ============================================================ */
+/*GET Form3 list by logged-in user*/
 router.get(
   "/list",
   verifyToken,
   getForm3ListByUser
 );
 
-/* ============================================================
-   GET — Fetch Editable (Latest) Form3 for Review / Edit
-   URL: /api/form3/editable
-   ============================================================ */
+/*GET Editable (Latest)*/
 router.get(
   "/editable",
   verifyToken,
   getEditableForm3
 );
 
-/* ============================================================
-   POST — Submit Form3
-   URL: /api/form3/submit
-   ============================================================ */
+/*POST Submit Form3*/
 router.post(
   "/submit",
   verifyToken,
@@ -58,10 +46,7 @@ router.post(
   submitForm3
 );
 
-/* ============================================================
-   PUT — Edit & Submit Form3 Again (Before Final Confirmation)
-   URL: /api/form3/edit
-   ============================================================ */
+/*PUT Edit & Submit Form3 Again*/
 router.put(
   "/edit",
   verifyToken,

@@ -8,9 +8,7 @@ import {
 
 export const Form8Service = {
 
-  /* =====================================================
-   * FORM7 → SOCIETIES (BASE DATA)
-   * ===================================================== */
+  /*FORM7 SOCIETIES (BASE DATA)*/
 
   async getForm7SocietiesByDistrict(district_id: number) {
     return prisma.form7_societies.findMany({
@@ -18,7 +16,7 @@ export const Form8Service = {
         form7: { district_id },
       },
       select: {
-        id: true, // form7_society_id
+        id: true, 
         society_id: true,
         society_name: true,
         casted_votes_count: true,
@@ -30,12 +28,10 @@ export const Form8Service = {
     });
   },
 
-  /* =====================================================
-   * FORM5 → MEMBERS (PER SOCIETY)
-   * ===================================================== */
+  /*FORM5 MEMBERS(PER SOCIETY)*/
 
  async getMembers(form7_society_id: number) {
-  // 1️⃣ Get actual society_id from form7_societies
+  // Get actual society_id from form7_societies
   const society =
     await prisma.form7_societies.findUnique({
       where: { id: form7_society_id },
@@ -44,10 +40,10 @@ export const Form8Service = {
 
   if (!society) return [];
 
-  // 2️⃣ Use society_id to fetch members from form5
+  // Use society_id to fetch members from form5
   return prisma.form5.findMany({
     where: {
-      form4_filed_soc_id: society.society_id, // ✅ CORRECT LINK
+      form4_filed_soc_id: society.society_id, 
       is_active: true,
     },
     select: {
@@ -60,9 +56,7 @@ export const Form8Service = {
 },
 
 
-  /* =====================================================
-   * RURAL COUNTS (FORM4)
-   * ===================================================== */
+  /*RURAL COUNTS (FORM4)*/
 
   async getRuralCountsBySociety(society_id: number) {
     return prisma.form4_filed_soc_mem_count.findFirst({
@@ -76,9 +70,7 @@ export const Form8Service = {
     });
   },
 
-  /* =====================================================
-   * FORM8 HELPERS
-   * ===================================================== */
+  /*FORM8 HELPERS*/
 
   async getLatestForm8ByDistrict(district_id: number) {
     return prisma.form8.findFirst({
@@ -100,7 +92,7 @@ export const Form8Service = {
   return prisma.form8.create({
     data: {
       district_id,
-      district_name: district.name, // ✅ now guaranteed string
+      district_name: district.name, 
     },
   });
 },
@@ -115,9 +107,7 @@ export const Form8Service = {
     return this.createForm8(district_id);
   },
 
-  /* =====================================================
-   * CHECKBOX PREVIEW (AUTO SELECTION)
-   * ===================================================== */
+  /* CHECKBOX PREVIEW*/
 
   buildCheckboxPreview(params: {
     form7_society_id: number;
@@ -171,9 +161,7 @@ export const Form8Service = {
     };
   },
 
-  /* =====================================================
-   * FINAL RESULT SAVE (WINNERS + DLG)
-   * ===================================================== */
+  /*FINAL RESULT SAVE (WINNERS + DLG)*/
 
   async saveFinalResult(data: {
     form8_id: number;
@@ -254,9 +242,7 @@ export const Form8Service = {
     };
   },
 
-  /* =====================================================
-   * SUBMIT FORM8 (POLLING DETAILS)
-   * ===================================================== */
+  /*SUBMIT FORM8 (POLLING DETAILS)*/
 
   async submitForm8(
     form8_id: number,
@@ -307,9 +293,7 @@ export const Form8Service = {
     };
   },
 
-  /* =====================================================
-   * LIST API – SUBMITTED FORM8 DATA
-   * ===================================================== */
+  /*LIST API SUBMITTED FORM8 DATA*/
 
   async getSubmittedForm8Details(district_id: number) {
 
@@ -328,11 +312,7 @@ export const Form8Service = {
 
     const societyMap = new Map<number, any>();
 
-    /**
-     * ============================
-     * POLLING DETAILS
-     * ============================
-     */
+    /*POLLING DETAILS*/
     for (const pd of form8.form8_polling_details) {
 
       const society =
@@ -382,11 +362,7 @@ export const Form8Service = {
       });
     }
 
-    /**
-     * ============================
-     * WINNERS (FINAL RESULT)
-     * ============================
-     */
+    /*WINNERS (FINAL RESULT)*/
     for (const fr of form8.form8_final_result) {
 
       const society = societyMap.get(fr.form7_society_id);
@@ -417,11 +393,7 @@ export const Form8Service = {
       });
     }
 
-    /**
-     * ============================
-     * PUSH FORM8 RESULT
-     * ============================
-     */
+    /*PUSH FORM8 RESULT*/
     result.push({
       form8_id: form8.id,
       district_name: form8.district_name,

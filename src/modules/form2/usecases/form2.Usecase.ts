@@ -5,9 +5,7 @@ export const prisma = new PrismaClient();
 import { form2Service, form2Services } from "../Services/form2.Service";
 
 export const form2Usecases = {
-  /* ---------------------------------------------------------
-   * 1️⃣ GET — Fetch selected societies from Form1
-   * --------------------------------------------------------- */
+  /*GET selected societies from Form1*/
   async fetchForm1SelectedSocieties(form1_id: number) {
     if (!form1_id) throw new Error("form1_id is required");
 
@@ -37,9 +35,7 @@ export const form2Usecases = {
     };
   },
 
-  /* ---------------------------------------------------------
-   * 2️⃣ CHECKBOX — Update selection
-   * --------------------------------------------------------- */
+  /*CHECKBOX Update selection*/
  async checkboxSelectionUsecase(payload: {
   uid: number;
   form1_id: number;
@@ -60,17 +56,17 @@ export const form2Usecases = {
   );
 },
 
-  /* ---------------------------------------------------------
-   * 3️⃣ SUBMIT — Create Form2
-   * --------------------------------------------------------- */
+  /*SUBMIT Create Form2*/
 async submitForm2Usecase(payload: any) {
-  // ✅ FIX: compute selected count safely
+  
+  //compute selected count
+
   const selectedCount =
     payload.selected_soc?.length ??
     payload.selected_soc_ids?.length ??
     0;
 
-  // 1️⃣ Create parent Form2
+  //Create parent Form2
   const form2Record = await form2Service.createForm2Parent({
     ...payload,
     selected_soc_count: selectedCount,
@@ -78,7 +74,7 @@ async submitForm2Usecase(payload: any) {
 
   const form2Id = form2Record.id;
 
-  // 2️⃣ Insert SELECTED societies
+  //Insert SELECTED societies
   if (payload.selected_soc?.length) {
     await prisma.form2_selected_soc.createMany({
       data: payload.selected_soc.map((s: any) => ({
@@ -89,7 +85,7 @@ async submitForm2Usecase(payload: any) {
     });
   }
 
-  // 3️⃣ Insert NON-SELECTED societies
+  //Insert NON-SELECTED societies
   if (payload.non_selected_soc?.length) {
     await prisma.form2_non_selected_soc.createMany({
       data: payload.non_selected_soc.map((s: any) => ({
@@ -100,36 +96,28 @@ async submitForm2Usecase(payload: any) {
     });
   }
 
-  // 4️⃣ Return response
+  //Return response
   return form2Service.buildSubmitResponse(
     form2Record,
     selectedCount
   );
 },
 
-
-
-  /* ---------------------------------------------------------
-   * 4️⃣ LIST — Form2 by user
-   * --------------------------------------------------------- */
+/*LIST Form2 by user*/
   async getForm2ListByUser(uid: number) {
     if (!uid) throw new Error("uid is required");
 
     return form2Services.getForm2ListByUser(uid);
   },
 
-  /* ---------------------------------------------------------
-   * 5️⃣ EDITABLE — Latest Form2
-   * --------------------------------------------------------- */
+  /*EDITABLE Latest Form2*/
   async getEditableForm2(uid: number) {
     if (!uid) throw new Error("uid is required");
 
     return form2Services.getEditableForm2(uid);
   },
 
-  /* ---------------------------------------------------------
-   * 6️⃣ EDIT — Edit Form2 (API-2)
-   * --------------------------------------------------------- */
+  /*Edit Form2*/
   async editForm2(payload: {
     uid: number;
     form2_id: number;

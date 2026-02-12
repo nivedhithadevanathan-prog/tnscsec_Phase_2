@@ -3,9 +3,7 @@ import { PrismaClient } from "@prisma/client";
 export const prisma = new PrismaClient()
 export const form3Service = {
 
-  /** ---------------------------------------------------------
-   * 1️⃣ GET SERVICE — Fetch Form2 list for Form3
-   * ---------------------------------------------------------*/
+  /*GET SERVICE Form2 list for Form3*/
 async fetchForm2ForForm3(uid: number | string, fm2id?: number | string) {
   const userId = Number(uid);
   if (Number.isNaN(userId)) {
@@ -54,9 +52,7 @@ async fetchForm2ForForm3(uid: number | string, fm2id?: number | string) {
 
 
 
-  /** ---------------------------------------------------------
-   * 2️⃣ GET SERVICE — Fetch Form3 list by logged-in user
-   * ---------------------------------------------------------*/
+  /*GET Form3 list by logged-in user*/
   async fetchForm3ListByUser(uid: number | string) {
   const userId = Number(uid);
 
@@ -66,7 +62,7 @@ async fetchForm2ForForm3(uid: number | string, fm2id?: number | string) {
 
   const form3List = await prisma.form3.findMany({
     where: {
-      uid: userId,      // ✅ always number now
+      uid: userId,     
       is_active: 1,
     },
     orderBy: {
@@ -94,9 +90,7 @@ async fetchForm2ForForm3(uid: number | string, fm2id?: number | string) {
 },
 
 
-  /** ---------------------------------------------------------
-   * 3️⃣ GET SERVICE — Fetch Editable (Latest) Form3
-   * ---------------------------------------------------------*/
+  /*GET Editable*/
  async fetchEditableForm3(uid: number | string) {
   const userId = Number(uid);
 
@@ -106,7 +100,7 @@ async fetchForm2ForForm3(uid: number | string, fm2id?: number | string) {
 
   const form3 = await prisma.form3.findFirst({
     where: {
-      uid: userId,        // ✅ number
+      uid: userId,        
       is_active: 1,
     },
     orderBy: {
@@ -133,9 +127,7 @@ async fetchForm2ForForm3(uid: number | string, fm2id?: number | string) {
   return form3;
 },
 
-  /** ---------------------------------------------------------
-   * 4️⃣ SUBMIT SERVICE — Create Form3 parent entry
-   * ---------------------------------------------------------*/
+  /*SUBMIT Create Form3 parent*/
   async createForm3Parent(payload: any) {
     return await prisma.form3.create({
       data: {
@@ -152,9 +144,7 @@ async fetchForm2ForForm3(uid: number | string, fm2id?: number | string) {
     });
   },
 
-  /** ---------------------------------------------------------
-   * 5️⃣ SUBMIT SERVICE — Insert societies into form3_societies
-   * ---------------------------------------------------------*/
+  /*SUBMIT Insert societies into form3_societies*/
   async insertForm3Societies(form3_id: number, societies: any[]) {
     if (!societies || societies.length === 0) return;
 
@@ -215,9 +205,7 @@ async fetchForm2ForForm3(uid: number | string, fm2id?: number | string) {
 
   },
 
-  /** ---------------------------------------------------------
-   * 6️⃣ PUT SERVICE — Update Form3 (Edit & Submit Again)
-   * ---------------------------------------------------------*/
+  /*PUT Update Form3 (Edit & Submit Again)*/
   async updateForm3(form3_id: number, uid: number, payload: any) {
 
 const userId = Number(uid);
@@ -226,11 +214,11 @@ if (Number.isNaN(userId)) {
   throw new Error("Invalid user id");
 }
 
-    // 1️⃣ Ownership + editable check
+    //Ownership + editable check
    const existingForm3 = await prisma.form3.findFirst({
   where: {
     id: Number(form3_id),
-    uid: userId,      // ✅ always number
+    uid: userId,      
     is_active: 1,
   },
 });
@@ -248,7 +236,7 @@ if (Number.isNaN(userId)) {
       throw new Error("selected_soc must be an array");
     }
 
-    // 2️⃣ Update parent Form3
+    //Update parent Form3
     await prisma.form3.update({
       where: { id: form3_id },
       data: {
@@ -258,12 +246,12 @@ if (Number.isNaN(userId)) {
       },
     });
 
-    // 3️⃣ Remove old societies
+    //Remove old societies
     await prisma.form3_societies.deleteMany({
       where: { form3_id },
     });
 
-    // 4️⃣ Re-insert updated societies
+    //Re-insert updated societies
     await this.insertForm3Societies(form3_id, selected_soc);
 
     return {
@@ -277,9 +265,7 @@ if (Number.isNaN(userId)) {
     };
   },
 
-  /** ---------------------------------------------------------
-   * 7️⃣ Build Submit Response
-   * ---------------------------------------------------------*/
+  /*Build Submit Response*/
   buildSubmitResponse(form3: any) {
     return {
       success: true,

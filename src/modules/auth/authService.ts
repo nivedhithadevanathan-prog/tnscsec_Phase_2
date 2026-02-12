@@ -33,7 +33,7 @@ export const AuthService = {
 
     const zone = user.zone_id
       ? await prisma.zone.findFirst({
-          where: { id: Number(user.zone_id) }, // zone_id is string
+          where: { id: Number(user.zone_id) }, 
         })
       : null;
 
@@ -46,12 +46,10 @@ export const AuthService = {
       fullname: user.fullname,
       // email: user.email,
 
-      // IDs
       department_id: user.department_id,
       district_id: user.district_id,
       zone_id: user.zone_id,
 
-      // Names (new)
       department_name: cleanText(department?.name) || null,
       district_name: cleanText(district?.name) || null,
       zone_name: cleanText(zone?.name) || null,

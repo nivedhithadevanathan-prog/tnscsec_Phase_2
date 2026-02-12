@@ -3,12 +3,7 @@ import { sendResponse, sendError } from "../../../utils/response";
 import { Form7Usecase } from "../../form7/Usecases/form7.Usecase";
 
 export const Form7Controller = {
-  /**
-   * =====================================================
-   * 1️⃣ GET: Form7 Preview (Before Submit)
-   * =====================================================
-   * READ-ONLY
-   */
+  /*GET Form7 Preview*/
   async preview(req: Request, res: Response) {
     try {
       const uid = Number((req as any).user?.uid);
@@ -32,11 +27,7 @@ export const Form7Controller = {
     }
   },
 
-  /**
-   * =====================================================
-   * 2️⃣ POST: Submit Form7
-   * =====================================================
-   */
+  /*POST Submit Form7*/
   async submit(req: Request, res: Response) {
     try {
       const uid = Number((req as any).user?.uid);
@@ -70,11 +61,7 @@ export const Form7Controller = {
     }
   },
 
-  /**
-   * =====================================================
-   * 3️⃣ GET: Form7 List
-   * =====================================================
-   */
+  /*GET Form7 List*/
   async list(req: Request, res: Response) {
     try {
       const uid = Number((req as any).user?.uid);
@@ -98,11 +85,7 @@ export const Form7Controller = {
     }
   },
 
-  /**
-   * =====================================================
-   * 4️⃣ GET: Editable Form7 (Review Screen)
-   * =====================================================
-   */
+  /*GET Editable Form7*/
   async editable(req: Request, res: Response) {
     try {
       const uid = Number((req as any).user?.uid);
@@ -126,11 +109,7 @@ export const Form7Controller = {
     }
   },
 
-  /**
-   * =====================================================
-   * 5️⃣ PUT: Edit Form7 (Before Final Confirm)
-   * =====================================================
-   */
+  /*PUT Edit Form7*/
   async edit(req: Request, res: Response) {
     try {
       const uid = Number((req as any).user?.uid);
