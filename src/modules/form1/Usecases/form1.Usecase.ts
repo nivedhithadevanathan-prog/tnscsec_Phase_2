@@ -1,5 +1,10 @@
 import { PrismaClient } from "@prisma/client";
 
+function cleanText(text?: string | null) {
+  if (!text) return text;
+  return text.replace(/[\r\n]+/g, " ").trim();
+}
+
 export const prisma = new PrismaClient();
 
 /*GET CHECKPOINT ZONES*/
