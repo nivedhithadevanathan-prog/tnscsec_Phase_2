@@ -1,9 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-
-function cleanText(text?: string | null) {
-  if (!text) return text;
-  return text.replace(/[\r\n]+/g, " ").trim();
-}
+import { cleanText } from "../../../utils/cleanText";
 
 export const prisma = new PrismaClient();
 
@@ -51,12 +47,18 @@ export const getCheckpointZonesUsecase = async (
 
   return {
     total_zones: validZones.length,
-    selected_soc: validZones.filter((z) =>
-      selectedIds.includes(z.id)
-    ),
-    non_selected_soc: validZones.filter(
-      (z) => !selectedIds.includes(z.id)
-    ),
+    selected_soc: validZones
+      .filter((z) => selectedIds.includes(z.id))
+      .map((z) => ({
+        id: z.id,
+        association_name: cleanText(z.association_name),
+      })),
+    non_selected_soc: validZones
+      .filter((z) => !selectedIds.includes(z.id))
+      .map((z) => ({
+        id: z.id,
+        association_name: cleanText(z.association_name),
+      })),
   };
 };
 
@@ -79,7 +81,7 @@ export const submitForm1Usecase = async (payload: any) => {
       department_id,
       district_id,
       zone_id,
-      remark: remark || null,
+      remark: cleanText(remark) || null,
       selected_count: selected_soc.length,
       non_selected_count: non_selected_soc.length,
     },
@@ -97,7 +99,7 @@ export const submitForm1Usecase = async (payload: any) => {
         return {
           form1_id,
           society_id: soc.id,
-          society_name: soc.association_name,
+          society_name: cleanText(soc.association_name),
           sc_st: rural?.sc_st ?? 0,
           women: rural?.women ?? 0,
           general: rural?.general ?? 0,
@@ -117,7 +119,7 @@ export const submitForm1Usecase = async (payload: any) => {
         return {
           form1_id,
           society_id: soc.id,
-          society_name: soc.association_name,
+          society_name: cleanText(soc.association_name),
           sc_st: rural?.sc_st ?? 0,
           women: rural?.women ?? 0,
           general: rural?.general ?? 0,
@@ -153,7 +155,7 @@ export const getMasterZonesUsecase = async (userId: number | string) => {
     return [];
   }
 
-  return prisma.master_zone.findMany({
+  const zones = await prisma.master_zone.findMany({
     where: {
       district_id: user.district_id,
       zone_id: Number(user.zone_id),
@@ -163,6 +165,11 @@ export const getMasterZonesUsecase = async (userId: number | string) => {
       association_name: true,
     },
   });
+
+  return zones.map((z) => ({
+    id: z.id,
+    association_name: cleanText(z.association_name),
+  }));
 };
 
 /*GET RURAL DETAILS*/
@@ -205,21 +212,29 @@ export const getForm1ListUsecase = async (
     select: { id: true, name: true },
   });
 
-  const deptMap = new Map(departments.map(d => [d.id, d.name]));
+  const deptMap = new Map(
+    departments.map((d) => [d.id, cleanText(d.name)])
+  );
 
-  return form1List.map(f => ({
+  return form1List.map((f) => ({
     id: f.id,
     department_id: f.department_id,
     department_name: deptMap.get(f.department_id ?? 0) || null,
     district_id: f.district_id,
-    district_name: districtName,
+    district_name: cleanText(districtName),
     zone_id: f.zone_id,
-    zone_name: zoneName,
+    zone_name: cleanText(zoneName),
     selected_count: f.selected_count,
     non_selected_count: f.non_selected_count,
-    remark: f.remark,
-    selected_soc: f.form1_selected_soc,
-    non_selected_soc: f.form1_non_selected_soc,
+    remark: cleanText(f.remark),
+    selected_soc: f.form1_selected_soc.map((s) => ({
+      ...s,
+      society_name: cleanText(s.society_name),
+    })),
+    non_selected_soc: f.form1_non_selected_soc.map((s) => ({
+      ...s,
+      society_name: cleanText(s.society_name),
+    })),
   }));
 };
 
@@ -251,9 +266,15 @@ export const getEditableForm1Usecase = async (userId: number) => {
     zone_id: form1.zone_id,
     selected_count: form1.selected_count,
     non_selected_count: form1.non_selected_count,
-    remark: form1.remark,
-    selected_soc: form1.form1_selected_soc,
-    non_selected_soc: form1.form1_non_selected_soc,
+    remark: cleanText(form1.remark),
+    selected_soc: form1.form1_selected_soc.map((s) => ({
+      ...s,
+      society_name: cleanText(s.society_name),
+    })),
+    non_selected_soc: form1.form1_non_selected_soc.map((s) => ({
+      ...s,
+      society_name: cleanText(s.society_name),
+    })),
     can_edit: !form2Exists,
   };
 };
@@ -287,20 +308,18 @@ export const editEditableForm1Usecase = async (payload: any) => {
     throw new Error("Editing is not allowed after proceeding");
   }
 
-  // 🔧 FIX: update only scalar fields
   await prisma.form1.update({
     where: { id: form1.id },
     data: {
       department_id,
       district_id,
       zone_id,
-      remark: remark || null,
+      remark: cleanText(remark) || null,
       selected_count: selected_soc.length,
       non_selected_count: non_selected_soc.length,
     },
   });
 
-  // reset relations
   await prisma.form1_selected_soc.deleteMany({
     where: { form1_id: form1.id },
   });
@@ -319,7 +338,7 @@ export const editEditableForm1Usecase = async (payload: any) => {
         return {
           form1_id: form1.id,
           society_id: soc.id,
-          society_name: soc.association_name,
+          society_name: cleanText(soc.association_name),
           sc_st: rural?.sc_st ?? 0,
           women: rural?.women ?? 0,
           general: rural?.general ?? 0,
@@ -339,7 +358,7 @@ export const editEditableForm1Usecase = async (payload: any) => {
         return {
           form1_id: form1.id,
           society_id: soc.id,
-          society_name: soc.association_name,
+          society_name: cleanText(soc.association_name),
           sc_st: rural?.sc_st ?? 0,
           women: rural?.women ?? 0,
           general: rural?.general ?? 0,

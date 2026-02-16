@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import { cleanText } from "../../../utils/cleanText";
 
 export const prisma = new PrismaClient();
 
@@ -43,6 +44,10 @@ export const Form4Service = {
       return { userMeta: null, selectedSocList: [] };
     }
 
+    if (userMeta.fullname) {
+      userMeta.fullname = cleanText(userMeta.fullname);
+    }
+
     const zoneId = userMeta.zone_id
       ? Number(userMeta.zone_id)
       : undefined;
@@ -70,6 +75,11 @@ export const Form4Service = {
     if (!selectedSocList.length) {
       return { userMeta, selectedSocList: [] };
     }
+
+    selectedSocList = selectedSocList.map(soc => ({
+      ...soc,
+      society_name: cleanText(soc.society_name),
+    }));
 
     const societyIds = selectedSocList
       .map(s => Number(s.society_id))
@@ -141,11 +151,10 @@ export const Form4Service = {
 
     for (const item of form1_selected_list) {
 
-      /*UNFILED*/
       if (!item.selected) {
         unfiledArr.push({
           society_id: item.society_id,
-          society_name: item.society_name,
+          society_name: cleanText(item.society_name),
           rural_id: item.rural_id,
           sc_st: item.sc_st ?? 0,
           women: item.women ?? 0,
@@ -157,12 +166,11 @@ export const Form4Service = {
             Number(item.sc_st ?? 0) +
             Number(item.women ?? 0) +
             Number(item.general ?? 0),
-          remarks: item.remarks ?? null,
+          remarks: cleanText(item.remarks) ?? null,
         });
         continue;
       }
 
-      /*FILED*/
       const rural_sc_st = Number(item.rural_sc_st ?? 0);
       const rural_women = Number(item.rural_women ?? 0);
       const rural_general = Number(item.rural_general ?? 0);
@@ -178,46 +186,40 @@ export const Form4Service = {
 
       filedArr.push({
         society_id: item.society_id,
-        society_name: item.society_name,
+        society_name: cleanText(item.society_name),
         rural_id: item.rural_id,
-
         rural_sc_st,
         rural_women,
         rural_general,
         rural_tot_voters:
           rural_sc_st + rural_women + rural_general,
-
         rural_sc_st_dlg: item.rural_sc_st_dlg ?? 0,
         rural_women_dlg: item.rural_women_dlg ?? 0,
         rural_general_dlg: item.rural_general_dlg ?? 0,
-
         declared_sc_st,
         declared_women,
         declared_general,
         declared_tot_voters:
           declared_sc_st + declared_women + declared_general,
-
         declared_sc_st_dlg: item.declared_sc_st_dlg ?? 0,
         declared_women_dlg: item.declared_women_dlg ?? 0,
         declared_general_dlg: item.declared_general_dlg ?? 0,
-
         election_status,
-        remarks: item.remarks ?? null,
+        remarks: cleanText(item.remarks) ?? null,
       });
     }
 
     const selectedCount = form1_selected_list.length;
 
-    /*UPDATE*/
     if (form4_id) {
       await prisma.form4.update({
         where: { id: Number(form4_id) },
         data: {
           department_id,
           district_id,
-          district_name,
+          district_name: cleanText(district_name),
           zone_id,
-          zone_name,
+          zone_name: cleanText(zone_name),
           selected_soc_count: selectedCount,
           filed_count: filedArr.length,
           unfiled_count: unfiledArr.length,
@@ -247,15 +249,14 @@ export const Form4Service = {
       return { form4_id };
     }
 
-    /*CREATE*/
     const newForm4 = await prisma.form4.create({
       data: {
         uid,
         department_id,
         district_id,
-        district_name,
+        district_name: cleanText(district_name),
         zone_id,
-        zone_name,
+        zone_name: cleanText(zone_name),
         selected_soc_count: selectedCount,
         filed_count: filedArr.length,
         unfiled_count: unfiledArr.length,

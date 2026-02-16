@@ -5,9 +5,9 @@ import {
   form6_society_decision_election_status,
   form6_status,
 } from "@prisma/client";
+import { cleanText } from "../../../utils/cleanText";
 
 export const prisma = new PrismaClient();
-
 
 export interface Form6ViewResponse {
   form6: {
@@ -23,14 +23,11 @@ export interface Form6ViewResponse {
     zone_id: number | null;
     fullname?: string;
   };
-  societies: any[]; 
+  societies: any[];
 }
-
-
 
 export const Form6Service = {
 
-  /*INIT FORM-6*/
   async initForm6(uid: number) {
     let form6 = await prisma.form6.findFirst({
       where: { uid },
@@ -68,15 +65,10 @@ export const Form6Service = {
     };
   },
 
-  /*PREVIEW FORM-6*/
   async loadForm6Preview(uid: number): Promise<Form6ViewResponse> {
-  return this._buildForm6View(uid, false);
-},
+    return this._buildForm6View(uid, false);
+  },
 
-
- 
-
-  /*LIST FORM-6*/
   async listForm6(uid: number) {
     const forms = await prisma.form6.findMany({
       where: {
@@ -109,7 +101,6 @@ export const Form6Service = {
     }));
   },
 
-  /*CANDIDATE WITHDRAW*/
   async withdrawCandidate(payload: {
     uid: number;
     form4_filed_soc_id: number;
@@ -147,7 +138,6 @@ export const Form6Service = {
     return { withdrawn_member_id: form5_member_id };
   },
 
-  /*SOCIETY DECISION*/
   async societyDecision(payload: {
     uid: number;
     form4_filed_soc_id: number;
@@ -186,7 +176,7 @@ export const Form6Service = {
           form6_id: form6.id,
           form4_filed_soc_id,
           society_id: filedSoc.society_id,
-          society_name: filedSoc.society_name,
+          society_name: cleanText(filedSoc.society_name),
           election_action: actionEnum,
         },
       });
@@ -200,91 +190,14 @@ export const Form6Service = {
       });
     }
 
-    /*Recalculate counts*/
-    const members = await prisma.form5.findMany({
-      where: { form4_filed_soc_id, is_active: true },
-      select: { id: true, category_type: true },
-    });
-
-    const events = await prisma.form6_candidate_event.findMany({
-      where: {
-        form6_id: form6.id,
-        form5_member_id: { in: members.map(m => m.id) },
-      },
-      orderBy: { event_at: "desc" },
-    });
-
-    const withdrawn = new Set<number>();
-    const seen = new Set<number>();
-
-    for (const e of events) {
-      if (!seen.has(e.form5_member_id)) {
-        seen.add(e.form5_member_id);
-        if (e.event_type === form6_candidate_event_event_type.WITHDRAW) {
-          withdrawn.add(e.form5_member_id);
-        }
-      }
-    }
-
-    let sc_st = 0, sc_st_dlg = 0;
-    let women = 0, women_dlg = 0;
-    let general = 0, general_dlg = 0;
-
-    for (const m of members) {
-      if (withdrawn.has(m.id)) continue;
-
-      if (m.category_type === "sc_st") sc_st++;
-      else if (m.category_type === "sc_st_dlg") sc_st_dlg++;
-      else if (m.category_type === "women") women++;
-      else if (m.category_type === "women_dlg") women_dlg++;
-      else if (m.category_type === "general") general++;
-      else if (m.category_type === "general_dlg") general_dlg++;
-    }
-
-    const total =
-      sc_st + sc_st_dlg + women + women_dlg + general + general_dlg;
-
-    let election_status =
-      total === 0
-        ? form6_society_decision_election_status.UNQUALIFIED
-        : total === 1
-        ? form6_society_decision_election_status.UNOPPOSED
-        : form6_society_decision_election_status.QUALIFIED;
-
-    await prisma.form6_society_decision.update({
-      where: { id: decision.id },
-      data: {
-        final_sc_st_count: sc_st,
-        final_sc_st_dlg_count: sc_st_dlg,
-        final_women_count: women,
-        final_women_dlg_count: women_dlg,
-        final_general_count: general,
-        final_general_dlg_count: general_dlg,
-        final_total_count: total,
-        election_status,
-        updated_at: new Date(),
-      },
-    });
-
     return {
       form4_filed_soc_id,
       society_id: filedSoc.society_id,
-      society_name: filedSoc.society_name,
+      society_name: cleanText(filedSoc.society_name),
       election_action: actionEnum,
-      election_status,
-      counts: {
-        sc_st,
-        sc_st_dlg,
-        women,
-        women_dlg,
-        general,
-        general_dlg,
-        total,
-      },
     };
   },
 
-  /*EDIT FORM-6*/
   async editForm6(payload: {
     uid: number;
     societies: { form4_filed_soc_id: number; election_action: "SHOW" | "STOP" }[];
@@ -323,7 +236,6 @@ export const Form6Service = {
     };
   },
 
-  /*SUBMIT FORM-6*/
   async submitForm6(uid: number) {
     const form6 = await prisma.form6.findFirst({
       where: { uid },
@@ -356,78 +268,71 @@ export const Form6Service = {
     };
   },
 
-/*EDITABLE FORM-6*/
-async getEditableForm6(uid: number) {
-  const form6 = await prisma.form6.findFirst({
-    where: { uid },
-    orderBy: { created_at: "desc" },
-  });
+  async getEditableForm6(uid: number) {
+    const form6 = await prisma.form6.findFirst({
+      where: { uid },
+      orderBy: { created_at: "desc" },
+    });
 
-  if (!form6) {
-    throw new Error("Form6 not found");
+    if (!form6) {
+      throw new Error("Form6 not found");
+    }
+
+    if (form6.status !== "SUBMITTED") {
+      throw new Error("Form6 is not submitted yet");
+    }
+
+    return this.loadForm6Preview(uid);
+  },
+
+  async _buildForm6View(uid: number, allowSubmitted: boolean) {
+
+    const form6 = await prisma.form6.findFirst({
+      where: { uid },
+      orderBy: { created_at: "desc" },
+    });
+
+    if (!form6) throw new Error("Form6 not found");
+
+    if (!allowSubmitted && form6.status !== form6_status.DRAFT) {
+      throw new Error("Form6 already submitted");
+    }
+
+    if (allowSubmitted && form6.status !== form6_status.SUBMITTED) {
+      throw new Error("Form6 not submitted yet");
+    }
+
+    const form4 = await prisma.form4.findFirst({
+      where: { uid },
+      orderBy: { created_at: "desc" },
+    });
+
+    const filedSocieties = form4
+      ? await prisma.form4_filed_soc_mem_count.findMany({
+          where: { form4_id: form4.id },
+        })
+      : [];
+
+    const societies = filedSocieties.map((soc) => ({
+      form4_filed_soc_id: soc.id,
+      society_id: soc.society_id,
+      society_name: cleanText(soc.society_name),
+    }));
+
+    return {
+      form6: {
+        id: form6.id,
+        status: form6.status,
+        created_at: form6.created_at,
+        submitted_at: form6.submitted_at,
+      },
+      userMeta: {
+        uid,
+        department_id: form6.department_id,
+        district_id: form6.district_id,
+        zone_id: form6.zone_id,
+      },
+      societies,
+    };
   }
-
-  if (form6.status !== "SUBMITTED") {
-    throw new Error("Form6 is not submitted yet");
-  }
-
-  return this.loadForm6Preview(uid);
-},
-
-
-  /*INTERNAL HELPER*/
- async _buildForm6View(uid: number, allowSubmitted: boolean) {
-
-  const form6 = await prisma.form6.findFirst({
-    where: { uid },
-    orderBy: { created_at: "desc" },
-  });
-
-  if (!form6) throw new Error("Form6 not found");
-
-  if (!allowSubmitted && form6.status !== form6_status.DRAFT) {
-    throw new Error("Form6 already submitted");
-  }
-
-  if (allowSubmitted && form6.status !== form6_status.SUBMITTED) {
-    throw new Error("Form6 not submitted yet");
-  }
-
-  
-  const form4 = await prisma.form4.findFirst({
-    where: { uid },
-    orderBy: { created_at: "desc" },
-  });
-
-  const filedSocieties = form4
-    ? await prisma.form4_filed_soc_mem_count.findMany({
-        where: { form4_id: form4.id },
-      })
-    : [];
-
- 
-
-const societies = filedSocieties.map((soc) => ({
-  form4_filed_soc_id: soc.id,
-  society_id: soc.society_id,
-  society_name: soc.society_name,
-}));
-   
-
-  return {
-    form6: {
-      id: form6.id,
-      status: form6.status,
-      created_at: form6.created_at,
-      submitted_at: form6.submitted_at,
-    },
-    userMeta: {
-      uid,
-      department_id: form6.department_id,
-      district_id: form6.district_id,
-      zone_id: form6.zone_id,
-    },
-    societies,
-  };
-}
 };

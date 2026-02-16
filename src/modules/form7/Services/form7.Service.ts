@@ -1,6 +1,8 @@
 import { PrismaClient } from "@prisma/client";
+import { cleanText } from "../../../utils/cleanText";
 
-export const prisma = new PrismaClient()
+export const prisma = new PrismaClient();
+
 export const Form7Service = {
   
   /*Get user's district_id*/
@@ -15,7 +17,7 @@ export const Form7Service = {
 
   /*Get district details*/
   async getDistrictById(district_id: number) {
-    return prisma.district.findFirst({
+    const district = await prisma.district.findFirst({
       where: { id: district_id },
       select: {
         id: true,
@@ -23,6 +25,13 @@ export const Form7Service = {
         is_active: true,
       },
     });
+
+    if (!district) return null;
+
+    return {
+      ...district,
+      name: cleanText(district.name),
+    };
   },
 
   /*Get latest SUBMITTED Form6*/
@@ -40,13 +49,18 @@ export const Form7Service = {
 
   /*Get societies from Form6*/
   async getForm6Societies(form6_id: number) {
-    return prisma.form6_society_decision.findMany({
+    const societies = await prisma.form6_society_decision.findMany({
       where: { form6_id },
       select: {
         society_id: true,
         society_name: true,
       },
     });
+
+    return societies.map((s) => ({
+      society_id: s.society_id,
+      society_name: cleanText(s.society_name),
+    }));
   },
 
   /*Get rural voter counts from Form4*/
@@ -58,12 +72,9 @@ export const Form7Service = {
         rural_women: true,
         rural_general: true,
         rural_sc_st_dlg: true,
-        rural_women_dlg:true,
+        rural_women_dlg: true,
         rural_general_dlg: true,
         rural_tot_voters: true,
-        
-       
-        
       },
     });
   },
@@ -123,7 +134,7 @@ export const Form7Service = {
     return prisma.form7.create({
       data: {
         district_id: data.district_id,
-        district_name: data.district_name,
+district_name: cleanText(data.district_name) ?? "",
       },
     });
   },
@@ -163,7 +174,7 @@ export const Form7Service = {
         form7_id,
 
         society_id: s.society_id,
-        society_name: s.society_name,
+        society_name: cleanText(s.society_name) ?? "",
 
         final_sc_st_count: s.final_sc_st_count,
         final_women_count: s.final_women_count,
@@ -205,11 +216,16 @@ export const Form7Service = {
     });
   },
 
-  /*Get Form7 societies (review / list / editable*/
+  /*Get Form7 societies*/
   async getForm7Societies(form7_id: number) {
-    return prisma.form7_societies.findMany({
+    const societies = await prisma.form7_societies.findMany({
       where: { form7_id },
       orderBy: { id: "asc" },
     });
+
+    return societies.map((s) => ({
+      ...s,
+      society_name: cleanText(s.society_name),
+    }));
   },
 };
