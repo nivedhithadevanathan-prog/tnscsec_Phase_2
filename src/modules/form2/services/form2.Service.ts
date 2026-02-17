@@ -6,9 +6,10 @@ export const prisma = new PrismaClient();
 /*SERVICE GROUP 1 — READ (GET / LIST / EDITABLE)*/
 
 export const form2Services = {
-  async getForm2ListByUser(uid: number) {
+   async getForm2ListByUser(where: any) {
+
     const form2List = await prisma.form2.findMany({
-      where: { uid, is_active: true },
+      where,
       orderBy: { id: "desc" },
       include: {
         form2_selected_soc: {
@@ -45,6 +46,7 @@ export const form2Services = {
       })),
     }));
   },
+
 
   async getEditableForm2(uid: number) {
     const data = await prisma.form2.findFirst({

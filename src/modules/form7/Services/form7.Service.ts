@@ -206,7 +206,7 @@ district_name: cleanText(data.district_name) ?? "",
     });
   },
 
-  /*LIST / EDITABLE*/
+   /*LIST / EDITABLE*/
 
   /*Get latest Form7 by district*/
   async getLatestForm7ByDistrict(district_id: number) {

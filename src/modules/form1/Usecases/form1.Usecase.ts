@@ -1,6 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { cleanText } from "../../../utils/cleanText";
-
+import { ScopeResult } from "../../../utils/resolveScope";
 export const prisma = new PrismaClient();
 
 /*GET CHECKPOINT ZONES*/
@@ -190,13 +190,14 @@ export const getRuralDetailsUsecase = async (ids: number[]) => {
 
 /*GET FORM1 LIST*/
 export const getForm1ListUsecase = async (
-  userId: number,
-  districtName: string,
-  zoneName: string
+  scope: ScopeResult
 ) => {
+
   const form1List = await prisma.form1.findMany({
     where: {
-      uid: userId,
+      department_id: scope.departmentId,
+      ...(scope.districtId && { district_id: scope.districtId }),
+      ...(scope.zoneId && { zone_id: scope.zoneId }),
       is_active: 1,
     },
     orderBy: { id: "desc" },
@@ -220,17 +221,22 @@ export const getForm1ListUsecase = async (
     id: f.id,
     department_id: f.department_id,
     department_name: deptMap.get(f.department_id ?? 0) || null,
+
     district_id: f.district_id,
-    district_name: cleanText(districtName),
+    district_name: null, // district name no longer comes from token
+
     zone_id: f.zone_id,
-    zone_name: cleanText(zoneName),
+    zone_name: null, // zone name no longer comes from token
+
     selected_count: f.selected_count,
     non_selected_count: f.non_selected_count,
     remark: cleanText(f.remark),
+
     selected_soc: f.form1_selected_soc.map((s) => ({
       ...s,
       society_name: cleanText(s.society_name),
     })),
+
     non_selected_soc: f.form1_non_selected_soc.map((s) => ({
       ...s,
       society_name: cleanText(s.society_name),

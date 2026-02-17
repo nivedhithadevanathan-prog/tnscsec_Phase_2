@@ -1,5 +1,6 @@
 
 import { Request, Response } from "express";
+import { resolveScope } from "../../../utils/resolveScope";
 import {
   getCheckpointZonesUsecase,
   submitForm1Usecase,
@@ -132,26 +133,14 @@ export const getRuralDetails = async (req: Request, res: Response) => {
   }
 };
 
-/* GET FORM1 LIST*/
+/* GET FORM1 LIST */
 export const getForm1List = async (req: Request, res: Response) => {
   try {
-    const user = (req as any).user;
+    // 🔹 Resolve role-based scope
+    const scope = resolveScope(req);
 
-    if (!user?.uid) {
-      return res.status(401).json({
-        success: false,
-        statusCode: 401,
-        message: "User ID missing in token",
-      });
-    }
-
-    const uid = Number(user.uid); 
-
-    const data = await getForm1ListUsecase(
-      uid,
-      user.district_name,
-      user.zone_name
-    );
+    // 🔹 Call usecase with scope
+    const data = await getForm1ListUsecase(scope);
 
     return res.status(200).json({
       success: true,
@@ -160,9 +149,9 @@ export const getForm1List = async (req: Request, res: Response) => {
       data,
     });
   } catch (err: any) {
-    return res.status(500).json({
+    return res.status(err.statusCode || 500).json({
       success: false,
-      statusCode: 500,
+      statusCode: err.statusCode || 500,
       message: err.message || "Internal server error",
     });
   }

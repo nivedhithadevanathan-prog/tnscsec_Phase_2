@@ -8,6 +8,7 @@ import {
   editEditableForm1Usecase,
 } from "../../form1/Usecases/form1.Usecase";
 
+import { ScopeResult } from "../../../utils/resolveScope";
 
 /*Get checkpoint zones*/
 export const getCheckpointZonesService = async (
@@ -34,11 +35,9 @@ export const getRuralDetailsService = async (ids: number[]) => {
 
 /*Get Form1 list*/
 export const getForm1ListService = async (
-  userId: number,
-  districtName: string,
-  zoneName: string
+  scope: ScopeResult
 ) => {
-  return await getForm1ListUsecase(userId, districtName, zoneName);
+  return await getForm1ListUsecase(scope);
 };
 
 /*Get editable Form1*/
