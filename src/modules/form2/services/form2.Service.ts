@@ -47,7 +47,6 @@ export const form2Services = {
     }));
   },
 
-
   async getEditableForm2(uid: number) {
     const data = await prisma.form2.findFirst({
       where: { uid, is_active: true },

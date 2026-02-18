@@ -1,10 +1,11 @@
 import { PrismaClient } from "@prisma/client";
 import { cleanText } from "../../../utils/cleanText";
+import { ScopeResult } from "../../../utils/resolveScope";
+
 
 export const prisma = new PrismaClient();
 
 export const form3Service = {
-
   /*GET SERVICE Form2 list for Form3*/
   async fetchForm2ForForm3(uid: number | string, fm2id?: number | string) {
     const userId = Number(uid);
@@ -12,8 +13,7 @@ export const form3Service = {
       throw new Error("Invalid user id");
     }
 
-    const form2Id =
-      fm2id !== undefined ? Number(fm2id) : undefined;
+    const form2Id = fm2id !== undefined ? Number(fm2id) : undefined;
 
     if (form2Id !== undefined && Number.isNaN(form2Id)) {
       throw new Error("Invalid form2_id");
@@ -42,64 +42,83 @@ export const form3Service = {
 
     if (!form2List || form2List.length === 0) return [];
 
-    return form2List.map(row => ({
+    return form2List.map((row) => ({
       form2_id: row.id,
       district_id: row.district_id,
       zone_id: row.zone_id,
       masterzone_count: row.masterzone_count,
       selected_soc_count: row.selected_soc_count,
-      selected_soc: row.form2_selected_soc.map(s => ({
+      selected_soc: row.form2_selected_soc.map((s) => ({
         society_id: s.society_id,
         society_name: cleanText(s.society_name),
       })),
     }));
   },
 
-  /*GET Form3 list by logged-in user*/
-  async fetchForm3ListByUser(uid: number | string) {
-    const userId = Number(uid);
+  /* GET Form3 list by logged-in user OR admin */
+async fetchForm3ListByUser(scope: ScopeResult) {
 
-    if (Number.isNaN(userId)) {
-      throw new Error("Invalid user id");
+  const { uid, departmentId, districtId, zoneId, isAdmin } = scope;
+
+  let where: any = {
+    is_active: 1,
+  };
+
+  // 🔹 ADMIN FLOW
+  if (isAdmin) {
+    where.department_id = departmentId;
+
+    if (districtId) {
+      where.district_id = districtId;
     }
 
-    const form3List = await prisma.form3.findMany({
-      where: {
-        uid: userId,
-        is_active: 1,
-      },
-      orderBy: {
-        id: "desc",
-      },
-      include: {
-        form3_societies: {
-          select: {
-            id: true,
-            society_id: true,
-            society_name: true,
-            ass_memlist: true,
-            ero_claim: true,
-            jcount: true,
-            rcount: true,
-            total: true,
-            rural_id: true,
-            tot_voters: true,
-          },
+    if (zoneId) {
+      where.zone_id = zoneId;
+    }
+  }
+
+  // 🔹 NORMAL USER FLOW
+  else {
+    if (!uid) {
+      throw new Error("User id missing in scope");
+    }
+
+    where.uid = Number(uid);
+  }
+
+  const form3List = await prisma.form3.findMany({
+    where,
+    orderBy: { id: "desc" },
+    include: {
+      form3_societies: {
+        select: {
+          id: true,
+          society_id: true,
+          society_name: true,
+          ass_memlist: true,
+          ero_claim: true,
+          jcount: true,
+          rcount: true,
+          total: true,
+          rural_id: true,
+          tot_voters: true,
         },
       },
-    });
+    },
+  });
 
-    return form3List.map(f => ({
-      ...f,
-      remarks: cleanText(f.remarks),
-      district_name: cleanText(f.district_name),
-      zone_name: cleanText(f.zone_name),
-      form3_societies: f.form3_societies.map(s => ({
-        ...s,
-        society_name: cleanText(s.society_name),
-      })),
-    }));
-  },
+  return form3List.map((f) => ({
+    ...f,
+    remarks: cleanText(f.remarks),
+    district_name: cleanText(f.district_name),
+    zone_name: cleanText(f.zone_name),
+    form3_societies: f.form3_societies.map((s) => ({
+      ...s,
+      society_name: cleanText(s.society_name),
+    })),
+  }));
+},
+
 
   /*GET Editable*/
   async fetchEditableForm3(uid: number | string) {
@@ -173,7 +192,7 @@ export const form3Service = {
     const votersData = await prisma.form1_selected_soc.findMany({
       where: {
         society_id: {
-          in: societies.map(s => s.society_id),
+          in: societies.map((s) => s.society_id),
         },
       },
       select: {
@@ -183,7 +202,7 @@ export const form3Service = {
     });
 
     const votersMap = new Map(
-      votersData.map(v => [v.society_id, v.tot_voters])
+      votersData.map((v) => [v.society_id, v.tot_voters]),
     );
 
     await prisma.form3_societies.createMany({
@@ -229,7 +248,6 @@ export const form3Service = {
 
   /*PUT Update Form3*/
   async updateForm3(form3_id: number, uid: number, payload: any) {
-
     const userId = Number(uid);
 
     if (Number.isNaN(userId)) {
@@ -249,9 +267,7 @@ export const form3Service = {
     }
 
     const selected_soc =
-      payload.selected_soc ??
-      payload.selected_societies ??
-      [];
+      payload.selected_soc ?? payload.selected_societies ?? [];
 
     if (!Array.isArray(selected_soc)) {
       throw new Error("selected_soc must be an array");

@@ -1,7 +1,7 @@
 import { Request } from "express";
 
 export interface ScopeResult {
-  uid: number;    
+  uid: number;              // ✅ Always available
   departmentId: number;
   districtId?: number;
   zoneId?: number;
@@ -9,23 +9,30 @@ export interface ScopeResult {
 }
 
 export const resolveScope = (req: Request): ScopeResult => {
-  const user = (req as any).user;
+  const rawUser = (req as any).user;
 
-  if (!user?.uid) {
-    throw new Error("Unauthorized");
+  // ✅ Support BOTH uid and id from token
+  const rawUid = rawUser?.uid ?? rawUser?.id;
+
+  if (!rawUid) {
+    throw new Error("User ID missing");
   }
 
-  const uid = Number(user.uid); // 🔥 FORCE NUMBER
+  const uid = Number(rawUid);
 
-  const role = user.role;
+  if (Number.isNaN(uid)) {
+    throw new Error("Invalid user id in token");
+  }
 
-  //  ADMIN FLOW
+  const role = rawUser.role;
+
+  // 🔹 ADMIN FLOW
   if (role === 1) {
     const departmentId = req.query.department_id
       ? Number(req.query.department_id)
       : null;
 
-    if (!departmentId) {
+    if (!departmentId || Number.isNaN(departmentId)) {
       throw new Error("department_id is required for admin");
     }
 
@@ -37,23 +44,25 @@ export const resolveScope = (req: Request): ScopeResult => {
       ? Number(req.query.zone_id)
       : undefined;
 
-   return {
-  uid, // ✅ add this
-  departmentId,
-  districtId,
-  zoneId,
-  isAdmin: true,
-};
-
+    return {
+      uid,
+      departmentId,
+      districtId,
+      zoneId,
+      isAdmin: true,
+    };
   }
 
-  //  NORMAL USER FLOW
+  // 🔹 NORMAL USER FLOW
   return {
-  uid, // ✅ add this
-  departmentId: user.departmentId,
-  districtId: user.districtId,
-  zoneId: user.zoneId,
-  isAdmin: false,
-};
-
+    uid,
+    departmentId: Number(rawUser.departmentId),
+    districtId: rawUser.districtId
+      ? Number(rawUser.districtId)
+      : undefined,
+    zoneId: rawUser.zoneId
+      ? Number(rawUser.zoneId)
+      : undefined,
+    isAdmin: false,
+  };
 };

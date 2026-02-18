@@ -2,6 +2,8 @@ import { PrismaClient } from "@prisma/client";
 
 export const prisma = new PrismaClient()
 import { form3Service } from "../../form3/Services/form3.Service";
+import { ScopeResult } from "../../../utils/resolveScope";
+
 
 export const form3Usecases = {
 
@@ -9,18 +11,22 @@ export const form3Usecases = {
   async getForm2ListForForm3(uid: number, fm2id?: number | string) {
     return await form3Service.fetchForm2ForForm3(uid, fm2id);
   },
+/* GET Form3 list by logged-in user OR admin */
+async getForm3ListByUser(scope: ScopeResult) {
 
-  /*GET Form3 list by logged-in user*/
-  async getForm3ListByUser(uid: number) {
-    const form3List = await form3Service.fetchForm3ListByUser(uid);
+  if (!scope) {
+    throw new Error("Scope is required");
+  }
 
-    // If no records, return empty array
-    if (!form3List || form3List.length === 0) {
-      return [];
-    }
+  const form3List = await form3Service.fetchForm3ListByUser(scope);
 
-    return form3List;
-  },
+  if (!form3List || form3List.length === 0) {
+    return [];
+  }
+
+  return form3List;
+},
+
 
   /*GET Editable*/
   async getEditableForm3(uid: number) {
