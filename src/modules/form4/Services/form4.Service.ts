@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { cleanText } from "../../../utils/cleanText";
+import { ScopeResult } from "../../../utils/resolveScope";
 
 export const prisma = new PrismaClient();
 
@@ -326,29 +327,56 @@ export const Form4Service = {
       }),
     };
   },
+/*List Form4 by scope (Admin + User)*/
+async getForm4ListByUser(scope: ScopeResult) {
+  const { uid, departmentId, districtId, zoneId, isAdmin } = scope;
 
-  /*List Form4 by user*/
-  async getForm4ListByUser(uid: number) {
-    const form4List = await prisma.form4.findMany({
-      where: { uid },
-      orderBy: { created_at: "desc" },
-    });
+  let where: any = {};
 
-    const result = [];
-    for (const form4 of form4List) {
-      result.push({
-        form4,
-        filedList: await prisma.form4_filed_soc_mem_count.findMany({
-          where: { form4_id: form4.id },
-        }),
-        unfiledList: await prisma.form4_unfiled_soc_mem_count.findMany({
-          where: { form4_id: form4.id },
-        }),
-      });
+  // 🔹 ADMIN FLOW
+  if (isAdmin) {
+    where.department_id = departmentId;
+
+    if (districtId) {
+      where.district_id = districtId;
     }
 
-    return result;
-  },
+    if (zoneId) {
+      where.zone_id = zoneId;
+    }
+  }
+
+  // 🔹 NORMAL USER FLOW
+  else {
+    if (!uid) {
+      throw new Error("User id missing in scope");
+    }
+
+    where.uid = Number(uid);
+  }
+
+  const form4List = await prisma.form4.findMany({
+    where,
+    orderBy: { created_at: "desc" },
+  });
+
+  const result = [];
+
+  for (const form4 of form4List) {
+    result.push({
+      form4,
+      filedList: await prisma.form4_filed_soc_mem_count.findMany({
+        where: { form4_id: form4.id },
+      }),
+      unfiledList: await prisma.form4_unfiled_soc_mem_count.findMany({
+        where: { form4_id: form4.id },
+      }),
+    });
+  }
+
+  return result;
+},
+
 
   /*Editable Form4*/
   async getEditableForm4(uid: number) {

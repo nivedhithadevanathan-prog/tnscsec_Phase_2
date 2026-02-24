@@ -6,6 +6,8 @@ import {
   submitSchema,
   editForm4Schema,
 } from "../../form4/Validations/form4.Schema";
+import { resolveScope } from "../../../utils/resolveScope";
+
 
 export const Form4Controller = {
 
@@ -88,26 +90,25 @@ export const Form4Controller = {
       return sendError(res, 500, "Error submitting Form4", err.message);
     }
   },
+/*List all Form4 by logged-in user*/
+async getForm4List(req: Request, res: Response) {
+  try {
+    const scope = resolveScope(req); // ✅ use resolveScope
 
-  /*List all Form4 by logged-in user*/
-  async getForm4List(req: Request, res: Response) {
-    try {
-      const uid = Number((req as any).user?.uid);
-      if (!uid) return sendError(res, 401, "Unauthorized");
+    const data = await Form4Usecase.getForm4ListByUser(scope);
 
-      const data = await Form4Usecase.getForm4ListByUser(uid);
+    return sendResponse(
+      res,
+      200,
+      "Form4 list fetched",
+      data
+    );
 
-      return sendResponse(
-        res,
-        200,
-        "Form4 list fetched",
-        data
-      );
+  } catch (err: any) {
+    return sendError(res, 500, err.message || "Error fetching Form4 list");
+  }
+},
 
-    } catch (err: any) {
-      return sendError(res, 500, "Error fetching Form4 list", err.message);
-    }
-  },
 
   /*Get Form4 details by ID (read-only)*/
   async getForm4Details(req: Request, res: Response) {

@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { cleanText } from "../../../utils/cleanText";
+import { ScopeResult } from "../../../utils/resolveScope";
 
 export const prisma = new PrismaClient();
 
@@ -120,121 +121,176 @@ export const Form5Service = {
   },
 
   /*GET Form5 LIST*/
-  async getForm5ListByUser(uid: number) {
-    const form4 = await prisma.form4.findFirst({
+async getForm5ListByUser(scope: ScopeResult) {
+
+  const { uid, departmentId, districtId, zoneId, isAdmin } = scope;
+
+  let form4;
+
+  // 🔹 ADMIN FLOW
+  if (isAdmin) {
+    form4 = await prisma.form4.findFirst({
+      where: {
+        department_id: departmentId,
+        ...(districtId ? { district_id: districtId } : {}),
+        ...(zoneId ? { zone_id: zoneId } : {}),
+      },
+      orderBy: { created_at: "desc" },
+    });
+  }
+
+  // 🔹 NORMAL USER FLOW
+  else {
+    if (!uid) {
+      throw new Error("User id missing in scope");
+    }
+
+    form4 = await prisma.form4.findFirst({
       where: { uid },
       orderBy: { created_at: "desc" },
     });
+  }
 
-    if (!form4) return { form4: null, societies: [] };
+  if (!form4) return { form4: null, societies: [] };
 
-    const filedSocieties =
-      await prisma.form4_filed_soc_mem_count.findMany({
-        where: { form4_id: form4.id },
-        orderBy: { id: "asc" },
-      });
-
-    const filedSocIds = filedSocieties.map((s) => s.id);
-
-    const members = await prisma.form5.findMany({
-      where: {
-        form4_filed_soc_id: { in: filedSocIds },
-        is_active: true,
-      },
-      orderBy: { created_at: "asc" },
+  const filedSocieties =
+    await prisma.form4_filed_soc_mem_count.findMany({
+      where: { form4_id: form4.id },
+      orderBy: { id: "asc" },
     });
 
-    const map = new Map<number, any>();
+  const filedSocIds = filedSocieties.map((s) => s.id);
 
-    for (const soc of filedSocieties) {
-      map.set(soc.id, {
-        filed_soc_id: soc.id,
-        society_id: soc.society_id,
-        society_name: cleanText(soc.society_name),
-        declared: {
-          sc_st: soc.declared_sc_st,
-          women: soc.declared_women,
-          general: soc.declared_general,
-        },
-        members: {
-          sc_st: [],
-          women: [],
-          general: [],
-          sc_st_dlg: [],
-          women_dlg: [],
-          general_dlg: [],
-        },
-      });
+  const members = await prisma.form5.findMany({
+    where: {
+      form4_filed_soc_id: { in: filedSocIds },
+      is_active: true,
+    },
+    orderBy: { created_at: "asc" },
+  });
+
+  const map = new Map<number, any>();
+
+  for (const soc of filedSocieties) {
+    map.set(soc.id, {
+      filed_soc_id: soc.id,
+      society_id: soc.society_id,
+      society_name: cleanText(soc.society_name),
+      declared: {
+        sc_st: soc.declared_sc_st,
+        women: soc.declared_women,
+        general: soc.declared_general,
+      },
+      members: {
+        sc_st: [],
+        women: [],
+        general: [],
+        sc_st_dlg: [],
+        women_dlg: [],
+        general_dlg: [],
+      },
+    });
+  }
+
+  for (const m of members) {
+    if (!m.category_type) continue;
+
+    const soc = map.get(m.form4_filed_soc_id);
+    if (!soc) continue;
+
+    soc.members[m.category_type].push({
+      id: m.id,
+      member_name: cleanText(m.member_name),
+      aadhar_no: cleanText(m.aadhar_no),
+    });
+  }
+
+  return {
+    form4: {
+      id: form4.id,
+      district_name: cleanText(form4.district_name),
+      zone_name: cleanText(form4.zone_name),
+      selected_soc_count: form4.selected_soc_count,
+      filed_count: form4.filed_count,
+      unfiled_count: form4.unfiled_count,
+    },
+    societies: Array.from(map.values()),
+  };
+},
+
+
+ async getEditableForm5(uid: number) {
+
+  const form4 = await prisma.form4.findFirst({
+    where: { uid },
+    orderBy: { created_at: "desc" },
+  });
+
+  if (!form4) return { form4: null, societies: [] };
+
+  // rest of your original editable logic here
+},
+
+/*PUT Edit Form5*/
+async editForm5(payload: any) {
+  const { uid, members } = payload;
+
+  if (!Array.isArray(members) || members.length === 0) {
+    throw new Error("Members array is required");
+  }
+
+  const form4 = await prisma.form4.findFirst({
+    where: { uid },
+    orderBy: { created_at: "desc" },
+  });
+
+  if (!form4) throw new Error("Form4 not found");
+
+  const filedSocieties =
+    await prisma.form4_filed_soc_mem_count.findMany({
+      where: { form4_id: form4.id },
+    });
+
+  const filedSocIds = filedSocieties.map((s) => s.id);
+
+  // 🔒 SAFETY CHECK — Ensure incoming members belong to latest form4
+  for (const m of members) {
+    if (!filedSocIds.includes(m.form4_filed_soc_id)) {
+      throw new Error(
+        `Invalid form4_filed_soc_id: ${m.form4_filed_soc_id}`
+      );
+    }
+  }
+
+  // deactivate old members of latest form4
+  await prisma.form5.updateMany({
+    where: {
+      form4_filed_soc_id: { in: filedSocIds },
+      is_active: true,
+    },
+    data: { is_active: false },
+  });
+
+  // insert fresh members (with enforced correct relation)
+await prisma.form5.createMany({
+  data: members.map((m) => {
+    if (!m.member_name || !m.aadhar_no) {
+      throw new Error("member_name and aadhar_no are required");
     }
 
-    for (const m of members) {
-      if (!m.category_type) continue;
-      const soc = map.get(m.form4_filed_soc_id);
-      if (!soc) continue;
-
-      soc.members[m.category_type].push({
-        id: m.id,
-        member_name: cleanText(m.member_name),
-        aadhar_no: cleanText(m.aadhar_no),
-      });
-    }
+    const memberName: string = m.member_name;
+    const aadharNo: string = m.aadhar_no;
 
     return {
-      form4: {
-        id: form4.id,
-        district_name: cleanText(form4.district_name),
-        zone_name: cleanText(form4.zone_name),
-        selected_soc_count: form4.selected_soc_count,
-        filed_count: form4.filed_count,
-        unfiled_count: form4.unfiled_count,
-      },
-      societies: Array.from(map.values()),
+      form4_filed_soc_id: m.form4_filed_soc_id,
+      category_type: m.category_type,
+      member_name: cleanText(memberName),
+      aadhar_no: cleanText(aadharNo),
+      is_active: true,
     };
-  },
+  }),
+});
 
-  /*GET Editable Form5*/
-  async getEditableForm5(uid: number) {
-    return this.getForm5ListByUser(uid);
-  },
-
-  /*PUT Edit Form5*/
-  async editForm5(payload: any) {
-    const { uid, members } = payload;
-
-    if (!Array.isArray(members) || members.length === 0) {
-      throw new Error("Members array is required");
-    }
-
-    const form4 = await prisma.form4.findFirst({
-      where: { uid },
-      orderBy: { created_at: "desc" },
-    });
-    if (!form4) throw new Error("Form4 not found");
-
-    const filedSocieties =
-      await prisma.form4_filed_soc_mem_count.findMany({
-        where: { form4_id: form4.id },
-      });
-
-    const filedSocIds = filedSocieties.map((s) => s.id);
-
-    await prisma.form5.updateMany({
-      where: {
-        form4_filed_soc_id: { in: filedSocIds },
-        is_active: true,
-      },
-      data: { is_active: false },
-    });
-
-    await prisma.form5.createMany({
-      data: members.map((m) => ({
-        ...m,
-        member_name: cleanText(m.member_name),
-        aadhar_no: cleanText(m.aadhar_no),
-      })),
-      skipDuplicates: true,
-    });
-
-    return { success: true, count: members.length };
-  },
+  return { success: true, count: members.length };
+}
 };

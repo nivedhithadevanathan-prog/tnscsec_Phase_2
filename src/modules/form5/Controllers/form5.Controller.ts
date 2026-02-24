@@ -5,6 +5,7 @@ import {
   form5EditSchema,
 } from "../../form5/Validations/form5.Schema";
 import { sendResponse, sendError } from "../../../utils/response";
+import { resolveScope } from "../../../utils/resolveScope";
 
 export const Form5Controller = {
 
@@ -71,30 +72,28 @@ export const Form5Controller = {
       );
     }
   },
+/*GET Form5 List*/
+async getForm5List(req: Request, res: Response) {
+  try {
+    const scope = resolveScope(req); // ✅ use resolveScope
 
-  /*GET Form5 List*/
-  async getForm5List(req: Request, res: Response) {
-    try {
-      const uid = Number((req as any).user?.uid);
-      if (!uid) return sendError(res, 401, "Unauthorized");
+    const data = await Form5Usecase.getForm5ListByUser(scope);
 
-      const data = await Form5Usecase.getForm5ListByUser(uid);
+    return sendResponse(
+      res,
+      200,
+      "Form5 list fetched",
+      data
+    );
+  } catch (err: any) {
+    return sendError(
+      res,
+      500,
+      err.message || "Error fetching Form5 list"
+    );
+  }
+},
 
-      return sendResponse(
-        res,
-        200,
-        "Form5 list fetched",
-        data
-      );
-    } catch (err: any) {
-      return sendError(
-        res,
-        500,
-        "Error fetching Form5 list",
-        err.message
-      );
-    }
-  },
 
   /*GET Editable Form5*/
   async getEditableForm5(req: Request, res: Response) {

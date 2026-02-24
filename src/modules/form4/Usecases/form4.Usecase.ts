@@ -1,4 +1,6 @@
 import { Form4Service } from "../../form4/Services/form4.Service";
+import { ScopeResult } from "../../../utils/resolveScope";
+
 
 export const Form4Usecase = {
 
@@ -16,11 +18,15 @@ export const Form4Usecase = {
   submitForm4(payload: any) {
     return Form4Service.submitForm4(payload);
   },
+/*List all Form4 of logged-in user*/
+getForm4ListByUser(scope: ScopeResult) {
+  if (!scope) {
+    throw new Error("Scope is required");
+  }
 
-  /*List all Form4 of logged-in user*/
-  getForm4ListByUser(uid: number) {
-    return Form4Service.getForm4ListByUser(uid);
-  },
+  return Form4Service.getForm4ListByUser(scope);
+},
+
 
   /*Get Form4 details by ID*/
   getForm4Details(form4_id: number) {

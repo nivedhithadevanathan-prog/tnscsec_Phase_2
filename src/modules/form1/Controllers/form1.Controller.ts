@@ -43,7 +43,7 @@ export const getCheckpointZones = async (req: Request, res: Response) => {
   }
 };
 
-/*SUBMIT FORM 1*/
+// SUBMIT FORM 1 
 export const submitForm1 = async (req: Request, res: Response) => {
   try {
     const user = (req as any).user;
