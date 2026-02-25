@@ -1,6 +1,6 @@
 import { Form8Service } from "../../form8/Services/form8.Service";
 import { form5_category_type } from "@prisma/client";
-
+import { ScopeResult } from "../../../utils/resolveScope";
 /*PREVIEW API USECASE*/
 
 interface PreviewPayload {
@@ -230,12 +230,38 @@ interface Form8ListPayload {
 }
 
 export const Form8ListUsecase = {
-  async list(payload: Form8ListPayload) {
-    const { district_id } = payload;
+  async list(scope: ScopeResult) {
+    const { uid, districtId, isAdmin } = scope;
+
+    let targetDistrictId: number | undefined;
+
+    // 🔹 ADMIN FLOW
+    if (isAdmin) {
+      if (!districtId) {
+        throw {
+          statusCode: 400,
+          message: "district_id is required for admin",
+        };
+      }
+
+      targetDistrictId = districtId;
+    }
+
+    // 🔹 NORMAL USER FLOW
+    else {
+      if (!districtId) {
+        throw {
+          statusCode: 400,
+          message: "User district not found",
+        };
+      }
+
+      targetDistrictId = districtId;
+    }
 
     const data =
       await Form8Service.getSubmittedForm8Details(
-        district_id
+        targetDistrictId
       );
 
     return Array.isArray(data) ? data : [];

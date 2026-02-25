@@ -1,6 +1,8 @@
 import { Request, Response } from "express";
 import { sendResponse, sendError } from "../../../utils/response";
 import { Form7Usecase } from "../../form7/Usecases/form7.Usecase";
+import { resolveScope } from "../../../utils/resolveScope";
+
 
 export const Form7Controller = {
   /*GET Form7 Preview*/
@@ -61,29 +63,28 @@ export const Form7Controller = {
     }
   },
 
-  /*GET Form7 List*/
-  async list(req: Request, res: Response) {
-    try {
-      const uid = Number((req as any).user?.uid);
-      if (!uid) return sendError(res, 401, "Unauthorized");
+ /* GET Form7 List */
+async list(req: Request, res: Response) {
+  try {
+    const scope = resolveScope(req);
 
-      const data = await Form7Usecase.list(uid);
+    const data = await Form7Usecase.list(scope);
 
-      return sendResponse(
-        res,
-        200,
-        "Form7 list fetched",
-        data
-      );
-    } catch (err: any) {
-      return sendError(
-        res,
-        err.statusCode || 500,
-        err.message || "Error fetching Form7 list",
-        err.details || err
-      );
-    }
-  },
+    return sendResponse(
+      res,
+      200,
+      "Form7 list fetched",
+      data
+    );
+  } catch (err: any) {
+    return sendError(
+      res,
+      err.statusCode || 500,
+      err.message || "Error fetching Form7 list",
+      err.details || err
+    );
+  }
+},
 
   /*GET Editable Form7*/
   async editable(req: Request, res: Response) {

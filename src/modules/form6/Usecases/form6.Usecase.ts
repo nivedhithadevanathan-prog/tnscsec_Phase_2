@@ -1,4 +1,6 @@
 import { Form6Service } from "../../form6/Services/form6.Service";
+import { ScopeResult } from "../../../utils/resolveScope";
+
 
 export const Form6Usecase = {
 
@@ -14,9 +16,9 @@ export const Form6Usecase = {
     return Form6Service.getEditableForm6(uid);
   },
 
-  listForm6(uid: number) {
-    return Form6Service.listForm6(uid);
-  },
+ listForm6(scope: ScopeResult) {
+  return Form6Service.listForm6(scope);
+},
 
   withdrawCandidate(payload: {
     uid: number;

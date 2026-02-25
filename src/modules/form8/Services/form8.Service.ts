@@ -6,6 +6,7 @@ import {
   form8_final_result_category_type,
 } from "@prisma/client";
 
+
 export const Form8Service = {
 
   /*FORM7 SOCIETIES (BASE DATA)*/
@@ -294,8 +295,7 @@ export const Form8Service = {
   },
 
   /*LIST API SUBMITTED FORM8 DATA*/
-
-  async getSubmittedForm8Details(district_id: number) {
+async getSubmittedForm8Details(district_id: number) {
 
   const form8List = await prisma.form8.findMany({
     where: { district_id },
@@ -312,17 +312,16 @@ export const Form8Service = {
 
     const societyMap = new Map<number, any>();
 
-    /*POLLING DETAILS*/
+    /* POLLING DETAILS */
     for (const pd of form8.form8_polling_details) {
 
-      const society =
-        await prisma.form7_societies.findUnique({
-          where: { id: pd.form7_society_id },
-          select: {
-            society_id: true,
-            society_name: true,
-          },
-        });
+      const society = await prisma.form7_societies.findUnique({
+        where: { id: pd.form7_society_id },
+        select: {
+          society_id: true,
+          society_name: true,
+        },
+      });
 
       if (!society) continue;
 
@@ -362,16 +361,13 @@ export const Form8Service = {
       });
     }
 
-    /*WINNERS (FINAL RESULT)*/
+    /* WINNERS (FINAL RESULT) */
     for (const fr of form8.form8_final_result) {
 
       const society = societyMap.get(fr.form7_society_id);
       if (!society) continue;
 
-      // category_type is nullable
       if (!fr.category_type) continue;
-
-      // Ignore invalid placeholder rows
       if (!fr.form5_member_id || fr.form5_member_id === 0) continue;
 
       const member =
@@ -393,7 +389,6 @@ export const Form8Service = {
       });
     }
 
-    /*PUSH FORM8 RESULT*/
     result.push({
       form8_id: form8.id,
       district_name: form8.district_name,

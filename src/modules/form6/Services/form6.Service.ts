@@ -6,6 +6,7 @@ import {
   form6_status,
 } from "@prisma/client";
 import { cleanText } from "../../../utils/cleanText";
+import { ScopeResult } from "../../../utils/resolveScope";
 
 export const prisma = new PrismaClient();
 
@@ -68,38 +69,64 @@ export const Form6Service = {
   async loadForm6Preview(uid: number): Promise<Form6ViewResponse> {
     return this._buildForm6View(uid, false);
   },
+async listForm6(scope: ScopeResult) {
+  const { uid, departmentId, districtId, zoneId, isAdmin } = scope;
 
-  async listForm6(uid: number) {
-    const forms = await prisma.form6.findMany({
-      where: {
-        uid,
-        status: form6_status.SUBMITTED,
-      },
-      orderBy: { submitted_at: "desc" },
-      include: {
-        form6_society_decision: {
-          select: { election_status: true },
-        },
-      },
-    });
+  let where: any = {
+    status: form6_status.SUBMITTED,
+  };
 
-    return forms.map((f) => ({
-      form6_id: f.id,
-      status: f.status,
-      created_at: f.created_at,
-      submitted_at: f.submitted_at,
-      total_societies: f.form6_society_decision.length,
-      qualified_societies: f.form6_society_decision.filter(
-        d => d.election_status === form6_society_decision_election_status.QUALIFIED
-      ).length,
-      unqualified_societies: f.form6_society_decision.filter(
-        d => d.election_status === form6_society_decision_election_status.UNQUALIFIED
-      ).length,
-      unopposed_societies: f.form6_society_decision.filter(
-        d => d.election_status === form6_society_decision_election_status.UNOPPOSED
-      ).length,
-    }));
-  },
+  // 🔹 ADMIN FLOW
+  if (isAdmin) {
+    where.department_id = departmentId;
+
+    if (districtId) {
+      where.district_id = districtId;
+    }
+
+    if (zoneId) {
+      where.zone_id = zoneId;
+    }
+  }
+
+  // 🔹 NORMAL USER FLOW
+  else {
+    where.uid = uid;
+  }
+
+  const forms = await prisma.form6.findMany({
+    where,
+    orderBy: { submitted_at: "desc" },
+    include: {
+      form6_society_decision: {
+        select: { election_status: true },
+      },
+    },
+  });
+
+  return forms.map((f) => ({
+    form6_id: f.id,
+    status: f.status,
+    created_at: f.created_at,
+    submitted_at: f.submitted_at,
+    total_societies: f.form6_society_decision.length,
+    qualified_societies: f.form6_society_decision.filter(
+      (d) =>
+        d.election_status ===
+        form6_society_decision_election_status.QUALIFIED
+    ).length,
+    unqualified_societies: f.form6_society_decision.filter(
+      (d) =>
+        d.election_status ===
+        form6_society_decision_election_status.UNQUALIFIED
+    ).length,
+    unopposed_societies: f.form6_society_decision.filter(
+      (d) =>
+        d.election_status ===
+        form6_society_decision_election_status.UNOPPOSED
+    ).length,
+  }));
+},
 
   async withdrawCandidate(payload: {
     uid: number;

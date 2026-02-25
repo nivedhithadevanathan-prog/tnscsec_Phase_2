@@ -98,10 +98,18 @@ export const submitForm6Validation = {
 /*LIST FORM-6*/
 export const listForm6Validation = {
   body: Joi.object({}).optional(),
+
   params: Joi.object({}).optional(),
+
   query: Joi.object({
     status: Joi.string()
       .valid("DRAFT", "SUBMITTED")
       .optional(),
+
+    department_id: Joi.number().integer().optional(),
+
+    district_id: Joi.number().integer().optional(),
+
+    zone_id: Joi.number().integer().optional(),
   }).optional(),
 };

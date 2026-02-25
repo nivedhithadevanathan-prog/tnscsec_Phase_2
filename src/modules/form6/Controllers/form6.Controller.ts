@@ -1,6 +1,8 @@
 import { Request, Response } from "express";
 import { Form6Usecase } from "../../form6/Usecases/form6.Usecase";
 import { sendResponse, sendError } from "../../../utils/response";
+import { resolveScope } from "../../../utils/resolveScope";
+
 
 export const form6Controller = {
 
@@ -62,23 +64,27 @@ export const form6Controller = {
   },
 
   /*LIST FORM-6*/
-  async listForm6(req: Request, res: Response) {
-    try {
-      const uid = Number((req as any).user?.uid);
-      if (!uid) return sendError(res, 401, "Unauthorized");
+async listForm6(req: Request, res: Response) {
+  try {
+    const scope = resolveScope(req);
 
-      const data = await Form6Usecase.listForm6(uid);
+    const data = await Form6Usecase.listForm6(scope);
 
-      return sendResponse(
-        res,
-        200,
-        "Form6 list fetched successfully",
-        data
-      );
-    } catch (error: any) {
-      return sendError(res, 500, "Error fetching Form6 list", error.message);
-    }
-  },
+    return sendResponse(
+      res,
+      200,
+      "Form6 list fetched successfully",
+      data
+    );
+  } catch (error: any) {
+    return sendError(
+      res,
+      500,
+      "Error fetching Form6 list",
+      error.message
+    );
+  }
+},
 
   /*CANDIDATE WITHDRAW / REINSTATE*/
   async withdrawCandidate(req: Request, res: Response) {

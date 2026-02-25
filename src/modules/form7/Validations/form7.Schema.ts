@@ -16,9 +16,15 @@ export const previewForm7Validation = {
 
 /*LIST*/
 export const listForm7Validation = {
-  params: Joi.object({}),
-  query: Joi.object({}),
-  body: Joi.object({}),
+  params: Joi.object({}).optional(),
+
+  query: Joi.object({
+    department_id: Joi.number().optional(),
+    district_id: Joi.number().optional(),
+    zone_id: Joi.number().optional(),
+  }).optional(),
+
+  body: Joi.object({}).optional(),
 };
 
 /*EDITABLE*/
