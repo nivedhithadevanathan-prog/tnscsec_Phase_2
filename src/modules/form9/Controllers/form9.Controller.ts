@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { sendResponse, sendError } from "../../../utils/response";
 import { Form9Usecase } from "../../form9/Usecases/form9.Usecase";
+import { resolveScope } from "../../../utils/resolveScope";
 
 export const Form9Controller = {
 
@@ -176,26 +177,25 @@ if (!uid) {
 
   /*GET FORM9 LIST (WINNERS)*/
   async list(req: Request, res: Response) {
-    try {
-      const uid = Number((req as any).user?.uid);
-      if (!uid) return sendError(res, 401, "Unauthorized");
+  try {
+    const scope = resolveScope(req);
 
-      const data = await Form9Usecase.list({ uid });
+    const data = await Form9Usecase.list(scope);
 
-      return sendResponse(
-        res,
-        200,
-        "Form9 winners list fetched",
-        data
-      );
-    } catch (err: any) {
-      return sendError(
-        res,
-        err.statusCode || 500,
-        err.message || "Error fetching Form9 list"
-      );
-    }
-  },
+    return sendResponse(
+      res,
+      200,
+      "Form9 winners list fetched",
+      data
+    );
+  } catch (err: any) {
+    return sendError(
+      res,
+      err.statusCode || 500,
+      err.message || "Error fetching Form9 list"
+    );
+  }
+},
 
   /*POST FORM9 SUBMIT*/
   async submit(req: Request, res: Response) {

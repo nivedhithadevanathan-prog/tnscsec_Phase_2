@@ -3,6 +3,7 @@ import { Form10Service } from "../../form10/Services/form10.Service";
 import { form10_status } from "@prisma/client";
 import { form10_candidate_status_status } from "@prisma/client";
 import { form10_society_status } from "@prisma/client";
+import { ScopeResult } from "../../../utils/resolveScope";
 
 
 
@@ -553,31 +554,48 @@ async submit(params: {
 },
 
 /*LIST (VICE PRESIDENT RESULTS)*/
-async list(params: { uid: number }) {
+async list(scope: ScopeResult) {
 
-  const { uid } = params;
+  const { uid, departmentId, districtId, zoneId, isAdmin } = scope;
 
-  /*Get Latest Form10 for User*/
-  const form10 = await prisma.form10.findFirst({
-    where: { uid },
-    orderBy: { id: "desc" },
-    select: { id: true, status: true },
-  });
+  let form10;
+
+  /* 🔹 ADMIN FLOW */
+  if (isAdmin) {
+    form10 = await prisma.form10.findFirst({
+      where: {
+        department_id: departmentId,
+        ...(districtId ? { district_id: districtId } : {}),
+        ...(zoneId ? { zone_id: zoneId } : {}),
+      },
+      orderBy: { id: "desc" },
+      select: { id: true, status: true },
+    });
+  }
+
+  /* 🔹 NORMAL USER FLOW */
+  else {
+    form10 = await prisma.form10.findFirst({
+      where: { uid },
+      orderBy: { id: "desc" },
+      select: { id: true, status: true },
+    });
+  }
 
   if (!form10) {
     throw { statusCode: 404, message: "No Form10 found" };
   }
 
-  /*Fetch Societies*/
+  /* Fetch Societies */
   const societies = await prisma.form10_society.findMany({
     where: { form10_id: form10.id },
     include: {
       form4_filed_soc_mem_count: true,
-      form5: true, // Vice-President winner relation
+      form5: true,
     },
   });
 
-  /*Build Response*/
+  /* Build Response */
   return societies.map((soc) =>
     Form10Service.buildListSociety({
       form10_society_id: soc.id,

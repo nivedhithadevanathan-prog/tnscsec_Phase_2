@@ -7,6 +7,7 @@ import {
   form9_society_status,
   form9_candidate_status_status,
 } from "@prisma/client";
+import { ScopeResult } from "../../../utils/resolveScope";
 
 export const Form9Usecase = {
 
@@ -459,14 +460,32 @@ async final(params: {
   },
 
   /*LIST (WINNERS)*/
-  async list(params: { uid: number }) {
-  const { uid } = params;
+ async list(scope: ScopeResult) {
+  const { uid, departmentId, districtId, zoneId, isAdmin } = scope;
 
-  const form9 = await prisma.form9.findFirst({
-    where: { uid },
-    orderBy: { id: "desc" },
-    select: { id: true, status: true },
-  });
+  let form9;
+
+  // 🔹 ADMIN FLOW
+  if (isAdmin) {
+    form9 = await prisma.form9.findFirst({
+      where: {
+        department_id: departmentId,
+        ...(districtId ? { district_id: districtId } : {}),
+        ...(zoneId ? { zone_id: zoneId } : {}),
+      },
+      orderBy: { id: "desc" },
+      select: { id: true, status: true },
+    });
+  }
+
+  // 🔹 NORMAL USER FLOW
+  else {
+    form9 = await prisma.form9.findFirst({
+      where: { uid },
+      orderBy: { id: "desc" },
+      select: { id: true, status: true },
+    });
+  }
 
   if (!form9) {
     throw { statusCode: 404, message: "No Form9 found" };

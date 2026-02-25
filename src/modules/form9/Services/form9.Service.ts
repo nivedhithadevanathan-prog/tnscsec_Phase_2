@@ -191,35 +191,34 @@ export const Form9Service = {
     return null;
   },
 
-  /*LIST (WINNERS)*/
-  buildListSociety(params: {
-    form9_society_id: number;
-    form4_filed_soc_id: number;
-    society_id: number;
-    society_name: string;
-    election_type: form9_society_election_type;
-    president_winner: {
-      form5_member_id: number;
-      member_name: string;
-      aadhar_no: string;
-    } | null;
-    is_draft_visible: boolean;
-  }) {
-    return {
-      form9_society_id: params.form9_society_id,
-      form4_filed_soc_id: params.form4_filed_soc_id,
-      society_id: params.society_id,
-      society_name: params.society_name,
-      election_type: params.election_type,
-      president_winner: params.president_winner,
-      draft: params.is_draft_visible === true ? false : true,
-    };
-  },
+ /* LIST (WINNERS) */
+buildListSociety(params: {
+  form9_society_id: number;
+  form4_filed_soc_id: number;
+  society_id: number;
+  society_name: string;
+  election_type: form9_society_election_type;
+  president_winner: {
+    form5_member_id: number;
+    member_name: string;
+    aadhar_no: string;
+  } | null;
+  is_draft_visible: boolean;
+}) {
+  return {
+    form9_society_id: params.form9_society_id,
+    form4_filed_soc_id: params.form4_filed_soc_id,
+    society_id: params.society_id,
+    society_name: params.society_name,
+    election_type: params.election_type,
+    president_winner: params.president_winner,
+    draft: params.is_draft_visible === true ? false : true,
+  };
+},
 
-  buildListResponse(params: {
-    societies: any[];
-  }) {
-    return params.societies;
-  },
-
+buildListResponse(params: {
+  societies: any[];
+}) {
+  return params.societies;
+},
 };
