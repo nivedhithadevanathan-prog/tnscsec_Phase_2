@@ -8,7 +8,6 @@ function cleanText(text: string | null | undefined) {
   return text.replace(/[\r\n]+/g, " ").trim();
 }
 
-
 export const AuthService = {
   async login(username: string, password: string) {
     const user = await prisma.users.findFirst({
@@ -33,18 +32,25 @@ export const AuthService = {
 
     const zone = user.zone_id
       ? await prisma.zone.findFirst({
-          where: { id: Number(user.zone_id) }, 
+          where: { id: Number(user.zone_id) },
         })
       : null;
 
     const accessToken = generateToken(user);
+
+    // ✅ Compute admin flag
+    const is_admin = user.role_id === 1;
 
     return {
       login: "success",
       username: user.username,
       user_id: user.id,
       fullname: user.fullname,
-      // email: user.email,
+
+      // ✅ Added fields
+      role_id: user.role_id,
+      is_admin,
+      is_active: user.is_active,
 
       department_id: user.department_id,
       district_id: user.district_id,

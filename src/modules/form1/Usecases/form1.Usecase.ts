@@ -223,11 +223,10 @@ export const getForm1ListUsecase = async (
     department_name: deptMap.get(f.department_id ?? 0) || null,
 
     district_id: f.district_id,
-    district_name: null, // district name no longer comes from token
+    district_name: null, 
 
     zone_id: f.zone_id,
-    zone_name: null, // zone name no longer comes from token
-
+    zone_name: null, 
     selected_count: f.selected_count,
     non_selected_count: f.non_selected_count,
     remark: cleanText(f.remark),
