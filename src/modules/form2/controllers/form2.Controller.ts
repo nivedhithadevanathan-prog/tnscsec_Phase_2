@@ -1,7 +1,6 @@
 
 import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
-import { resolveScope } from "../../../utils/resolveScope";
 
 export const prisma = new PrismaClient();
 import { form2Usecases } from "../Usecases/form2.Usecase";
@@ -127,11 +126,23 @@ export const submitForm2 = async (req: Request, res: Response) => {
 
 
 /*GET Form2 by Logged in User*/
+/*GET Form2 List*/
 export const getForm2ListByUser = async (req: Request, res: Response) => {
   try {
-    const scope = resolveScope(req);
+    const user = (req as any).user;
 
-    const data = await form2Usecases.getForm2ListByUser(scope);
+    if (!user?.uid || !user?.role) {
+      return res.status(401).json({
+        success: false,
+        statusCode: 401,
+        message: "Unauthorized",
+      });
+    }
+
+    const data = await form2Usecases.getForm2ListByUser({
+      uid: Number(user.uid),
+      role: Number(user.role),
+    });
 
     return res.status(200).json({
       success: true,
@@ -139,6 +150,7 @@ export const getForm2ListByUser = async (req: Request, res: Response) => {
       message: "Form2 list fetched successfully",
       data,
     });
+
   } catch (error: any) {
     console.error("Form2 LIST error:", error);
 
@@ -149,6 +161,7 @@ export const getForm2ListByUser = async (req: Request, res: Response) => {
     });
   }
 };
+
 /*GET Editable Form2*/
 export const getEditableForm2 = async (req: Request, res: Response) => {
   try {

@@ -6,7 +6,6 @@ import {
   submitSchema,
   editForm4Schema,
 } from "../../form4/Validations/form4.Schema";
-import { resolveScope } from "../../../utils/resolveScope";
 
 
 export const Form4Controller = {
@@ -90,12 +89,19 @@ export const Form4Controller = {
       return sendError(res, 500, "Error submitting Form4", err.message);
     }
   },
-/*List all Form4 by logged-in user*/
+/*List all Form4*/
 async getForm4List(req: Request, res: Response) {
   try {
-    const scope = resolveScope(req); // ✅ use resolveScope
+    const user = (req as any).user;
 
-    const data = await Form4Usecase.getForm4ListByUser(scope);
+    if (!user?.uid || !user?.role) {
+      return sendError(res, 401, "Unauthorized");
+    }
+
+    const data = await Form4Usecase.getForm4ListByUser({
+      uid: Number(user.uid),
+      role: Number(user.role),
+    });
 
     return sendResponse(
       res,

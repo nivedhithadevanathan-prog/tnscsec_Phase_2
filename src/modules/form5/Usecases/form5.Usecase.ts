@@ -1,5 +1,4 @@
 import { Form5Service } from "../../form5/Services/form5.Service";
-import { ScopeResult } from "../../../utils/resolveScope";
 
 export const Form5Usecase = {
   /*GET Eligible societies for Form5*/
@@ -16,13 +15,14 @@ export const Form5Usecase = {
   },
 
  /*GET Form5 list*/
-getForm5ListByUser(scope: ScopeResult) {
+getForm5ListByUser(params: { uid: number; role: number }) {
 
-  if (!scope) {
-    throw new Error("Scope is required");
-  }
+  const { uid, role } = params;
 
-  return Form5Service.getForm5ListByUser(scope);
+  return Form5Service.getForm5ListByUser({
+    uid,
+    role,
+  });
 },
 
 

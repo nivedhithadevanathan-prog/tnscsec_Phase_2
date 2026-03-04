@@ -69,30 +69,15 @@ export const Form6Service = {
   async loadForm6Preview(uid: number): Promise<Form6ViewResponse> {
     return this._buildForm6View(uid, false);
   },
-async listForm6(scope: ScopeResult) {
-  const { uid, departmentId, districtId, zoneId, isAdmin } = scope;
+/*LIST FORM-6*/
+async listForm6(params: { uid: number; role: number }) {
 
-  let where: any = {
+  const { uid, role } = params;
+
+  const where: any = {
     status: form6_status.SUBMITTED,
+    ...(role !== 1 && { uid: uid }) // normal users see only their records
   };
-
-  // 🔹 ADMIN FLOW
-  if (isAdmin) {
-    where.department_id = departmentId;
-
-    if (districtId) {
-      where.district_id = districtId;
-    }
-
-    if (zoneId) {
-      where.zone_id = zoneId;
-    }
-  }
-
-  // 🔹 NORMAL USER FLOW
-  else {
-    where.uid = uid;
-  }
 
   const forms = await prisma.form6.findMany({
     where,

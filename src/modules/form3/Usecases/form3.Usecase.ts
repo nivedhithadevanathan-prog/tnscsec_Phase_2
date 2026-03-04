@@ -2,7 +2,6 @@ import { PrismaClient } from "@prisma/client";
 
 export const prisma = new PrismaClient()
 import { form3Service } from "../../form3/Services/form3.Service";
-import { ScopeResult } from "../../../utils/resolveScope";
 
 
 export const form3Usecases = {
@@ -11,14 +10,15 @@ export const form3Usecases = {
   async getForm2ListForForm3(uid: number, fm2id?: number | string) {
     return await form3Service.fetchForm2ForForm3(uid, fm2id);
   },
-/* GET Form3 list by logged-in user OR admin */
-async getForm3ListByUser(scope: ScopeResult) {
+/* GET Form3 list */
+async getForm3ListByUser(params: { uid: number; role: number }) {
 
-  if (!scope) {
-    throw new Error("Scope is required");
-  }
+  const { uid, role } = params;
 
-  const form3List = await form3Service.fetchForm3ListByUser(scope);
+  const form3List = await form3Service.fetchForm3ListByUser({
+    uid,
+    role,
+  });
 
   if (!form3List || form3List.length === 0) {
     return [];

@@ -34,10 +34,11 @@ export const getRuralDetailsService = async (ids: number[]) => {
 };
 
 /*Get Form1 list*/
-export const getForm1ListService = async (
-  scope: ScopeResult
-) => {
-  return await getForm1ListUsecase(scope);
+export const getForm1ListService = async (params: {
+  uid: number;
+  role: number;
+}) => {
+  return await getForm1ListUsecase(params);
 };
 
 /*Get editable Form1*/

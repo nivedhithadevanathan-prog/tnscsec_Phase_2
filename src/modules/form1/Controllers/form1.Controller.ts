@@ -1,6 +1,5 @@
 
 import { Request, Response } from "express";
-import { resolveScope } from "../../../utils/resolveScope";
 import {
   getCheckpointZonesUsecase,
   submitForm1Usecase,
@@ -133,14 +132,22 @@ export const getRuralDetails = async (req: Request, res: Response) => {
   }
 };
 
-/* GET FORM1 LIST */
 export const getForm1List = async (req: Request, res: Response) => {
   try {
-    // 🔹 Resolve role-based scope
-    const scope = resolveScope(req);
+    const user = (req as any).user;
 
-    // 🔹 Call usecase with scope
-    const data = await getForm1ListUsecase(scope);
+    if (!user?.uid || !user?.role) {
+      return res.status(401).json({
+        success: false,
+        statusCode: 401,
+        message: "Unauthorized",
+      });
+    }
+
+    const data = await getForm1ListUsecase({
+      uid: Number(user.uid),
+      role: Number(user.role),
+    });
 
     return res.status(200).json({
       success: true,
@@ -148,6 +155,7 @@ export const getForm1List = async (req: Request, res: Response) => {
       message: "Form1 list fetched successfully",
       data,
     });
+
   } catch (err: any) {
     return res.status(err.statusCode || 500).json({
       success: false,

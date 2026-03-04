@@ -1,6 +1,5 @@
 import { PrismaClient } from "@prisma/client";
 import { cleanText } from "../../../utils/cleanText";
-import { ScopeResult } from "../../../utils/resolveScope";
 
 export const prisma = new PrismaClient();
 
@@ -119,30 +118,22 @@ export const Form5Service = {
 
     return { success: true, count: members.length };
   },
-/* GET Form5 LIST */
-async getForm5ListByUser(scope: ScopeResult) {
-  const { uid, departmentId, districtId, zoneId, isAdmin } = scope;
+/*GET Form5 LIST*/
+async getForm5ListByUser(params: { uid: number; role: number }) {
+
+  const { uid, role } = params;
 
   let form4;
 
-  // 🔹 ADMIN FLOW
-  if (isAdmin) {
+  // 🔹 ADMIN → get latest Form4 overall
+  if (role === 1) {
     form4 = await prisma.form4.findFirst({
-      where: {
-        department_id: departmentId,
-        ...(districtId ? { district_id: districtId } : {}),
-        ...(zoneId ? { zone_id: zoneId } : {}),
-      },
       orderBy: { created_at: "desc" },
     });
   }
 
-  // 🔹 NORMAL USER FLOW
+  // 🔹 NORMAL USER → get their latest Form4
   else {
-    if (!uid) {
-      throw new Error("User id missing in scope");
-    }
-
     form4 = await prisma.form4.findFirst({
       where: { uid },
       orderBy: { created_at: "desc" },
@@ -153,7 +144,6 @@ async getForm5ListByUser(scope: ScopeResult) {
     return { form4: null, societies: [] };
   }
 
-  // 🔹 Get filed societies of latest form4
   const filedSocieties =
     await prisma.form4_filed_soc_mem_count.findMany({
       where: { form4_id: form4.id },
@@ -176,7 +166,6 @@ async getForm5ListByUser(scope: ScopeResult) {
     };
   }
 
-  // 🔹 Get active members
   const members = await prisma.form5.findMany({
     where: {
       form4_filed_soc_id: { in: filedSocIds },
@@ -185,7 +174,6 @@ async getForm5ListByUser(scope: ScopeResult) {
     orderBy: { created_at: "asc" },
   });
 
-  // 🔹 Prepare map
   const map = new Map<number, any>();
 
   for (const soc of filedSocieties) {
@@ -209,7 +197,6 @@ async getForm5ListByUser(scope: ScopeResult) {
     });
   }
 
-  // 🔹 Group members safely
   for (const m of members) {
     if (!m.category_type) continue;
 
@@ -218,7 +205,7 @@ async getForm5ListByUser(scope: ScopeResult) {
 
     const key = String(m.category_type).toLowerCase().trim();
 
-    if (!soc.members[key]) continue; // safety check
+    if (!soc.members[key]) continue;
 
     soc.members[key].push({
       id: m.id,

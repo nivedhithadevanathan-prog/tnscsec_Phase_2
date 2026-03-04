@@ -1,6 +1,5 @@
 import { Request, Response } from "express";
 import { form3Usecases } from "../../form3/Usecases/form3.Usecase";
-import { resolveScope } from "../../../utils/resolveScope";
 
 
 /*GET Form2 list for Form3*/
@@ -34,12 +33,23 @@ export const getForm2ListForForm3 = async (req: any, res: Response) => {
   }
 };
 
-/* GET Form3 list by logged-in user OR admin */
+/* GET Form3 list */
 export const getForm3ListByUser = async (req: any, res: Response) => {
   try {
-    const scope = resolveScope(req);
+    const user = req.user;
 
-    const data = await form3Usecases.getForm3ListByUser(scope);
+    if (!user?.uid || !user?.role) {
+      return res.status(400).json({
+        success: false,
+        statusCode: 400,
+        message: "User information missing",
+      });
+    }
+
+    const data = await form3Usecases.getForm3ListByUser({
+      uid: Number(user.uid),
+      role: Number(user.role),
+    });
 
     return res.status(200).json({
       success: true,
@@ -47,6 +57,7 @@ export const getForm3ListByUser = async (req: any, res: Response) => {
       message: "Form3 list fetched successfully",
       data,
     });
+
   } catch (error: any) {
     return res.status(500).json({
       success: false,
@@ -55,7 +66,6 @@ export const getForm3ListByUser = async (req: any, res: Response) => {
     });
   }
 };
-
 
 /*GET Editable*/
 export const getEditableForm3 = async (req: any, res: Response) => {

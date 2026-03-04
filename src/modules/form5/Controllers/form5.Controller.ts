@@ -5,7 +5,6 @@ import {
   form5EditSchema,
 } from "../../form5/Validations/form5.Schema";
 import { sendResponse, sendError } from "../../../utils/response";
-import { resolveScope } from "../../../utils/resolveScope";
 
 export const Form5Controller = {
 
@@ -75,9 +74,16 @@ export const Form5Controller = {
 /*GET Form5 List*/
 async getForm5List(req: Request, res: Response) {
   try {
-    const scope = resolveScope(req); // ✅ use resolveScope
+    const user = (req as any).user;
 
-    const data = await Form5Usecase.getForm5ListByUser(scope);
+    if (!user?.uid || !user?.role) {
+      return sendError(res, 401, "Unauthorized");
+    }
+
+    const data = await Form5Usecase.getForm5ListByUser({
+      uid: Number(user.uid),
+      role: Number(user.role),
+    });
 
     return sendResponse(
       res,
@@ -85,6 +91,7 @@ async getForm5List(req: Request, res: Response) {
       "Form5 list fetched",
       data
     );
+
   } catch (err: any) {
     return sendError(
       res,

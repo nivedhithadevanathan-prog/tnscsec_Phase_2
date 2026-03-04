@@ -1,5 +1,4 @@
 import { PrismaClient } from "@prisma/client";
-import { ScopeResult } from "../../../utils/resolveScope";
 
 export const prisma = new PrismaClient();
 
@@ -104,37 +103,18 @@ async submitForm2Usecase(payload: any) {
   );
 },
 
-/*LIST Form2 by user*/
- async getForm2ListByUser(scope: ScopeResult) {
+/*LIST Form2*/
+async getForm2ListByUser(params: { uid: number; role: number }) {
 
-    if (!scope) {
-      throw new Error("Scope is required");
-    }
+  const { uid, role } = params;
 
-    let where: any = {
-      is_active: true,
-    };
+  let where: any = {
+    is_active: true,
+    ...(role !== 1 && { uid: uid }), // normal users see only their records
+  };
 
-    // 🔹 ADMIN FLOW
-    if (scope.isAdmin) {
-      where.department_id = scope.departmentId;
-
-      if (scope.districtId) {
-        where.district_id = scope.districtId;
-      }
-
-      if (scope.zoneId) {
-        where.zone_id = scope.zoneId;
-      }
-    }
-
-    // 🔹 NORMAL USER FLOW
-    else {
-      where.uid = scope.uid;
-    }
-
-    return form2Services.getForm2ListByUser(where);
-  },
+  return form2Services.getForm2ListByUser(where);
+},
 
   /*EDITABLE Latest Form2*/
   async getEditableForm2(uid: number) {

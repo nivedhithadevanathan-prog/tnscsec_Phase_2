@@ -1,6 +1,5 @@
 import { PrismaClient } from "@prisma/client";
 import { cleanText } from "../../../utils/cleanText";
-import { ScopeResult } from "../../../utils/resolveScope";
 
 
 export const prisma = new PrismaClient();
@@ -55,36 +54,15 @@ export const form3Service = {
     }));
   },
 
-  /* GET Form3 list by logged-in user OR admin */
-async fetchForm3ListByUser(scope: ScopeResult) {
+/* GET Form3 list */
+async fetchForm3ListByUser(params: { uid: number; role: number }) {
 
-  const { uid, departmentId, districtId, zoneId, isAdmin } = scope;
+  const { uid, role } = params;
 
-  let where: any = {
+  const where: any = {
     is_active: 1,
+    ...(role !== 1 && { uid: uid }), // normal users see only their records
   };
-
-  // 🔹 ADMIN FLOW
-  if (isAdmin) {
-    where.department_id = departmentId;
-
-    if (districtId) {
-      where.district_id = districtId;
-    }
-
-    if (zoneId) {
-      where.zone_id = zoneId;
-    }
-  }
-
-  // 🔹 NORMAL USER FLOW
-  else {
-    if (!uid) {
-      throw new Error("User id missing in scope");
-    }
-
-    where.uid = Number(uid);
-  }
 
   const form3List = await prisma.form3.findMany({
     where,

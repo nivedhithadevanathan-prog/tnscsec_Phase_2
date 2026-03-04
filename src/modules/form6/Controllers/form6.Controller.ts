@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
 import { Form6Usecase } from "../../form6/Usecases/form6.Usecase";
 import { sendResponse, sendError } from "../../../utils/response";
-import { resolveScope } from "../../../utils/resolveScope";
 
 
 export const form6Controller = {
@@ -66,9 +65,16 @@ export const form6Controller = {
   /*LIST FORM-6*/
 async listForm6(req: Request, res: Response) {
   try {
-    const scope = resolveScope(req);
+    const user = (req as any).user;
 
-    const data = await Form6Usecase.listForm6(scope);
+    if (!user?.uid || !user?.role) {
+      return sendError(res, 401, "Unauthorized");
+    }
+
+    const data = await Form6Usecase.listForm6({
+      uid: Number(user.uid),
+      role: Number(user.role),
+    });
 
     return sendResponse(
       res,
@@ -76,6 +82,7 @@ async listForm6(req: Request, res: Response) {
       "Form6 list fetched successfully",
       data
     );
+
   } catch (error: any) {
     return sendError(
       res,

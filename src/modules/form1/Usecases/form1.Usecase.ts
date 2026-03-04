@@ -1,6 +1,5 @@
 import { PrismaClient } from "@prisma/client";
 import { cleanText } from "../../../utils/cleanText";
-import { ScopeResult } from "../../../utils/resolveScope";
 export const prisma = new PrismaClient();
 
 /*GET CHECKPOINT ZONES*/
@@ -189,16 +188,17 @@ export const getRuralDetailsUsecase = async (ids: number[]) => {
 };
 
 /*GET FORM1 LIST*/
-export const getForm1ListUsecase = async (
-  scope: ScopeResult
-) => {
+export const getForm1ListUsecase = async (params: {
+  uid: number;
+  role: number;
+}) => {
+
+  const { uid, role } = params;
 
   const form1List = await prisma.form1.findMany({
     where: {
-      department_id: scope.departmentId,
-      ...(scope.districtId && { district_id: scope.districtId }),
-      ...(scope.zoneId && { zone_id: scope.zoneId }),
       is_active: 1,
+      ...(role !== 1 && { uid: uid }), // normal user sees only their records
     },
     orderBy: { id: "desc" },
     include: {
@@ -223,10 +223,11 @@ export const getForm1ListUsecase = async (
     department_name: deptMap.get(f.department_id ?? 0) || null,
 
     district_id: f.district_id,
-    district_name: null, 
+    district_name: null,
 
     zone_id: f.zone_id,
-    zone_name: null, 
+    zone_name: null,
+
     selected_count: f.selected_count,
     non_selected_count: f.non_selected_count,
     remark: cleanText(f.remark),
