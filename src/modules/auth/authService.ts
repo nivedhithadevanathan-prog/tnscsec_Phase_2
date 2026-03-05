@@ -9,13 +9,15 @@ function cleanText(text: string | null | undefined) {
 }
 
 export const AuthService = {
-  async login(username: string, password: string) {
-    const user = await prisma.users.findFirst({
-      where: { username },
-    });
+async login(username: string, password: string) {
 
-    if (!user) return null;
-    if (password !== user.password) return null;
+  const user = await prisma.users.findFirst({
+    where: { username: cleanText(username) },
+  });
+
+  if (!user) return null;
+
+  if (cleanText(password) !== cleanText(user.password)) return null;
 
     // Fetch Names
     const district = user.district_id
