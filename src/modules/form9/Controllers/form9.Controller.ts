@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
 import { sendResponse, sendError } from "../../../utils/response";
 import { Form9Usecase } from "../../form9/Usecases/form9.Usecase";
-import { resolveScope } from "../../../utils/resolveScope";
 
 export const Form9Controller = {
 
@@ -175,12 +174,19 @@ if (!uid) {
     }
   },
 
-  /*GET FORM9 LIST (WINNERS)*/
-  async list(req: Request, res: Response) {
+/*GET FORM9 LIST (WINNERS)*/
+async list(req: Request, res: Response) {
   try {
-    const scope = resolveScope(req);
+    const user = (req as any).user;
 
-    const data = await Form9Usecase.list(scope);
+    if (!user?.uid || !user?.role) {
+      return sendError(res, 401, "Unauthorized");
+    }
+
+    const data = await Form9Usecase.list({
+      uid: Number(user.uid),
+      role: Number(user.role),
+    });
 
     return sendResponse(
       res,
@@ -188,6 +194,7 @@ if (!uid) {
       "Form9 winners list fetched",
       data
     );
+
   } catch (err: any) {
     return sendError(
       res,
@@ -196,7 +203,6 @@ if (!uid) {
     );
   }
 },
-
   /*POST FORM9 SUBMIT*/
   async submit(req: Request, res: Response) {
     try {

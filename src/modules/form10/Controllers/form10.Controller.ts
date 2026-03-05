@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
 import { sendResponse, sendError } from "../../../utils/response";
 import { Form10Usecase } from "../../form10/Usecases/form10.Usecase";
-import { resolveScope } from "../../../utils/resolveScope";
 
 export const Form10Controller = {
 
@@ -256,9 +255,17 @@ async submit(req: Request, res: Response) {
 /*GET FORM10 LIST*/
 async list(req: Request, res: Response) {
   try {
-    const scope = resolveScope(req);
 
-    const data = await Form10Usecase.list(scope);
+    const user = (req as any).user;
+
+    if (!user?.uid || !user?.role) {
+      return sendError(res, 401, "Unauthorized");
+    }
+
+    const data = await Form10Usecase.list({
+      uid: Number(user.uid),
+      role: Number(user.role),
+    });
 
     return sendResponse(
       res,

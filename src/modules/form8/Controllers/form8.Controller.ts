@@ -7,7 +7,6 @@ import {
   Form8SubmitUsecase,
   Form8ListUsecase,
 } from "../../form8/Usecases/form8.Usecase";
-import { resolveScope } from "../../../utils/resolveScope";
 
 
 export const Form8Controller = {
@@ -148,12 +147,19 @@ export const Form8Controller = {
     }
   },
 
-  /*GET Form8 List*/
-  async listForm8(req: Request, res: Response) {
+ /*GET Form8 List*/
+async listForm8(req: Request, res: Response) {
   try {
-    const scope = resolveScope(req);
+    const user = (req as any).user;
 
-    const data = await Form8ListUsecase.list(scope);
+    if (!user?.uid || !user?.role) {
+      return sendError(res, 401, "Unauthorized");
+    }
+
+    const data = await Form8ListUsecase.list({
+      uid: Number(user.uid),
+      role: Number(user.role),
+    });
 
     return sendResponse(
       res,
@@ -161,6 +167,7 @@ export const Form8Controller = {
       "Form8 list fetched",
       data
     );
+
   } catch (err: any) {
     return sendError(
       res,

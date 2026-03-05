@@ -1,3 +1,7 @@
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
+
 import { Form8Service } from "../../form8/Services/form8.Service";
 import { form5_category_type } from "@prisma/client";
 import { ScopeResult } from "../../../utils/resolveScope";
@@ -229,34 +233,44 @@ interface Form8ListPayload {
   district_id: number;
 }
 
+/*FORM8 LIST USECASE*/
+
 export const Form8ListUsecase = {
-  async list(scope: ScopeResult) {
-    const { uid, districtId, isAdmin } = scope;
+
+  async list(params: { uid: number; role: number }) {
+
+    const { uid, role } = params;
 
     let targetDistrictId: number | undefined;
 
-    // 🔹 ADMIN FLOW
-    if (isAdmin) {
-      if (!districtId) {
-        throw {
-          statusCode: 400,
-          message: "district_id is required for admin",
-        };
-      }
+    // 🔹 ADMIN → show all Form8
+    if (role === 1) {
 
-      targetDistrictId = districtId;
+      const form8 = await prisma.form8.findFirst({
+        orderBy: { id: "desc" },
+      });
+
+      if (!form8) return [];
+
+      targetDistrictId = form8.district_id;
     }
 
-    // 🔹 NORMAL USER FLOW
+    // 🔹 NORMAL USER → use user's district
     else {
-      if (!districtId) {
+
+      const user = await prisma.users.findFirst({
+        where: { id: uid },
+        select: { district_id: true },
+      });
+
+      if (!user?.district_id) {
         throw {
           statusCode: 400,
           message: "User district not found",
         };
       }
 
-      targetDistrictId = districtId;
+      targetDistrictId = user.district_id;
     }
 
     const data =
@@ -265,5 +279,6 @@ export const Form8ListUsecase = {
       );
 
     return Array.isArray(data) ? data : [];
-  },
+  }
+
 };

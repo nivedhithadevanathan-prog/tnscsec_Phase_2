@@ -3,7 +3,6 @@ import { Form10Service } from "../../form10/Services/form10.Service";
 import { form10_status } from "@prisma/client";
 import { form10_candidate_status_status } from "@prisma/client";
 import { form10_society_status } from "@prisma/client";
-import { ScopeResult } from "../../../utils/resolveScope";
 
 
 
@@ -552,28 +551,22 @@ async submit(params: {
   /*Return response*/
   return Form10Service.buildSubmitResponse();
 },
-
 /*LIST (VICE PRESIDENT RESULTS)*/
-async list(scope: ScopeResult) {
+async list(params: { uid: number; role: number }) {
 
-  const { uid, departmentId, districtId, zoneId, isAdmin } = scope;
+  const { uid, role } = params;
 
   let form10;
 
-  /* 🔹 ADMIN FLOW */
-  if (isAdmin) {
+  /* 🔹 ADMIN → show latest Form10 */
+  if (role === 1) {
     form10 = await prisma.form10.findFirst({
-      where: {
-        department_id: departmentId,
-        ...(districtId ? { district_id: districtId } : {}),
-        ...(zoneId ? { zone_id: zoneId } : {}),
-      },
       orderBy: { id: "desc" },
       select: { id: true, status: true },
     });
   }
 
-  /* 🔹 NORMAL USER FLOW */
+  /* 🔹 NORMAL USER → show their Form10 */
   else {
     form10 = await prisma.form10.findFirst({
       where: { uid },

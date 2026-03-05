@@ -7,7 +7,6 @@ import {
   form9_society_status,
   form9_candidate_status_status,
 } from "@prisma/client";
-import { ScopeResult } from "../../../utils/resolveScope";
 
 export const Form9Usecase = {
 
@@ -458,27 +457,22 @@ async final(params: {
 
     return Form9Service.buildSubmitResponse();
   },
+/*LIST (WINNERS)*/
+async list(params: { uid: number; role: number }) {
 
-  /*LIST (WINNERS)*/
- async list(scope: ScopeResult) {
-  const { uid, departmentId, districtId, zoneId, isAdmin } = scope;
+  const { uid, role } = params;
 
   let form9;
 
-  // 🔹 ADMIN FLOW
-  if (isAdmin) {
+  // 🔹 ADMIN → show latest Form9
+  if (role === 1) {
     form9 = await prisma.form9.findFirst({
-      where: {
-        department_id: departmentId,
-        ...(districtId ? { district_id: districtId } : {}),
-        ...(zoneId ? { zone_id: zoneId } : {}),
-      },
       orderBy: { id: "desc" },
       select: { id: true, status: true },
     });
   }
 
-  // 🔹 NORMAL USER FLOW
+  // 🔹 NORMAL USER → show their Form9
   else {
     form9 = await prisma.form9.findFirst({
       where: { uid },
