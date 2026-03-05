@@ -1,6 +1,5 @@
 import { PrismaClient } from "@prisma/client";
 import { Form7Service } from "../../form7/Services/form7.Service";
-import { ScopeResult } from "../../../utils/resolveScope";
 
 
 
@@ -234,24 +233,22 @@ export const Form7Usecase = {
   });
 },
 
-
 /* LIST FORM7 */
-async list(scope: ScopeResult) {
-  const { uid, districtId, isAdmin } = scope;
+async list(params: { uid: number; role: number }) {
 
-  // 🔹 ADMIN FLOW
-  if (isAdmin) {
-    if (!districtId) {
-      throw { statusCode: 400, message: "district_id is required for admin" };
-    }
+  const { uid, role } = params;
 
-    const form7 =
-      await Form7Service.getLatestForm7ByDistrict(districtId);
+  // 🔹 ADMIN → show latest Form7
+  if (role === 1) {
+
+    const form7 = await prisma.form7.findFirst({
+      orderBy: { created_at: "desc" },
+    });
 
     return form7 ? [form7] : [];
   }
 
-  // 🔹 NORMAL USER FLOW
+  // 🔹 NORMAL USER → show latest Form7 of their district
   const user = await Form7Service.getUserDistrict(uid);
 
   if (user?.district_id == null) {

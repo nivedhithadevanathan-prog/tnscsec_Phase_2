@@ -6,7 +6,6 @@ import {
   form6_status,
 } from "@prisma/client";
 import { cleanText } from "../../../utils/cleanText";
-import { ScopeResult } from "../../../utils/resolveScope";
 
 export const prisma = new PrismaClient();
 

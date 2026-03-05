@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
 import { sendResponse, sendError } from "../../../utils/response";
 import { Form7Usecase } from "../../form7/Usecases/form7.Usecase";
-import { resolveScope } from "../../../utils/resolveScope";
 
 
 export const Form7Controller = {
@@ -62,13 +61,19 @@ export const Form7Controller = {
       );
     }
   },
-
- /* GET Form7 List */
+/* GET Form7 List */
 async list(req: Request, res: Response) {
   try {
-    const scope = resolveScope(req);
+    const user = (req as any).user;
 
-    const data = await Form7Usecase.list(scope);
+    if (!user?.uid || !user?.role) {
+      return sendError(res, 401, "Unauthorized");
+    }
+
+    const data = await Form7Usecase.list({
+      uid: Number(user.uid),
+      role: Number(user.role),
+    });
 
     return sendResponse(
       res,
@@ -76,6 +81,7 @@ async list(req: Request, res: Response) {
       "Form7 list fetched",
       data
     );
+
   } catch (err: any) {
     return sendError(
       res,
