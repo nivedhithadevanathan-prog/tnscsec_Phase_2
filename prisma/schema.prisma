@@ -247,6 +247,11 @@ model form4_filed_soc_mem_count {
   election_status      form4_filed_soc_mem_count_election_status?
   remarks              String?                                    @db.VarChar(255)
   decision_at          DateTime                                   @default(now()) @db.Timestamp(0)
+  is_stopped           Boolean?                                   @default(false)
+  stopped_at           DateTime?                                  @db.DateTime(0)
+  stopped_by           Int?
+  stop_remark          String?                                    @db.VarChar(500)
+  stop_locked          Boolean?                                   @default(false)
   form10_society       form10_society[]
   form4                form4                                      @relation(fields: [form4_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "fk_form4_filed_soc")
   form5                form5[]
