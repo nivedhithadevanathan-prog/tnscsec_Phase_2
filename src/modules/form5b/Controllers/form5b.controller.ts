@@ -1,8 +1,9 @@
 import { Request, Response } from "express";
 import { Form5BUsecase } from "../../form5b/Usecases/form5b.Usecase";
 import { sendResponse, sendError } from "../../../utils/response";
-import { stopSocietySchema } from "../Validations/form5b.schema";
+import { form5bEditSchema, stopSocietySchema } from "../Validations/form5b.schema";
 import { stopCandidateSchema } from "../Validations/form5b.schema";
+
 
 export const Form5BController = {
 
@@ -180,6 +181,83 @@ async getForm5BList(req: Request, res: Response) {
       res,
       500,
       err.message || "Error fetching Form5B list"
+    );
+  }
+},
+
+/*GET Editable Form5B*/
+async getEditableForm5B(req: Request, res: Response) {
+  try {
+    const user = (req as any).user;
+
+    if (!user?.uid || !user?.role) {
+      return sendError(res, 401, "Unauthorized");
+    }
+
+    const data = await Form5BUsecase.getEditableForm5BByUser({
+      uid: Number(user.uid),
+      role: Number(user.role),
+    });
+
+    return sendResponse(
+      res,
+      200,
+      "Editable Form5B fetched",
+      data
+    );
+
+  } catch (err: any) {
+    return sendError(
+      res,
+      500,
+      err.message || "Error fetching editable Form5B"
+    );
+  }
+},
+
+/*PUT Edit Form5B*/
+async editForm5B(req: Request, res: Response) {
+  try {
+
+    const { error, value } = form5bEditSchema.validate(req.body, {
+      abortEarly: false,
+    });
+
+    if (error) {
+      return sendError(
+        res,
+        400,
+        "Validation failed",
+        error.details.map((e) => e.message)
+      );
+    }
+
+    const user = (req as any).user;
+
+    if (!user?.uid || !user?.role) {
+      return sendError(res, 401, "Unauthorized");
+    }
+
+    const result = await Form5BUsecase.editForm5B({
+      uid: Number(user.uid),
+      role: Number(user.role),
+      societies: value.societies,
+      candidates: value.candidates,
+    });
+
+    return sendResponse(
+      res,
+      200,
+      "Form5B updated successfully",
+      result
+    );
+
+  } catch (err: any) {
+    return sendError(
+      res,
+      500,
+      "Error updating Form5B",
+      err.message
     );
   }
 },

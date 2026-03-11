@@ -38,4 +38,26 @@ getForm5BListByUser(params: { uid: number; role: number }) {
 
 },
 
+/*GET Editable Form5B*/
+getEditableForm5BByUser(params: { uid: number; role: number }) {
+
+  const { uid, role } = params;
+
+  return Form5BService.getEditableForm5BByUser({
+    uid,
+    role,
+  });
+
+},
+
+/*PUT Edit Form5B*/
+editForm5B(payload: {
+  uid: number;
+  role: number;
+  societies: any[];
+  candidates: any[];
+}) {
+  return Form5BService.editForm5B(payload);
+},
+
 };

@@ -37,4 +37,18 @@ router.get(
   Form5BController.getForm5BList
 );
 
+/*GET Editable Form5B*/
+router.get(
+  "/editable",
+  verifyToken,
+  Form5BController.getEditableForm5B
+);
+
+/*PUT Edit Form5B*/
+router.put(
+  "/edit",
+  verifyToken,
+  Form5BController.editForm5B
+);
+
 export default router;
