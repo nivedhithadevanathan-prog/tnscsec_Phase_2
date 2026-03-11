@@ -154,4 +154,34 @@ async submitForm5B(req: Request, res: Response) {
   }
 },
 
+/*GET Form5B List*/
+async getForm5BList(req: Request, res: Response) {
+  try {
+    const user = (req as any).user;
+
+    if (!user?.uid || !user?.role) {
+      return sendError(res, 401, "Unauthorized");
+    }
+
+    const data = await Form5BUsecase.getForm5BListByUser({
+      uid: Number(user.uid),
+      role: Number(user.role),
+    });
+
+    return sendResponse(
+      res,
+      200,
+      "Form5B list fetched",
+      data
+    );
+
+  } catch (err: any) {
+    return sendError(
+      res,
+      500,
+      err.message || "Error fetching Form5B list"
+    );
+  }
+},
+
 };

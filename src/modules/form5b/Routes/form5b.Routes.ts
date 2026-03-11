@@ -30,4 +30,11 @@ router.post(
   Form5BController.submitForm5B
 );
 
+/*GET Form5B List*/
+router.get(
+  "/list",
+  verifyToken,
+  Form5BController.getForm5BList
+);
+
 export default router;

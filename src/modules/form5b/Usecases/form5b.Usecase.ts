@@ -26,4 +26,16 @@ submitForm5B(uid: number) {
   return Form5BService.submitForm5B(uid);
 },
 
+/*GET Form5B list*/
+getForm5BListByUser(params: { uid: number; role: number }) {
+
+  const { uid, role } = params;
+
+  return Form5BService.getForm5BListByUser({
+    uid,
+    role,
+  });
+
+},
+
 };

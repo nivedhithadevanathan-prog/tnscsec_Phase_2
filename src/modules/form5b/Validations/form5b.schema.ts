@@ -38,3 +38,7 @@ export const stopCandidateSchema = Joi.object({
 
 /*POST Submit Form5B*/
 export const form5bSubmitSchema = Joi.object({});
+
+
+/*GET Form5B List*/
+export const form5bListSchema = Joi.object({});
