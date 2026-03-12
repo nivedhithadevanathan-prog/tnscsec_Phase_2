@@ -296,40 +296,29 @@ async listForm6(params: { uid: number; role: number }) {
     return this.loadForm6Preview(uid);
   },
 
-  async _buildForm6View(uid: number, allowSubmitted: boolean) {
+ async _buildForm6View(uid: number, allowSubmitted: boolean) {
 
-    const form6 = await prisma.form6.findFirst({
-      where: { uid },
-      orderBy: { created_at: "desc" },
-    });
+  const form6 = await prisma.form6.findFirst({
+    where: { uid },
+    orderBy: { created_at: "desc" },
+  });
 
-    if (!form6) throw new Error("Form6 not found");
+  if (!form6) throw new Error("Form6 not found");
 
-    if (!allowSubmitted && form6.status !== form6_status.DRAFT) {
-      throw new Error("Form6 already submitted");
-    }
+  if (!allowSubmitted && form6.status !== form6_status.DRAFT) {
+    throw new Error("Form6 already submitted");
+  }
 
-    if (allowSubmitted && form6.status !== form6_status.SUBMITTED) {
-      throw new Error("Form6 not submitted yet");
-    }
+  if (allowSubmitted && form6.status !== form6_status.SUBMITTED) {
+    throw new Error("Form6 not submitted yet");
+  }
 
-    const form4 = await prisma.form4.findFirst({
-      where: { uid },
-      orderBy: { created_at: "desc" },
-    });
+  const form4 = await prisma.form4.findFirst({
+    where: { uid },
+    orderBy: { created_at: "desc" },
+  });
 
-    const filedSocieties = form4
-      ? await prisma.form4_filed_soc_mem_count.findMany({
-          where: { form4_id: form4.id },
-        })
-      : [];
-
-    const societies = filedSocieties.map((soc) => ({
-      form4_filed_soc_id: soc.id,
-      society_id: soc.society_id,
-      society_name: cleanText(soc.society_name),
-    }));
-
+  if (!form4) {
     return {
       form6: {
         id: form6.id,
@@ -343,7 +332,67 @@ async listForm6(params: { uid: number; role: number }) {
         district_id: form6.district_id,
         zone_id: form6.zone_id,
       },
-      societies,
+      societies: [],
     };
   }
+
+  /* 🔹 Only get societies that are NOT stopped */
+  const filedSocieties = await prisma.form4_filed_soc_mem_count.findMany({
+    where: {
+      form4_id: form4.id,
+      is_stopped: false
+    },
+    orderBy: { id: "asc" }
+  });
+
+  const filedSocIds = filedSocieties.map((s) => s.id);
+
+  /* 🔹 Only get ACTIVE candidates */
+  const candidates = await prisma.form5.findMany({
+    where: {
+      form4_filed_soc_id: { in: filedSocIds },
+      is_active: true
+    },
+    orderBy: { created_at: "asc" }
+  });
+
+  /* 🔹 Group candidates by society */
+  const candidateMap = new Map<number, any[]>();
+
+  for (const c of candidates) {
+    if (!candidateMap.has(c.form4_filed_soc_id)) {
+      candidateMap.set(c.form4_filed_soc_id, []);
+    }
+
+    candidateMap.get(c.form4_filed_soc_id)?.push({
+      id: c.id,
+      member_name: cleanText(c.member_name),
+      aadhar_no: cleanText(c.aadhar_no),
+      category_type: c.category_type,
+    });
+  }
+
+  const societies = filedSocieties.map((soc) => ({
+    form4_filed_soc_id: soc.id,
+    society_id: soc.society_id,
+    society_name: cleanText(soc.society_name),
+    candidates: candidateMap.get(soc.id) || [],
+  }));
+
+  return {
+    form6: {
+      id: form6.id,
+      status: form6.status,
+      created_at: form6.created_at,
+      submitted_at: form6.submitted_at,
+    },
+    userMeta: {
+      uid,
+      department_id: form6.department_id,
+      district_id: form6.district_id,
+      zone_id: form6.zone_id,
+    },
+    societies,
+  };
+}
 };
