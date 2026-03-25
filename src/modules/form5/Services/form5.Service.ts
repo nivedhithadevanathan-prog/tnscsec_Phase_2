@@ -125,14 +125,14 @@ async getForm5ListByUser(params: { uid: number; role: number }) {
 
   let form4;
 
-  // 🔹 ADMIN → get latest Form4 overall
+  //  ADMIN - get latest Form4 overall
   if (role === 1) {
     form4 = await prisma.form4.findFirst({
       orderBy: { created_at: "desc" },
     });
   }
 
-  // 🔹 NORMAL USER → get their latest Form4
+  //  NORMAL USER - get their latest Form4
   else {
     form4 = await prisma.form4.findFirst({
       where: { uid },

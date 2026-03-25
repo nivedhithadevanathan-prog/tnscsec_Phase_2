@@ -28,12 +28,12 @@ export const verifyToken = (
   try {
     const decoded: any = jwt.verify(token, process.env.JWT_SECRET!);
 
-    console.log("✅ DECODED TOKEN:", decoded);
+    console.log("DECODED TOKEN:", decoded);
 
     const user = decoded.data ?? decoded;
 
     if (!user?.uid && !user?.id) {
-      console.log("❌ Invalid token payload:", user);
+      console.log("Invalid token payload:", user);
       return res.status(401).json({
         success: false,
         statusCode: 401,
@@ -50,11 +50,11 @@ export const verifyToken = (
       role: user.role ?? null,
     };
 
-    console.log("👤 FINAL req.user:", req.user);
+    console.log("FINAL req.user:", req.user);
 
     next();
   } catch (err) {
-    console.log("❌ JWT ERROR:", err);
+    console.log("JWT ERROR:", err);
     return res.status(401).json({
       success: false,
       statusCode: 401,

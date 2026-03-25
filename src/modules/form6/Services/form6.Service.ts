@@ -75,7 +75,7 @@ async listForm6(params: { uid: number; role: number }) {
 
   const where: any = {
     status: form6_status.SUBMITTED,
-    ...(role !== 1 && { uid: uid }) // normal users see only their records
+    ...(role !== 1 && { uid: uid }) 
   };
 
   const forms = await prisma.form6.findMany({
@@ -336,7 +336,7 @@ async listForm6(params: { uid: number; role: number }) {
     };
   }
 
-  /* 🔹 Only get societies that are NOT stopped */
+  /* Only get societies that are NOT stopped */
   const filedSocieties = await prisma.form4_filed_soc_mem_count.findMany({
     where: {
       form4_id: form4.id,
@@ -347,7 +347,7 @@ async listForm6(params: { uid: number; role: number }) {
 
   const filedSocIds = filedSocieties.map((s) => s.id);
 
-  /* 🔹 Only get ACTIVE candidates */
+  /* Only get ACTIVE candidates */
   const candidates = await prisma.form5.findMany({
     where: {
       form4_filed_soc_id: { in: filedSocIds },
@@ -356,7 +356,7 @@ async listForm6(params: { uid: number; role: number }) {
     orderBy: { created_at: "asc" }
   });
 
-  /* 🔹 Group candidates by society */
+  /* Group candidates by society */
   const candidateMap = new Map<number, any[]>();
 
   for (const c of candidates) {

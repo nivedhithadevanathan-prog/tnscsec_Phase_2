@@ -238,7 +238,7 @@ async list(params: { uid: number; role: number }) {
 
   const { uid, role } = params;
 
-  // 🔹 ADMIN → show latest Form7
+  //  ADMIN - show latest Form7
   if (role === 1) {
 
     const form7 = await prisma.form7.findFirst({
@@ -248,7 +248,7 @@ async list(params: { uid: number; role: number }) {
     return form7 ? [form7] : [];
   }
 
-  // 🔹 NORMAL USER → show latest Form7 of their district
+  //  NORMAL USER - show latest Form7 of their district
   const user = await Form7Service.getUserDistrict(uid);
 
   if (user?.district_id == null) {

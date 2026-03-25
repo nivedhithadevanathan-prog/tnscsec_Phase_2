@@ -17,41 +17,14 @@ import {
 
 const router = Router();
 
-/*GET Form2 list for Form3*/
-router.get(
-  "/form2-list",
-  verifyToken,
-  getForm2ListForForm3
-);
+router.get("/form2-list",verifyToken,getForm2ListForForm3);
 
-/*GET Form3 list by logged-in user*/
-router.get(
-  "/list",
-  verifyToken,
-  getForm3ListByUser
-);
+router.get("/list",verifyToken,getForm3ListByUser);
 
-/*GET Editable (Latest)*/
-router.get(
-  "/editable",
-  verifyToken,
-  getEditableForm3
-);
+router.get("/editable",verifyToken,getEditableForm3);
 
-/*POST Submit Form3*/
-router.post(
-  "/submit",
-  verifyToken,
-  validate(submitForm3Validation),
-  submitForm3
-);
+router.post("/submit",verifyToken,validate(submitForm3Validation),submitForm3);
 
-/*PUT Edit & Submit Form3 Again*/
-router.put(
-  "/edit",
-  verifyToken,
-  validate(updateForm3Validation),
-  updateForm3
-);
+router.put("/edit",verifyToken,validate(updateForm3Validation),updateForm3);
 
 export default router;

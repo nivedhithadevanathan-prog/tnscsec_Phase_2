@@ -40,7 +40,7 @@ async login(username: string, password: string) {
 
     const accessToken = generateToken(user);
 
-    // ✅ Compute admin flag
+    //Compute admin flag
     const is_admin = user.role_id === 1;
 
     return {
@@ -49,7 +49,7 @@ async login(username: string, password: string) {
       user_id: user.id,
       fullname: user.fullname,
 
-      // ✅ Added fields
+      // Added fields
       role_id: user.role_id,
       is_admin,
       is_active: user.is_active,

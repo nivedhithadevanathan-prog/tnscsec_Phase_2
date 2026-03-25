@@ -198,7 +198,7 @@ export const getForm1ListUsecase = async (params: {
   const form1List = await prisma.form1.findMany({
     where: {
       is_active: 1,
-      ...(role !== 1 && { uid: uid }), // normal user sees only their records
+      ...(role !== 1 && { uid: uid }), 
     },
     orderBy: { id: "desc" },
     include: {

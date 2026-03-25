@@ -18,21 +18,9 @@ import {
 
 const router = Router();
 
-/*LIST Form2 submissions by logged-in user*/
 router.get("/list", verifyToken, getForm2ListByUser);
-
-/*Editable Form2*/
 router.get("/editable", verifyToken, getEditableForm2);
-
-/*Edit Form2*/
-router.put(
-  "/edit",
-  verifyToken,
-  validate(editForm2Validation),
-  editForm2
-);
-
-
+router.put("/edit",verifyToken,validate(editForm2Validation),editForm2);
 router.get("/get", verifyToken, getForm2SelectedSocieties);
 router.post("/checkbox", verifyToken, checkboxForm2);
 router.post("/submit", verifyToken, submitForm2);

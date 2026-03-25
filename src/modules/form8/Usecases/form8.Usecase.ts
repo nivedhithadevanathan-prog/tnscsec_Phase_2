@@ -243,7 +243,7 @@ export const Form8ListUsecase = {
 
     let targetDistrictId: number | undefined;
 
-    // 🔹 ADMIN → show all Form8
+    //  ADMIN - show all Form8
     if (role === 1) {
 
       const form8 = await prisma.form8.findFirst({
@@ -255,7 +255,7 @@ export const Form8ListUsecase = {
       targetDistrictId = form8.district_id;
     }
 
-    // 🔹 NORMAL USER → use user's district
+    //  NORMAL USER - use user's district
     else {
 
       const user = await prisma.users.findFirst({

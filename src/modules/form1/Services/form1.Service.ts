@@ -8,7 +8,6 @@ import {
   editEditableForm1Usecase,
 } from "../../form1/Usecases/form1.Usecase";
 
-import { ScopeResult } from "../../../utils/resolveScope";
 
 /*Get checkpoint zones*/
 export const getCheckpointZonesService = async (

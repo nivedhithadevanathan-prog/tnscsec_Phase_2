@@ -244,14 +244,14 @@ async getForm5BListByUser(params: { uid: number; role: number }) {
 
   let form4;
 
-  // 🔹 ADMIN → get latest Form4 overall
+  //  ADMIN - get latest Form4 overall
   if (role === 1) {
     form4 = await prisma.form4.findFirst({
       orderBy: { created_at: "desc" },
     });
   }
 
-  // 🔹 NORMAL USER → get their latest Form4
+  //  NORMAL USER - get their latest Form4
   else {
     form4 = await prisma.form4.findFirst({
       where: { uid },
@@ -353,14 +353,14 @@ async getEditableForm5BByUser(params: { uid: number; role: number }) {
 
   let form4;
 
-  // 🔹 ADMIN → latest Form4 overall
+  //  ADMIN - latest Form4 overall
   if (role === 1) {
     form4 = await prisma.form4.findFirst({
       orderBy: { created_at: "desc" },
     });
   }
 
-  // 🔹 NORMAL USER → latest Form4 for that user
+  //  NORMAL USER - latest Form4 for that user
   else {
     form4 = await prisma.form4.findFirst({
       where: { uid },
@@ -392,7 +392,7 @@ async getEditableForm5BByUser(params: { uid: number; role: number }) {
     };
   }
 
-  // 🔒 Check if editing is locked
+  //  Check if editing is locked
   const lockedSociety = filedSocieties.find((s) => s.stop_locked === true);
 
   if (lockedSociety) {
@@ -495,7 +495,7 @@ async editForm5B(payload: any) {
     throw new Error("Stop decisions locked. Cannot edit.");
   }
 
-  // 🔹 Update societies
+  //  Update societies
   if (Array.isArray(societies)) {
 
     for (const soc of societies) {
@@ -512,7 +512,7 @@ async editForm5B(payload: any) {
 
   }
 
-  // 🔹 Update candidates
+  //  Update candidates
   if (Array.isArray(candidates)) {
 
     for (const c of candidates) {

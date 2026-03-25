@@ -332,7 +332,7 @@ async getForm4ListByUser(params: { uid: number; role: number }) {
   const { uid, role } = params;
 
   const where: any = {
-    ...(role !== 1 && { uid: uid }) // normal users see only their records
+    ...(role !== 1 && { uid: uid }) 
   };
 
   const form4List = await prisma.form4.findMany({

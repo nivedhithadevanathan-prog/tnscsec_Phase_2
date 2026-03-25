@@ -61,7 +61,7 @@ async fetchForm3ListByUser(params: { uid: number; role: number }) {
 
   const where: any = {
     is_active: 1,
-    ...(role !== 1 && { uid: uid }), // normal users see only their records
+    ...(role !== 1 && { uid: uid }), 
   };
 
   const form3List = await prisma.form3.findMany({

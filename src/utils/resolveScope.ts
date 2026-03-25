@@ -1,7 +1,7 @@
 import { Request } from "express";
 
 export interface ScopeResult {
-  uid: number;              // ✅ Always available
+  uid: number;              //  Always available
   departmentId: number;
   districtId?: number;
   zoneId?: number;
@@ -11,7 +11,7 @@ export interface ScopeResult {
 export const resolveScope = (req: Request): ScopeResult => {
   const rawUser = (req as any).user;
 
-  // ✅ Support BOTH uid and id from token
+  //  Support BOTH uid and id from token
   const rawUid = rawUser?.uid ?? rawUser?.id;
 
   if (!rawUid) {
@@ -26,7 +26,7 @@ export const resolveScope = (req: Request): ScopeResult => {
 
   const role = rawUser.role;
 
-  // 🔹 ADMIN FLOW
+  //  ADMIN FLOW
   if (role === 1) {
     const departmentId = req.query.department_id
       ? Number(req.query.department_id)
@@ -53,7 +53,7 @@ export const resolveScope = (req: Request): ScopeResult => {
     };
   }
 
-  // 🔹 NORMAL USER FLOW
+  //  NORMAL USER FLOW
   return {
     uid,
     departmentId: Number(rawUser.departmentId),

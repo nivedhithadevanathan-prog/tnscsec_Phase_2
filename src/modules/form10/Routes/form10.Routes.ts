@@ -16,60 +16,20 @@ import { submitForm10Schema } from "../Validations/form10.Schema";
 const router = Router();
 
 /*FORM10 INIT*/
-router.post(
-  "/init",
-  verifyToken,
-  validate(initForm10Schema),
-  Form10Controller.init
-);
+router.post("/init",verifyToken,validate(initForm10Schema),Form10Controller.init);
 
 /*FORM10 PREVIEW*/
-router.get(
-  "/preview",
-  verifyToken,
-  validate(previewForm10Schema),
-  Form10Controller.preview
-);
+router.get("/preview",verifyToken,validate(previewForm10Schema),Form10Controller.preview);
 
-/*FORM10 REJECT CANDIDATES*/
-router.post(
-  "/reject",
-  verifyToken,
-  validate(rejectForm10Schema),
-  Form10Controller.reject
-);
+router.post("/reject",verifyToken,validate(rejectForm10Schema),Form10Controller.reject);
 
+router.post("/withdraw",verifyToken,validate(withdrawForm10Schema),Form10Controller.withdraw);
 
-/*FORM10 WITHDRAW CANDIDATES*/
-router.post(
-  "/withdraw",
-  verifyToken,
-  validate(withdrawForm10Schema),
-  Form10Controller.withdraw
-);
+router.post("/final",verifyToken,validate(finalForm10Schema),Form10Controller.final);
 
-/*FORM10 FINAL (PER SOCIETY)*/
-router.post(
-  "/final",
-  verifyToken,
-  validate(finalForm10Schema),
-  Form10Controller.final
-);
+router.post("/submit",verifyToken,validate(submitForm10Schema),Form10Controller.submit);
 
-/*FORM10 SUBMIT*/
-router.post(
-  "/submit",
-  verifyToken,
-  validate(submitForm10Schema),
-  Form10Controller.submit
-);
-
-/*FORM10 LIST*/
-router.get(
-  "/list",
-  verifyToken,
-  Form10Controller.list
-);
+router.get("/list",verifyToken,Form10Controller.list);
 
 
 export default router;

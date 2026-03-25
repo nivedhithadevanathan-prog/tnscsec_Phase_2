@@ -558,7 +558,7 @@ async list(params: { uid: number; role: number }) {
 
   let form10;
 
-  /* 🔹 ADMIN → show latest Form10 */
+  /* ADMIN - show latest Form10 */
   if (role === 1) {
     form10 = await prisma.form10.findFirst({
       orderBy: { id: "desc" },
@@ -566,7 +566,7 @@ async list(params: { uid: number; role: number }) {
     });
   }
 
-  /* 🔹 NORMAL USER → show their Form10 */
+  /* NORMAL USER - show their Form10 */
   else {
     form10 = await prisma.form10.findFirst({
       where: { uid },
