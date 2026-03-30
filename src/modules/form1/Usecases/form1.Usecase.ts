@@ -29,10 +29,25 @@ export const getCheckpointZonesUsecase = async (
     };
   }
 
+  // ✅ FIX: parse zone_id string → array
+  let zoneIds: number[] = [];
+
+  try {
+    zoneIds = JSON.parse(user.zone_id || "[]");
+  } catch (err) {
+    zoneIds = [];
+  }
+
+  // ✅ DEBUG (optional)
+  console.log("ZONE IDS:", zoneIds);
+  console.log("SELECTED IDS:", selectedIds);
+
   const allZones = await prisma.master_zone.findMany({
     where: {
       district_id: user.district_id,
-      zone_id: Number(user.zone_id),
+      zone_id: {
+        in: zoneIds, // ✅ FIXED
+      },
     },
     select: {
       id: true,
@@ -46,12 +61,14 @@ export const getCheckpointZonesUsecase = async (
 
   return {
     total_zones: validZones.length,
+
     selected_soc: validZones
       .filter((z) => selectedIds.includes(z.id))
       .map((z) => ({
         id: z.id,
         association_name: cleanText(z.association_name),
       })),
+
     non_selected_soc: validZones
       .filter((z) => !selectedIds.includes(z.id))
       .map((z) => ({
@@ -135,6 +152,7 @@ export const submitForm1Usecase = async (payload: any) => {
 };
 
 /*GET MASTER ZONES*/
+/*GET MASTER ZONES*/
 export const getMasterZonesUsecase = async (userId: number | string) => {
   const uid = Number(userId);
 
@@ -154,10 +172,24 @@ export const getMasterZonesUsecase = async (userId: number | string) => {
     return [];
   }
 
+  // ✅ FIX: convert string "[73,37,74]" → [73,37,74]
+  let zoneIds: number[] = [];
+
+  try {
+    zoneIds = JSON.parse(user.zone_id || "[]");
+  } catch (err) {
+    zoneIds = [];
+  }
+
+  // ✅ DEBUG (optional)
+  console.log("ZONE IDS:", zoneIds);
+
   const zones = await prisma.master_zone.findMany({
     where: {
       district_id: user.district_id,
-      zone_id: Number(user.zone_id),
+      zone_id: {
+        in: zoneIds, // ✅ correct fix
+      },
     },
     select: {
       id: true,
