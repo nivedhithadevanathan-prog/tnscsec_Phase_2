@@ -172,7 +172,6 @@ export const getMasterZonesUsecase = async (userId: number | string) => {
     return [];
   }
 
-  // ✅ FIX: convert string "[73,37,74]" → [73,37,74]
   let zoneIds: number[] = [];
 
   try {
@@ -181,14 +180,13 @@ export const getMasterZonesUsecase = async (userId: number | string) => {
     zoneIds = [];
   }
 
-  // ✅ DEBUG (optional)
   console.log("ZONE IDS:", zoneIds);
 
   const zones = await prisma.master_zone.findMany({
     where: {
       district_id: user.district_id,
       zone_id: {
-        in: zoneIds, // ✅ correct fix
+        in: zoneIds, 
       },
     },
     select: {
