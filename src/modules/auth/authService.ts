@@ -3,8 +3,8 @@ import { generateToken } from "../../utils/response/generateToken";
 
 const prisma = new PrismaClient();
 
-function cleanText(text: string | null | undefined) {
-  if (!text) return text;
+function cleanText(text: string | null | undefined): string | null {
+  if (!text) return null;   
   return text.replace(/[\r\n]+/g, " ").trim();
 }
 
@@ -12,10 +12,13 @@ export const AuthService = {
 async login(username: string, password: string) {
 
   const user = await prisma.users.findFirst({
-    where: { username: cleanText(username) },
+  where: {
+    username: cleanText(username) ?? null },
   });
 
   if (!user) return null;
+
+  if (!user?.password) return null;
 
   if (cleanText(password) !== cleanText(user.password)) return null;
 
@@ -32,11 +35,27 @@ async login(username: string, password: string) {
         })
       : null;
 
-    const zone = user.zone_id
-      ? await prisma.zone.findFirst({
-          where: { id: Number(user.zone_id) },
-        })
-      : null;
+let zoneNames: string[] = [];
+
+if (user.zone_id) {
+  try {
+    const zoneIds: number[] = JSON.parse(user.zone_id);
+
+    if (Array.isArray(zoneIds) && zoneIds.length > 0) {
+      const zones = await prisma.zone.findMany({
+        where: {
+          id: { in: zoneIds },
+        },
+      });
+
+      zoneNames = zones
+        .map((z) => cleanText(z.name))
+        .filter((name): name is string => !!name);
+    }
+  } catch (err) {
+    console.log("Invalid zone_id format:", user.zone_id);
+  }
+}
 
     const accessToken = generateToken(user);
 
@@ -60,8 +79,7 @@ async login(username: string, password: string) {
 
       department_name: cleanText(department?.name) || null,
       district_name: cleanText(district?.name) || null,
-      zone_name: cleanText(zone?.name) || null,
-
+      zone_name: zoneNames.length > 0 ? zoneNames : null,
       accessToken,
     };
   },
