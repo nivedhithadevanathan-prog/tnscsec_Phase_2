@@ -3,7 +3,7 @@ import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
 
 export const prisma = new PrismaClient();
-import { form2Usecases } from "../Usecases/form2.Usecase";
+import { form2Usecases } from "../usecases/form2.usecase";
 import { AuthRequest } from "../../../middleware/auth.middleware";
 
 

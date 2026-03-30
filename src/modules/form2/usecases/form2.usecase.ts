@@ -2,7 +2,7 @@ import { PrismaClient } from "@prisma/client";
 
 export const prisma = new PrismaClient();
 
-import { form2Service, form2Services } from "../Services/form2.Service";
+import { form2Service, form2Services } from "../services/form2.service";
 
 export const form2Usecases = {
   /*GET selected societies from Form1*/
