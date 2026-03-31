@@ -49,6 +49,7 @@ export const getForm3ListByUser = async (req: any, res: Response) => {
     const data = await form3Usecases.getForm3ListByUser({
       uid: Number(user.uid),
       role: Number(user.role),
+      zone_id: user.zone_id,
     });
 
     return res.status(200).json({

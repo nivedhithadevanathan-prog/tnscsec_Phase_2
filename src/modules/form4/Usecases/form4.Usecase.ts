@@ -18,16 +18,20 @@ export const Form4Usecase = {
     return Form4Service.submitForm4(payload);
   },
 /*List all Form4*/
-getForm4ListByUser(params: { uid: number; role: number }) {
+getForm4ListByUser(params: { 
+  uid: number; 
+  role: number; 
+  zone_id?: string; 
+}) {
 
-  const { uid, role } = params;
+  const { uid, role, zone_id } = params;
 
   return Form4Service.getForm4ListByUser({
     uid,
     role,
+    zone_id, // ✅ added
   });
 },
-
 
   /*Get Form4 details by ID*/
   getForm4Details(form4_id: number) {

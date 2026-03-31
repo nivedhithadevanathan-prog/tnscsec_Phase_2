@@ -142,6 +142,7 @@ export const getForm2ListByUser = async (req: Request, res: Response) => {
     const data = await form2Usecases.getForm2ListByUser({
       uid: Number(user.uid),
       role: Number(user.role),
+      zone_id: user.zone_id,
     });
 
     return res.status(200).json({

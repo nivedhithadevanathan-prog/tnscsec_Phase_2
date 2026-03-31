@@ -327,13 +327,41 @@ export const Form4Service = {
     };
   },
 /*List Form4*/
-async getForm4ListByUser(params: { uid: number; role: number }) {
+/*List Form4*/
+async getForm4ListByUser(params: { 
+  uid: number; 
+  role: number; 
+  zone_id?: string; 
+}) {
 
-  const { uid, role } = params;
+  const { uid, role, zone_id } = params;
 
-  const where: any = {
-    ...(role !== 1 && { uid: uid }) 
-  };
+  let zoneIds: number[] = [];
+
+  if (zone_id) {
+    try {
+      zoneIds = JSON.parse(zone_id);
+    } catch {}
+  }
+
+  let where: any = {};
+
+  // ADMIN
+  if (role === 1) {
+    // no filter
+  }
+
+  // JRCS (multiple zones)
+  else if (role === 4) {
+    where.zone_id = {
+      in: zoneIds,
+    };
+  }
+
+  // NORMAL USER
+  else {
+    where.uid = uid;
+  }
 
   const form4List = await prisma.form4.findMany({
     where,

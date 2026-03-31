@@ -221,15 +221,35 @@ export const getRuralDetailsUsecase = async (ids: number[]) => {
 export const getForm1ListUsecase = async (params: {
   uid: number;
   role: number;
+  zone_id?: string;
 }) => {
 
-  const { uid, role } = params;
+  const { uid, role, zone_id } = params;
+
+  let zoneIds: number[] = [];
+
+  if (zone_id) {
+    try {
+      zoneIds = JSON.parse(zone_id);
+    } catch {}
+  }
+
+  let where: any = {
+    is_active: 1,
+  };
+
+  if (role === 1) {
+    // admin → all
+  } else if (role === 4) {
+    where.zone_id = {
+      in: zoneIds,
+    };
+  } else {
+    where.uid = uid;
+  }
 
   const form1List = await prisma.form1.findMany({
-    where: {
-      is_active: 1,
-      ...(role !== 1 && { uid: uid }), 
-    },
+    where,
     orderBy: { id: "desc" },
     include: {
       form1_selected_soc: true,

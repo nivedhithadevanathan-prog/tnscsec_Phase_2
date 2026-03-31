@@ -11,21 +11,26 @@ export const form3Usecases = {
     return await form3Service.fetchForm2ForForm3(uid, fm2id);
   },
 /* GET Form3 list */
-async getForm3ListByUser(params: { uid: number; role: number }) {
+  async getForm3ListByUser(params: { 
+    uid: number; 
+    role: number; 
+    zone_id?: string; 
+  }) {
 
-  const { uid, role } = params;
+    const { uid, role, zone_id } = params;
 
-  const form3List = await form3Service.fetchForm3ListByUser({
-    uid,
-    role,
-  });
+    const form3List = await form3Service.fetchForm3ListByUser({
+      uid,
+      role,
+      zone_id, // ✅ added
+    });
 
-  if (!form3List || form3List.length === 0) {
-    return [];
-  }
+    if (!form3List || form3List.length === 0) {
+      return [];
+    }
 
-  return form3List;
-},
+    return form3List;
+  },
 
 
   /*GET Editable*/

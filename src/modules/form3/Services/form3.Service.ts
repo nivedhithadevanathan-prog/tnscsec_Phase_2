@@ -55,14 +55,37 @@ export const form3Service = {
   },
 
 /* GET Form3 list */
-async fetchForm3ListByUser(params: { uid: number; role: number }) {
+async fetchForm3ListByUser(params: { 
+  uid: number; 
+  role: number; 
+  zone_id?: string; 
+}) {
 
-  const { uid, role } = params;
+  const { uid, role, zone_id } = params;
 
-  const where: any = {
+  let zoneIds: number[] = [];
+
+  if (zone_id) {
+    try {
+      zoneIds = JSON.parse(zone_id);
+    } catch {}
+  }
+
+  let where: any = {
     is_active: 1,
-    ...(role !== 1 && { uid: uid }), 
   };
+
+  if (role === 1) {
+    // admin → all
+  } 
+  else if (role === 4) {
+    where.zone_id = {
+      in: zoneIds,
+    };
+  } 
+  else {
+    where.uid = uid;
+  }
 
   const form3List = await prisma.form3.findMany({
     where,
@@ -96,7 +119,6 @@ async fetchForm3ListByUser(params: { uid: number; role: number }) {
     })),
   }));
 },
-
 
   /*GET Editable*/
   async fetchEditableForm3(uid: number | string) {

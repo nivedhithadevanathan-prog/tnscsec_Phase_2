@@ -147,6 +147,7 @@ export const getForm1List = async (req: Request, res: Response) => {
     const data = await getForm1ListUsecase({
       uid: Number(user.uid),
       role: Number(user.role),
+      zone_id: user.zone_id, 
     });
 
     return res.status(200).json({

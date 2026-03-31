@@ -104,14 +104,37 @@ async submitForm2Usecase(payload: any) {
 },
 
 /*LIST Form2*/
-async getForm2ListByUser(params: { uid: number; role: number }) {
+async getForm2ListByUser(params: { 
+  uid: number; 
+  role: number; 
+  zone_id?: string;
+}) {
 
-  const { uid, role } = params;
+  const { uid, role, zone_id } = params;
+
+  let zoneIds: number[] = [];
+
+  if (zone_id) {
+    try {
+      zoneIds = JSON.parse(zone_id);
+    } catch {}
+  }
 
   let where: any = {
     is_active: true,
-    ...(role !== 1 && { uid: uid }), // normal users see only their records
   };
+
+  if (role === 1) {
+    // admin → all
+  } 
+  else if (role === 4) {
+    where.zone_id = {
+      in: zoneIds,
+    };
+  } 
+  else {
+    where.uid = uid;
+  }
 
   return form2Services.getForm2ListByUser(where);
 },

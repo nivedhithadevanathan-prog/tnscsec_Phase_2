@@ -61,11 +61,11 @@ model master_dist {
 
 model master_zone {
   id               Int     @id @default(autoincrement())
-  association_id   Int?
   district_id      Int?
   zone_id          Int?
   association_name String? @db.VarChar(150)
   is_active        Int     @default(1)
+  department_id    Int?
 }
 
 model reservation {
