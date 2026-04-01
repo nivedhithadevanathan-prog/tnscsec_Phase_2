@@ -73,6 +73,7 @@ async list(req: Request, res: Response) {
     const data = await Form7Usecase.list({
       uid: Number(user.uid),
       role: Number(user.role),
+      zone_id: user.zone_id,
     });
 
     return sendResponse(

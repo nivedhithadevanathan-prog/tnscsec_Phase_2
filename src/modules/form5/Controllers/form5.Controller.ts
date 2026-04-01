@@ -83,6 +83,7 @@ async getForm5List(req: Request, res: Response) {
     const data = await Form5Usecase.getForm5ListByUser({
       uid: Number(user.uid),
       role: Number(user.role),
+      zone_id: user.zone_id,
     });
 
     return sendResponse(

@@ -69,14 +69,42 @@ export const Form6Service = {
     return this._buildForm6View(uid, false);
   },
 /*LIST FORM-6*/
-async listForm6(params: { uid: number; role: number }) {
+async listForm6(params: { 
+  uid: number; 
+  role: number; 
+  zone_id?: string; 
+}) {
 
-  const { uid, role } = params;
+  const { uid, role, zone_id } = params;
 
-  const where: any = {
+  let zoneIds: number[] = [];
+
+  if (zone_id) {
+    try {
+      zoneIds = JSON.parse(zone_id);
+    } catch {}
+  }
+
+  let where: any = {
     status: form6_status.SUBMITTED,
-    ...(role !== 1 && { uid: uid }) 
   };
+
+  // 🔹 ADMIN → all submitted
+  if (role === 1) {
+    // no extra filter
+  }
+
+  // 🔹 JRCS → filter by zones
+  else if (role === 4) {
+    where.zone_id = {
+      in: zoneIds,
+    };
+  }
+
+  // 🔹 NORMAL USER → only own
+  else {
+    where.uid = uid;
+  }
 
   const forms = await prisma.form6.findMany({
     where,
@@ -94,16 +122,19 @@ async listForm6(params: { uid: number; role: number }) {
     created_at: f.created_at,
     submitted_at: f.submitted_at,
     total_societies: f.form6_society_decision.length,
+
     qualified_societies: f.form6_society_decision.filter(
       (d) =>
         d.election_status ===
         form6_society_decision_election_status.QUALIFIED
     ).length,
+
     unqualified_societies: f.form6_society_decision.filter(
       (d) =>
         d.election_status ===
         form6_society_decision_election_status.UNQUALIFIED
     ).length,
+
     unopposed_societies: f.form6_society_decision.filter(
       (d) =>
         d.election_status ===

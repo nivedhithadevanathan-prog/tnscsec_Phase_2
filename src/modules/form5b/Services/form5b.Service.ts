@@ -238,41 +238,120 @@ async submitForm5B(uid: number) {
 },
 
 /*GET Form5B LIST*/
-async getForm5BListByUser(params: { uid: number; role: number }) {
+async getForm5BListByUser(params: { 
+  uid: number; 
+  role: number; 
+  zone_id?: string; 
+}) {
 
-  const { uid, role } = params;
+  const { uid, role, zone_id } = params;
 
-  let form4;
+  let zoneIds: number[] = [];
 
-  //  ADMIN - get latest Form4 overall
+  if (zone_id) {
+    try {
+      zoneIds = JSON.parse(zone_id);
+    } catch {}
+  }
+
+  let form4List: any[] = [];
+
+  // 🔹 ADMIN → latest only
   if (role === 1) {
-    form4 = await prisma.form4.findFirst({
+    const latest = await prisma.form4.findFirst({
+      orderBy: { created_at: "desc" },
+    });
+    if (latest) form4List = [latest];
+  }
+
+  // 🔹 JRCS → ALL form4 from zones
+  else if (role === 4) {
+    form4List = await prisma.form4.findMany({
+      where: {
+        zone_id: {
+          in: zoneIds,
+        },
+      },
       orderBy: { created_at: "desc" },
     });
   }
 
-  //  NORMAL USER - get their latest Form4
+  // 🔹 NORMAL USER → latest own
   else {
-    form4 = await prisma.form4.findFirst({
+    const latest = await prisma.form4.findFirst({
       where: { uid },
       orderBy: { created_at: "desc" },
     });
+    if (latest) form4List = [latest];
   }
 
-  if (!form4) {
-    return { form4: null, societies: [] };
+  if (!form4List.length) {
+    return [];
   }
 
-  const filedSocieties =
-    await prisma.form4_filed_soc_mem_count.findMany({
-      where: { form4_id: form4.id },
-      orderBy: { id: "asc" },
-    });
+  const finalResult: any[] = [];
 
-  const filedSocIds = filedSocieties.map((s) => s.id);
+  for (const form4 of form4List) {
 
-  if (filedSocIds.length === 0) {
-    return {
+    const filedSocieties =
+      await prisma.form4_filed_soc_mem_count.findMany({
+        where: { form4_id: form4.id },
+        orderBy: { id: "asc" },
+      });
+
+    const filedSocIds = filedSocieties.map((s) => s.id);
+
+    let members: any[] = [];
+
+    if (filedSocIds.length > 0) {
+      members = await prisma.form5.findMany({
+        where: {
+          form4_filed_soc_id: { in: filedSocIds },
+        },
+        orderBy: { created_at: "asc" },
+      });
+    }
+
+    const map = new Map<number, any>();
+
+    for (const soc of filedSocieties) {
+      map.set(soc.id, {
+        filed_soc_id: soc.id,
+        society_id: soc.society_id,
+        society_name: cleanText(soc.society_name),
+        is_stopped: soc.is_stopped,
+        stop_remark: soc.stop_remark,
+        members: {
+          sc_st: [],
+          women: [],
+          general: [],
+          sc_st_dlg: [],
+          women_dlg: [],
+          general_dlg: [],
+        },
+      });
+    }
+
+    for (const m of members) {
+
+      if (!m.category_type) continue;
+
+      const soc = map.get(m.form4_filed_soc_id);
+      if (!soc) continue;
+
+      const key = String(m.category_type).toLowerCase().trim();
+
+      if (!soc.members[key]) continue;
+
+      soc.members[key].push({
+        id: m.id,
+        member_name: cleanText(m.member_name),
+        aadhar_no: cleanText(m.aadhar_no),
+        is_active: m.is_active, // ✅ important for stop candidate
+      });
+    }
+
+    finalResult.push({
       form4: {
         id: form4.id,
         district_name: cleanText(form4.district_name),
@@ -281,69 +360,11 @@ async getForm5BListByUser(params: { uid: number; role: number }) {
         filed_count: form4.filed_count,
         unfiled_count: form4.unfiled_count,
       },
-      societies: [],
-    };
-  }
-
-  const members = await prisma.form5.findMany({
-    where: {
-      form4_filed_soc_id: { in: filedSocIds },
-    },
-    orderBy: { created_at: "asc" },
-  });
-
-  const map = new Map<number, any>();
-
-  for (const soc of filedSocieties) {
-    map.set(soc.id, {
-      filed_soc_id: soc.id,
-      society_id: soc.society_id,
-      society_name: cleanText(soc.society_name),
-      is_stopped: soc.is_stopped,
-      stop_remark: soc.stop_remark,
-      members: {
-        sc_st: [],
-        women: [],
-        general: [],
-        sc_st_dlg: [],
-        women_dlg: [],
-        general_dlg: [],
-      },
+      societies: Array.from(map.values()),
     });
   }
 
-  for (const m of members) {
-
-    if (!m.category_type) continue;
-
-    const soc = map.get(m.form4_filed_soc_id);
-    if (!soc) continue;
-
-    const key = String(m.category_type).toLowerCase().trim();
-
-    if (!soc.members[key]) continue;
-
-    soc.members[key].push({
-      id: m.id,
-      member_name: cleanText(m.member_name),
-      aadhar_no: cleanText(m.aadhar_no),
-      is_active: m.is_active,
-    });
-
-  }
-
-  return {
-    form4: {
-      id: form4.id,
-      district_name: cleanText(form4.district_name),
-      zone_name: cleanText(form4.zone_name),
-      selected_soc_count: form4.selected_soc_count,
-      filed_count: form4.filed_count,
-      unfiled_count: form4.unfiled_count,
-    },
-    societies: Array.from(map.values()),
-  };
-
+  return finalResult;
 },
 
 /*GET Editable Form5B*/

@@ -27,13 +27,14 @@ submitForm5B(uid: number) {
 },
 
 /*GET Form5B list*/
-getForm5BListByUser(params: { uid: number; role: number }) {
+getForm5BListByUser(params: { uid: number; role: number; zone_id?: string; }) {
 
-  const { uid, role } = params;
+  const { uid, role, zone_id } = params;
 
   return Form5BService.getForm5BListByUser({
     uid,
     role,
+    zone_id,  
   });
 
 },

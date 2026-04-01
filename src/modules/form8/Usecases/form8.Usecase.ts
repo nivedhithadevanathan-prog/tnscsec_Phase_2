@@ -241,9 +241,9 @@ export const Form8ListUsecase = {
 
     const { uid, role } = params;
 
-    let targetDistrictId: number | undefined;
-
-    //  ADMIN - show all Form8
+    /* =========================
+       1. ADMIN
+    ========================== */
     if (role === 1) {
 
       const form8 = await prisma.form8.findFirst({
@@ -252,33 +252,79 @@ export const Form8ListUsecase = {
 
       if (!form8) return [];
 
-      targetDistrictId = form8.district_id;
+      return Form8Service.getSubmittedForm8Details(
+        form8.district_id
+      );
     }
 
-    //  NORMAL USER - use user's district
-    else {
+    /* =========================
+       2. JRCS (MULTI ZONE)
+    ========================== */
+    if (role === 4) {
 
       const user = await prisma.users.findFirst({
         where: { id: uid },
-        select: { district_id: true },
+        select: { zone_id: true },
       });
 
-      if (!user?.district_id) {
-        throw {
-          statusCode: 400,
-          message: "User district not found",
-        };
+      if (!user?.zone_id) return [];
+
+      let zoneIds: number[] = [];
+
+      try {
+        zoneIds = JSON.parse(user.zone_id);
+      } catch (err) {
+        console.log("Invalid zone_id format:", user.zone_id);
+        return [];
       }
 
-      targetDistrictId = user.district_id;
+      if (!zoneIds.length) return [];
+
+      // Get districts under these zones
+      const districts = await prisma.district.findMany({
+        where: {
+          zone_id: { in: zoneIds },
+        },
+        select: { id: true },
+      });
+
+      const districtIds = districts.map(d => d.id);
+
+      if (!districtIds.length) return [];
+
+      let finalResult: any[] = [];
+
+      // Fetch Form8 for ALL districts
+      for (const dId of districtIds) {
+        const data =
+          await Form8Service.getSubmittedForm8Details(dId);
+
+        if (Array.isArray(data)) {
+          finalResult.push(...data);
+        }
+      }
+
+      return finalResult;
     }
 
-    const data =
-      await Form8Service.getSubmittedForm8Details(
-        targetDistrictId
-      );
+    /* =========================
+       3. NORMAL USER
+    ========================== */
+    const user = await prisma.users.findFirst({
+      where: { id: uid },
+      select: { district_id: true },
+    });
 
-    return Array.isArray(data) ? data : [];
+    if (!user?.district_id) {
+      throw {
+        statusCode: 400,
+        message: "User district not found",
+      };
+    }
+
+    return Form8Service.getSubmittedForm8Details(
+      user.district_id
+    );
   }
-
 };
+

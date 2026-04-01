@@ -74,6 +74,7 @@ async listForm6(req: Request, res: Response) {
     const data = await Form6Usecase.listForm6({
       uid: Number(user.uid),
       role: Number(user.role),
+      zone_id: user.zone_id,
     });
 
     return sendResponse(

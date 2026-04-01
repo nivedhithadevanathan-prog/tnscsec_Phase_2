@@ -118,7 +118,6 @@ export const Form7Service = {
 
   /*SUBMIT/EDIT*/
 
-  /*Check existing Form7 for district*/
   async getExistingForm7(district_id: number) {
     return prisma.form7.findFirst({
       where: { district_id },
@@ -126,7 +125,6 @@ export const Form7Service = {
     });
   },
 
-  /*Create Form7 parent*/
   async createForm7(data: {
     district_id: number;
     district_name: string;
@@ -134,40 +132,14 @@ export const Form7Service = {
     return prisma.form7.create({
       data: {
         district_id: data.district_id,
-district_name: cleanText(data.district_name) ?? "",
+        district_name: cleanText(data.district_name) ?? "",
       },
     });
   },
 
-  /*Bulk insert Form7 societies*/
   async createForm7Societies(
     form7_id: number,
-    societies: {
-      society_id: number;
-      society_name: string;
-
-      final_sc_st_count: number;
-      final_women_count: number;
-      final_general_count: number;
-
-      final_sc_st_dlg_count: number;
-      final_women_dlg_count: number;
-      final_general_dlg_count: number;
-
-      form3_total: number;
-      casted_votes_count: number;
-      voting_percentage: number;
-
-      ballot_box_count: number;
-      stamp_count: number;
-      polling_stations_count: number;
-      election_officers_count: number;
-
-      polling_suspension_count:
-        | "RULE_52_18"
-        | "RULE_52A_6"
-        | "NO_ISSUES";
-    }[]
+    societies: any[]
   ) {
     return prisma.form7_societies.createMany({
       data: societies.map((s) => ({
@@ -199,16 +171,14 @@ district_name: cleanText(data.district_name) ?? "",
     });
   },
 
-  /*Delete Form7 societies*/
   async deleteForm7Societies(form7_id: number) {
     return prisma.form7_societies.deleteMany({
       where: { form7_id },
     });
   },
 
-   /*LIST / EDITABLE*/
+  /*LIST / EDITABLE*/
 
-  /*Get latest Form7 by district*/
   async getLatestForm7ByDistrict(district_id: number) {
     return prisma.form7.findFirst({
       where: { district_id },
@@ -216,7 +186,6 @@ district_name: cleanText(data.district_name) ?? "",
     });
   },
 
-  /*Get Form7 societies*/
   async getForm7Societies(form7_id: number) {
     const societies = await prisma.form7_societies.findMany({
       where: { form7_id },
@@ -227,5 +196,68 @@ district_name: cleanText(data.district_name) ?? "",
       ...s,
       society_name: cleanText(s.society_name),
     }));
+  },
+
+  /* 🔥 NEW: LIST FORM7 WITH ROLE + ZONE */
+  async listForm7(params: { 
+    uid: number; 
+    role: number; 
+    zone_id?: string; 
+  }) {
+
+    const { uid, role, zone_id } = params;
+
+    let zoneIds: number[] = [];
+
+    if (zone_id) {
+      try {
+        zoneIds = JSON.parse(zone_id);
+      } catch {}
+    }
+
+    // ADMIN
+    if (role === 1) {
+      const form7 = await prisma.form7.findFirst({
+        orderBy: { created_at: "desc" },
+      });
+
+      return form7 ? [form7] : [];
+    }
+
+    // JRCS
+    else if (role === 4) {
+
+      const districts = await prisma.district.findMany({
+        where: {
+          zone_id: { in: zoneIds },
+        },
+        select: { id: true },
+      });
+
+      const districtIds = districts.map((d) => d.id);
+
+      const form7List = await prisma.form7.findMany({
+        where: {
+          district_id: { in: districtIds },
+        },
+        orderBy: { created_at: "desc" },
+      });
+
+      return form7List;
+    }
+
+    // NORMAL USER
+    else {
+      const user = await this.getUserDistrict(uid);
+
+      if (user?.district_id == null) {
+        throw { statusCode: 400, message: "User district not found" };
+      }
+
+      const form7 =
+        await this.getLatestForm7ByDistrict(user.district_id);
+
+      return form7 ? [form7] : [];
+    }
   },
 };

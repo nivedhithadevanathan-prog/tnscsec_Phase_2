@@ -15,13 +15,18 @@ export const Form5Usecase = {
   },
 
  /*GET Form5 list*/
-getForm5ListByUser(params: { uid: number; role: number }) {
+getForm5ListByUser(params: { 
+  uid: number; 
+  role: number; 
+  zone_id?: string; // ✅ add
+}) {
 
-  const { uid, role } = params;
+  const { uid, role, zone_id } = params;
 
   return Form5Service.getForm5ListByUser({
     uid,
     role,
+    zone_id, // ✅ pass
   });
 },
 

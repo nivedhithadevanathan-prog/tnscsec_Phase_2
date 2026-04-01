@@ -15,13 +15,14 @@ export const Form6Usecase = {
     return Form6Service.getEditableForm6(uid);
   },
 /*LIST FORM-6*/
-listForm6(params: { uid: number; role: number }) {
+listForm6(params: { uid: number; role: number; zone_id?: string }) {
 
-  const { uid, role } = params;
+  const { uid, role, zone_id } = params;
 
   return Form6Service.listForm6({
     uid,
     role,
+    zone_id,
   });
 },
 

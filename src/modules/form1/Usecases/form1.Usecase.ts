@@ -151,7 +151,7 @@ export const submitForm1Usecase = async (payload: any) => {
   };
 };
 
-/*GET MASTER ZONES*/
+
 /*GET MASTER ZONES*/
 export const getMasterZonesUsecase = async (userId: number | string) => {
   const uid = Number(userId);

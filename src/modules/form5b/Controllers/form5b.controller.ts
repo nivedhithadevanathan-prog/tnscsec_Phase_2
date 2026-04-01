@@ -167,6 +167,7 @@ async getForm5BList(req: Request, res: Response) {
     const data = await Form5BUsecase.getForm5BListByUser({
       uid: Number(user.uid),
       role: Number(user.role),
+      zone_id: user.zone_id,
     });
 
     return sendResponse(

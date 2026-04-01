@@ -50,6 +50,7 @@ model district {
   id        Int     @id @default(autoincrement())
   name      String? @db.VarChar(255)
   is_active Int?    @default(1)
+  zone_id   Int?
 }
 
 model master_dist {

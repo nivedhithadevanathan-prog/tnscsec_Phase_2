@@ -234,13 +234,25 @@ export const Form7Usecase = {
 },
 
 /* LIST FORM7 */
-async list(params: { uid: number; role: number }) {
+/* LIST FORM7 */
+async list(params: { 
+  uid: number; 
+  role: number; 
+  zone_id?: string; 
+}) {
 
-  const { uid, role } = params;
+  const { uid, role, zone_id } = params;
 
-  //  ADMIN - show latest Form7
+  let zoneIds: number[] = [];
+
+  if (zone_id) {
+    try {
+      zoneIds = JSON.parse(zone_id);
+    } catch {}
+  }
+
+  // 🔹 ADMIN → latest Form7
   if (role === 1) {
-
     const form7 = await prisma.form7.findFirst({
       orderBy: { created_at: "desc" },
     });
@@ -248,17 +260,41 @@ async list(params: { uid: number; role: number }) {
     return form7 ? [form7] : [];
   }
 
-  //  NORMAL USER - show latest Form7 of their district
-  const user = await Form7Service.getUserDistrict(uid);
+  // 🔹 JRCS → ALL districts in their zones
+  else if (role === 4) {
 
-  if (user?.district_id == null) {
-    throw { statusCode: 400, message: "User district not found" };
+    const districts = await prisma.district.findMany({
+      where: {
+        zone_id: { in: zoneIds },
+      },
+      select: { id: true },
+    });
+
+    const districtIds = districts.map((d) => d.id);
+
+    const form7List = await prisma.form7.findMany({
+      where: {
+        district_id: { in: districtIds },
+      },
+      orderBy: { created_at: "desc" },
+    });
+
+    return form7List;
   }
 
-  const form7 =
-    await Form7Service.getLatestForm7ByDistrict(user.district_id);
+  // 🔹 NORMAL USER → district-based
+  else {
+    const user = await Form7Service.getUserDistrict(uid);
 
-  return form7 ? [form7] : [];
+    if (user?.district_id == null) {
+      throw { statusCode: 400, message: "User district not found" };
+    }
+
+    const form7 =
+      await Form7Service.getLatestForm7ByDistrict(user.district_id);
+
+    return form7 ? [form7] : [];
+  }
 },
 
   /*EDITABLE FORM7*/
