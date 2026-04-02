@@ -74,10 +74,12 @@ async fetchForm3ListByUser(params: {
   let where: any = {
     is_active: 1,
   };
-
+// admin - all
   if (role === 1) {
-    // admin → all
+   
   } 
+
+  //JRCS - ALL districts in their zones
   else if (role === 4) {
     where.zone_id = {
       in: zoneIds,

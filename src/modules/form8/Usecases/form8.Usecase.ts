@@ -111,7 +111,7 @@ export const Form8CheckboxUsecase = {
       const members =
         await Form8Service.getMembers(soc.id);
 
-      //FILTER NULL category_type (TS + runtime safe)
+      //FILTER NULL category_type
      const validMembers = members
   .filter((m) => m.category_type !== null)
   .map((m) => ({
@@ -142,7 +142,7 @@ export const Form8CheckboxUsecase = {
   },
 };
 
-/*FINAL RESULT SAVE USECASE (WINNERS + DLG)*/
+/*FINAL RESULT SAVE USECASE*/
 
 export const Form8FinalResultUsecase = {
   async saveFinalResult(data: {
@@ -192,7 +192,7 @@ export const Form8FinalResultUsecase = {
   },
 };
 
-/*SUBMIT FORM8 USECASE (POLLING DETAILS)*/
+/*SUBMIT FORM8 USECASE*/
 
 interface SubmitPayload {
   uid: number;
@@ -241,9 +241,7 @@ export const Form8ListUsecase = {
 
     const { uid, role } = params;
 
-    /* =========================
-       1. ADMIN
-    ========================== */
+    /*ADMIN*/
     if (role === 1) {
 
       const form8 = await prisma.form8.findFirst({
@@ -257,9 +255,7 @@ export const Form8ListUsecase = {
       );
     }
 
-    /* =========================
-       2. JRCS (MULTI ZONE)
-    ========================== */
+    /*JRCS*/
     if (role === 4) {
 
       const user = await prisma.users.findFirst({
@@ -307,9 +303,7 @@ export const Form8ListUsecase = {
       return finalResult;
     }
 
-    /* =========================
-       3. NORMAL USER
-    ========================== */
+    /*NORMAL USER*/
     const user = await prisma.users.findFirst({
       where: { id: uid },
       select: { district_id: true },

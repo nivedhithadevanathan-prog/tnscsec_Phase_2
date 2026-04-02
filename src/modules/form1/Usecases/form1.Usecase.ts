@@ -29,7 +29,6 @@ export const getCheckpointZonesUsecase = async (
     };
   }
 
-  // ✅ FIX: parse zone_id string → array
   let zoneIds: number[] = [];
 
   try {
@@ -38,7 +37,6 @@ export const getCheckpointZonesUsecase = async (
     zoneIds = [];
   }
 
-  // ✅ DEBUG (optional)
   console.log("ZONE IDS:", zoneIds);
   console.log("SELECTED IDS:", selectedIds);
 
@@ -46,7 +44,7 @@ export const getCheckpointZonesUsecase = async (
     where: {
       district_id: user.district_id,
       zone_id: {
-        in: zoneIds, // ✅ FIXED
+        in: zoneIds, 
       },
     },
     select: {

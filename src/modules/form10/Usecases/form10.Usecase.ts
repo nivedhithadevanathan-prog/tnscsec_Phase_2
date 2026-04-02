@@ -552,13 +552,19 @@ async submit(params: {
   return Form10Service.buildSubmitResponse();
 },
 /*LIST (VICE PRESIDENT RESULTS)*/
-async list(params: { uid: number; role: number }) {
+async list(params: {
+  uid: number;
+  role: number;
+  department_id?: number;
+  district_id?: number;
+  zone_id?: string;
+}) {
 
-  const { uid, role } = params;
+  const { uid, role, department_id, district_id, zone_id } = params;
 
   let form10;
 
-  /* ADMIN - show latest Form10 */
+  /*  ADMIN - show latest Form10 */
   if (role === 1) {
     form10 = await prisma.form10.findFirst({
       orderBy: { id: "desc" },
@@ -566,7 +572,35 @@ async list(params: { uid: number; role: number }) {
     });
   }
 
-  /* NORMAL USER - show their Form10 */
+  /*  JRCS - filter by dept, district, zone */
+  else if (role === 4) {
+
+    const zoneIds = zone_id
+      ? zone_id.split(",").map((z) => Number(z))
+      : [];
+
+    console.log("FORM10 JRCS DEBUG:", {
+      department_id,
+      district_id,
+      zoneIds
+    });
+
+    form10 = await prisma.form10.findFirst({
+      where: {
+        ...(department_id && { department_id }),
+        ...(district_id && { district_id }),
+        ...(zoneIds.length > 0 && {
+          zone_id: { in: zoneIds }
+        }),
+      },
+      orderBy: { id: "desc" },
+      select: { id: true, status: true },
+    });
+
+    console.log("FORM10 RESULT:", form10);
+  }
+
+  /*  NORMAL USER - show their Form10 */
   else {
     form10 = await prisma.form10.findFirst({
       where: { uid },
@@ -579,7 +613,7 @@ async list(params: { uid: number; role: number }) {
     throw { statusCode: 404, message: "No Form10 found" };
   }
 
-  /* Fetch Societies */
+  /*  Fetch Societies */
   const societies = await prisma.form10_society.findMany({
     where: { form10_id: form10.id },
     include: {
@@ -588,7 +622,7 @@ async list(params: { uid: number; role: number }) {
     },
   });
 
-  /* Build Response */
+  /*  Build Response */
   return societies.map((soc) =>
     Form10Service.buildListSociety({
       form10_society_id: soc.id,
@@ -606,7 +640,7 @@ async list(params: { uid: number; role: number }) {
       is_draft_visible: form10.status === "DRAFT",
     })
   );
-},
+}
 
 
 };

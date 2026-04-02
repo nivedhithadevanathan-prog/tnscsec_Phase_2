@@ -234,7 +234,6 @@ export const Form7Usecase = {
 },
 
 /* LIST FORM7 */
-/* LIST FORM7 */
 async list(params: { 
   uid: number; 
   role: number; 
@@ -251,7 +250,7 @@ async list(params: {
     } catch {}
   }
 
-  // 🔹 ADMIN → latest Form7
+  //ADMIN - latest Form7
   if (role === 1) {
     const form7 = await prisma.form7.findFirst({
       orderBy: { created_at: "desc" },
@@ -260,7 +259,7 @@ async list(params: {
     return form7 ? [form7] : [];
   }
 
-  // 🔹 JRCS → ALL districts in their zones
+  // JRCS - ALL districts in their zones
   else if (role === 4) {
 
     const districts = await prisma.district.findMany({
@@ -282,7 +281,7 @@ async list(params: {
     return form7List;
   }
 
-  // 🔹 NORMAL USER → district-based
+  // NORMAL USER - district-based
   else {
     const user = await Form7Service.getUserDistrict(uid);
 

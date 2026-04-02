@@ -183,10 +183,13 @@ async list(req: Request, res: Response) {
       return sendError(res, 401, "Unauthorized");
     }
 
-    const data = await Form9Usecase.list({
-      uid: Number(user.uid),
-      role: Number(user.role),
-    });
+  const data = await Form9Usecase.list({
+  uid: Number(user.uid),
+  role: Number(user.role),
+  department_id: user.department_id,
+  district_id: user.district_id,
+  zone_id: user.zone_id,
+});
 
     return sendResponse(
       res,

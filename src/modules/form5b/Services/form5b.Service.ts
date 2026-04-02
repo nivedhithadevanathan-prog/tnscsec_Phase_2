@@ -256,7 +256,7 @@ async getForm5BListByUser(params: {
 
   let form4List: any[] = [];
 
-  // 🔹 ADMIN → latest only
+  // ADMIN - latest only
   if (role === 1) {
     const latest = await prisma.form4.findFirst({
       orderBy: { created_at: "desc" },
@@ -264,7 +264,7 @@ async getForm5BListByUser(params: {
     if (latest) form4List = [latest];
   }
 
-  // 🔹 JRCS → ALL form4 from zones
+  // JRCS - ALL form4 from zones
   else if (role === 4) {
     form4List = await prisma.form4.findMany({
       where: {
@@ -276,7 +276,7 @@ async getForm5BListByUser(params: {
     });
   }
 
-  // 🔹 NORMAL USER → latest own
+  // NORMAL USER - latest own
   else {
     const latest = await prisma.form4.findFirst({
       where: { uid },
@@ -347,7 +347,7 @@ async getForm5BListByUser(params: {
         id: m.id,
         member_name: cleanText(m.member_name),
         aadhar_no: cleanText(m.aadhar_no),
-        is_active: m.is_active, // ✅ important for stop candidate
+        is_active: m.is_active, 
       });
     }
 

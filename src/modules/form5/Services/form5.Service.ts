@@ -137,7 +137,7 @@ async getForm5ListByUser(params: {
 
   let form4List: any[] = [];
 
-  // 🔹 ADMIN → latest only
+  // ADMIN - latest only
   if (role === 1) {
     const latest = await prisma.form4.findFirst({
       orderBy: { created_at: "desc" },
@@ -145,7 +145,7 @@ async getForm5ListByUser(params: {
     if (latest) form4List = [latest];
   }
 
-  // 🔹 JRCS → ALL form4 from zones
+  // JRCS - ALL form4 from zones
   else if (role === 4) {
     form4List = await prisma.form4.findMany({
       where: {
@@ -157,7 +157,7 @@ async getForm5ListByUser(params: {
     });
   }
 
-  // 🔹 NORMAL USER → latest own
+  // NORMAL USER -latest own
   else {
     const latest = await prisma.form4.findFirst({
       where: { uid },
@@ -188,7 +188,7 @@ async getForm5ListByUser(params: {
       members = await prisma.form5.findMany({
         where: {
           form4_filed_soc_id: { in: filedSocIds },
-          is_active: true, // ✅ only active in list
+          is_active: true, 
         },
         orderBy: { created_at: "asc" },
       });
@@ -252,7 +252,7 @@ async getForm5ListByUser(params: {
 
 async getEditableForm5(uid: number) {
 
-  // 🔹 Get latest form4 for user
+  // Get latest form4 for user
   const form4 = await prisma.form4.findFirst({
     where: { uid },
     orderBy: { created_at: "desc" },
@@ -262,7 +262,7 @@ async getEditableForm5(uid: number) {
     return { form4: null, societies: [] };
   }
 
-  // 🔹 Get filed societies
+  // Get filed societies
   const filedSocieties =
     await prisma.form4_filed_soc_mem_count.findMany({
       where: { form4_id: form4.id },
@@ -285,7 +285,7 @@ async getEditableForm5(uid: number) {
     };
   }
 
-  // 🔹 Get ALL members (including inactive for editable)
+  //Get ALL members (including inactive for editable)
   const members = await prisma.form5.findMany({
     where: {
       form4_filed_soc_id: { in: filedSocIds },
@@ -293,7 +293,7 @@ async getEditableForm5(uid: number) {
     orderBy: { created_at: "asc" },
   });
 
-  // 🔹 Map societies
+  // Map societies
   const map = new Map<number, any>();
 
   for (const soc of filedSocieties) {
@@ -312,7 +312,7 @@ async getEditableForm5(uid: number) {
     });
   }
 
-  // 🔹 Group members
+  // Group members
   for (const m of members) {
     if (!m.category_type) continue;
 
@@ -327,11 +327,11 @@ async getEditableForm5(uid: number) {
       id: m.id,
       member_name: cleanText(m.member_name),
       aadhar_no: cleanText(m.aadhar_no),
-      is_active: m.is_active, // ⭐ IMPORTANT for editable
+      is_active: m.is_active, 
     });
   }
 
-  // 🔹 Final response
+  //Final response
   return {
     form4: {
       id: form4.id,

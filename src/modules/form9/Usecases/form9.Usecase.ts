@@ -458,13 +458,19 @@ async final(params: {
     return Form9Service.buildSubmitResponse();
   },
 /*LIST (WINNERS)*/
-async list(params: { uid: number; role: number }) {
+async list(params: {
+  uid: number;
+  role: number;
+  department_id?: number;
+  district_id?: number;
+  zone_id?: string;
+}) {
 
-  const { uid, role } = params;
+  const { uid, role, department_id, district_id, zone_id } = params;
 
   let form9;
 
-  //  ADMIN - show latest Form9
+  // ADMIN - show latest Form9
   if (role === 1) {
     form9 = await prisma.form9.findFirst({
       orderBy: { id: "desc" },
@@ -472,7 +478,27 @@ async list(params: { uid: number; role: number }) {
     });
   }
 
-  //  NORMAL USER - show their Form9
+  // JRCS - filter by department, district, zone
+  else if (role === 4) {
+
+    const zoneIds = zone_id
+      ? zone_id.split(",").map((z) => Number(z))
+      : [];
+
+    form9 = await prisma.form9.findFirst({
+      where: {
+        department_id,
+        district_id,
+        ...(zoneIds.length > 0 && {
+          zone_id: { in: zoneIds }
+        })
+      },
+      orderBy: { id: "desc" },
+      select: { id: true, status: true },
+    });
+  }
+
+  // NORMAL USER 
   else {
     form9 = await prisma.form9.findFirst({
       where: { uid },

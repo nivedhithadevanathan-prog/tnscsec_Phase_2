@@ -9,9 +9,7 @@ import {
 
 export const Form8Service = {
 
-  /* =========================
-     FORM7 SOCIETIES (BASE DATA)
-  ========================== */
+  /*FORM7 SOCIETIES (BASE DATA)*/
   async getForm7SocietiesByDistrict(district_id: number) {
     return prisma.form7_societies.findMany({
       where: {
@@ -30,9 +28,7 @@ export const Form8Service = {
     });
   },
 
-  /* =========================
-     FORM5 MEMBERS (PER SOCIETY)
-  ========================== */
+  /*FORM5 MEMBERS (PER SOCIETY)*/
   async getMembers(form7_society_id: number) {
 
     const society = await prisma.form7_societies.findUnique({
@@ -56,9 +52,7 @@ export const Form8Service = {
     });
   },
 
-  /* =========================
-     RURAL COUNTS (FORM4)
-  ========================== */
+  /*RURAL COUNTS (FORM4)*/
   async getRuralCountsBySociety(society_id: number) {
     return prisma.form4_filed_soc_mem_count.findFirst({
       where: { society_id },
@@ -71,9 +65,7 @@ export const Form8Service = {
     });
   },
 
-  /* =========================
-     FORM8 HELPERS
-  ========================== */
+  /*FORM8 HELPERS*/
   async getLatestForm8ByDistrict(district_id: number) {
     return prisma.form8.findFirst({
       where: { district_id },
@@ -106,9 +98,7 @@ export const Form8Service = {
     return Form8Service.createForm8(district_id);
   },
 
-  /* =========================
-     CHECKBOX PREVIEW
-  ========================== */
+  /*CHECKBOX PREVIEW*/
   buildCheckboxPreview(params: {
     form7_society_id: number;
     members: {
@@ -159,9 +149,7 @@ export const Form8Service = {
     };
   },
 
-  /* =========================
-     FINAL RESULT SAVE
-  ========================== */
+  /*FINAL RESULT SAVE*/
   async saveFinalResult(data: {
     form8_id: number;
     form7_society_id: number;
@@ -202,9 +190,7 @@ export const Form8Service = {
     return { form8_id: data.form8_id, total: rows.length };
   },
 
-  /* =========================
-     SUBMIT FORM8
-  ========================== */
+  /*SUBMIT FORM8*/
   async submitForm8(form8_id: number, societies: any[]) {
 
     const count = await prisma.form8_final_result.count({
@@ -231,9 +217,7 @@ export const Form8Service = {
     return { form8_id, submitted: true };
   },
 
-  /* =========================
-     CORE LIST BUILDER
-  ========================== */
+  /*CORE LIST BUILDER*/
   async getSubmittedForm8Details(district_id: number) {
 
     const form8List = await prisma.form8.findMany({
@@ -286,7 +270,7 @@ for (const fr of form8.form8_final_result) {
 
   if (!soc) continue;
   if (!fr.form5_member_id) continue;
-  if (!fr.category_type) continue; // ✅ FIX
+  if (!fr.category_type) continue; 
 
   const member = await prisma.form5.findUnique({
     where: { id: fr.form5_member_id },
@@ -310,9 +294,7 @@ for (const fr of form8.form8_final_result) {
     return result;
   },
 
-  /* =========================
-     FINAL LIST API (ADMIN + JRCS + USER)
-  ========================== */
+  /*FINAL LIST API*/
   async listForm8(params: { uid: number; role: number }) {
 
     const { uid, role } = params;

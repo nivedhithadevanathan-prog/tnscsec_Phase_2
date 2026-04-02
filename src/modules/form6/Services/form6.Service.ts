@@ -89,19 +89,19 @@ async listForm6(params: {
     status: form6_status.SUBMITTED,
   };
 
-  // 🔹 ADMIN → all submitted
+  //ADMIN -all submitted
   if (role === 1) {
     // no extra filter
   }
 
-  // 🔹 JRCS → filter by zones
+  // JRCS  filter by zones
   else if (role === 4) {
     where.zone_id = {
       in: zoneIds,
     };
   }
 
-  // 🔹 NORMAL USER → only own
+  // NORMAL USER  only own
   else {
     where.uid = uid;
   }

@@ -327,7 +327,6 @@ export const Form4Service = {
     };
   },
 /*List Form4*/
-/*List Form4*/
 async getForm4ListByUser(params: { 
   uid: number; 
   role: number; 
@@ -348,7 +347,6 @@ async getForm4ListByUser(params: {
 
   // ADMIN
   if (role === 1) {
-    // no filter
   }
 
   // JRCS (multiple zones)
