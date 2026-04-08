@@ -6,9 +6,10 @@ import {
   getForm1ListUsecase,
   getEditableForm1Usecase,
   editEditableForm1Usecase,
+
 } from "../../form1/Usecases/form1.Usecase";
 
-
+import { getForm1PdfUsecase } from "../../form1/Usecases/form1.pdfUsecase";
 /*Get checkpoint zones*/
 export const getCheckpointZonesService = async (
   userId: number,
@@ -48,4 +49,9 @@ export const getEditableForm1Service = async (userId: number) => {
 /*Edit Form1*/
 export const editForm1Service = async (payload: any) => {
   return await editEditableForm1Usecase(payload);
+};
+
+/*pdf download*/
+export const getForm1PdfService = async (payload: any) => {
+  return await getForm1PdfUsecase(payload);
 };

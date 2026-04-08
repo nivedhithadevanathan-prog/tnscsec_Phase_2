@@ -9,6 +9,7 @@ import {
   getForm1List,
   getEditableForm1,
   editForm1,
+  getForm1Pdf,
 } from "../Controllers/form1.Controller";
 
 const router = Router();
@@ -20,5 +21,6 @@ router.post("/submit", verifyToken, submitForm1);
 router.get("/", verifyToken, getForm1List);
 router.get("/editable", verifyToken, getEditableForm1);
 router.put("/edit", verifyToken, editForm1);
+router.get("/pdf", verifyToken, getForm1Pdf);
 
 export default router;

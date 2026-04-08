@@ -13,7 +13,7 @@ import { verifyToken } from "../../../middleware/auth.middleware";
 import {
   validate,
   editForm2Validation,
-} from "../validations/form2.schema";
+} from "../Validations/form2.schema";
 
 const router = Router();
 

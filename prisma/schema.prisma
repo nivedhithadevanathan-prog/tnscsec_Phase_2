@@ -70,13 +70,16 @@ model master_zone {
 }
 
 model reservation {
-  id         Int  @id @default(autoincrement())
-  rurel_id   Int? @default(0)
-  tot_voters Int  @default(0)
-  sc_st      Int? @default(0)
-  women      Int? @default(0)
-  general    Int? @default(0)
-  is_active  Int? @default(1)
+  id          Int  @id @default(autoincrement())
+  rurel_id    Int? @default(0)
+  tot_voters  Int  @default(0)
+  sc_st       Int? @default(0)
+  women       Int? @default(0)
+  general     Int? @default(0)
+  sc_st_dlg   Int? @default(0)
+  women_dlg   Int? @default(0)
+  general_dlg Int? @default(0)
+  is_active   Int? @default(1)
 }
 
 model role {

@@ -8,7 +8,10 @@ import {
   getForm1ListUsecase,
   getEditableForm1Usecase,
   editEditableForm1Usecase,
+  
 } from "../../form1/Usecases/form1.Usecase";
+
+import { getForm1PdfUsecase } from "../../form1/Usecases/form1.pdfUsecase";
 
 /*GET CHECKPOINT ZONES*/
 export const getCheckpointZones = async (req: Request, res: Response) => {
@@ -233,6 +236,37 @@ export const editForm1 = async (req: Request, res: Response) => {
       success: false,
       statusCode: 400,
       message: err.message || "Unable to update Form1",
+    });
+  }
+};
+
+/*GET FORM1 PDF*/
+export const getForm1Pdf = async (req: Request, res: Response) => {
+  try {
+    const user = (req as any).user;
+
+    if (!user?.uid || !user?.role) {
+      return res.status(401).json({
+        success: false,
+        statusCode: 401,
+        message: "Unauthorized",
+      });
+    }
+
+    await getForm1PdfUsecase({
+      uid: Number(user.uid),
+      role: Number(user.role),
+      zone_id: req.query.zone_id || user.zone_id,
+      res, // ✅ IMPORTANT for PDF streaming
+    });
+
+    // ❗ No JSON response because PDF is streamed
+
+  } catch (err: any) {
+    return res.status(err.statusCode || 500).json({
+      success: false,
+      statusCode: err.statusCode || 500,
+      message: err.message || "Internal server error",
     });
   }
 };

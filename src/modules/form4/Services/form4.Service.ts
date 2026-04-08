@@ -92,6 +92,9 @@ export const Form4Service = {
         sc_st: true,
         women: true,
         general: true,
+        sc_st_dlg: true,
+        women_dlg: true,
+        general_dlg: true,
         tot_voters: true,
       },
     });
@@ -103,17 +106,30 @@ export const Form4Service = {
 
     selectedSocList = selectedSocList.map(soc => {
       const rural = reservationMap[Number(soc.society_id)] ?? {};
+
       const rural_sc_st = Number(rural.sc_st ?? 0);
       const rural_women = Number(rural.women ?? 0);
       const rural_general = Number(rural.general ?? 0);
+
+      // ✅ DLG FROM RESERVATION
+      const rural_sc_st_dlg = Number(rural.sc_st_dlg ?? 0);
+      const rural_women_dlg = Number(rural.women_dlg ?? 0);
+      const rural_general_dlg = Number(rural.general_dlg ?? 0);
 
       return {
         ...soc,
         selected: false,
         rural_id: rural.rurel_id ?? soc.society_id,
+
         rural_sc_st,
         rural_women,
         rural_general,
+
+        // ✅ added
+        rural_sc_st_dlg,
+        rural_women_dlg,
+        rural_general_dlg,
+
         rural_tot_voters:
           rural.tot_voters ??
           rural_sc_st + rural_women + rural_general,
@@ -193,17 +209,22 @@ export const Form4Service = {
         rural_general,
         rural_tot_voters:
           rural_sc_st + rural_women + rural_general,
+
+        // ✅ rural dlg from reservation
         rural_sc_st_dlg: item.rural_sc_st_dlg ?? 0,
         rural_women_dlg: item.rural_women_dlg ?? 0,
         rural_general_dlg: item.rural_general_dlg ?? 0,
+
         declared_sc_st,
         declared_women,
         declared_general,
         declared_tot_voters:
           declared_sc_st + declared_women + declared_general,
+
         declared_sc_st_dlg: item.declared_sc_st_dlg ?? 0,
         declared_women_dlg: item.declared_women_dlg ?? 0,
         declared_general_dlg: item.declared_general_dlg ?? 0,
+
         election_status,
         remarks: cleanText(item.remarks) ?? null,
       });
@@ -289,7 +310,7 @@ export const Form4Service = {
     });
 
     if (!form4) throw new Error("Form4 not found");
-    if (form4.uid !== uid) throw new Error("Unauthorized to edit this Form4");
+    if (form4.uid !== uid) throw new Error("Unauthorized");
 
     const form5Exists = await prisma.form5.findFirst({
       where: {
@@ -298,9 +319,7 @@ export const Form4Service = {
     });
 
     if (form5Exists) {
-      const err: any = new Error(
-        "Form4 already moved to Form5. Editing not allowed."
-      );
+      const err: any = new Error("Moved to Form5. Editing not allowed.");
       err.statusCode = 409;
       throw err;
     }
@@ -326,63 +345,54 @@ export const Form4Service = {
       }),
     };
   },
-/*List Form4*/
-async getForm4ListByUser(params: { 
-  uid: number; 
-  role: number; 
-  zone_id?: string; 
-}) {
 
-  const { uid, role, zone_id } = params;
+  /*List Form4*/
+  async getForm4ListByUser(params: {
+    uid: number;
+    role: number;
+    zone_id?: string;
+  }) {
 
-  let zoneIds: number[] = [];
+    const { uid, role, zone_id } = params;
 
-  if (zone_id) {
-    try {
-      zoneIds = JSON.parse(zone_id);
-    } catch {}
-  }
+    let zoneIds: number[] = [];
 
-  let where: any = {};
+    if (zone_id) {
+      try {
+        zoneIds = JSON.parse(zone_id);
+      } catch {}
+    }
 
-  // ADMIN
-  if (role === 1) {
-  }
+    let where: any = {};
 
-  // JRCS (multiple zones)
-  else if (role === 4) {
-    where.zone_id = {
-      in: zoneIds,
-    };
-  }
+    if (role === 1) {
+    } else if (role === 4) {
+      where.zone_id = { in: zoneIds };
+    } else {
+      where.uid = uid;
+    }
 
-  // NORMAL USER
-  else {
-    where.uid = uid;
-  }
-
-  const form4List = await prisma.form4.findMany({
-    where,
-    orderBy: { created_at: "desc" },
-  });
-
-  const result = [];
-
-  for (const form4 of form4List) {
-    result.push({
-      form4,
-      filedList: await prisma.form4_filed_soc_mem_count.findMany({
-        where: { form4_id: form4.id },
-      }),
-      unfiledList: await prisma.form4_unfiled_soc_mem_count.findMany({
-        where: { form4_id: form4.id },
-      }),
+    const form4List = await prisma.form4.findMany({
+      where,
+      orderBy: { created_at: "desc" },
     });
-  }
 
-  return result;
-},
+    const result = [];
 
+    for (const form4 of form4List) {
+      result.push({
+        form4,
+        filedList: await prisma.form4_filed_soc_mem_count.findMany({
+          where: { form4_id: form4.id },
+        }),
+        unfiledList: await prisma.form4_unfiled_soc_mem_count.findMany({
+          where: { form4_id: form4.id },
+        }),
+      });
+    }
+
+    return result;
+  },
 
   /*Editable Form4*/
   async getEditableForm4(uid: number) {
