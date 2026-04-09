@@ -9,18 +9,19 @@ function cleanText(text: string | null | undefined): string | null {
 }
 
 export const AuthService = {
-async login(username: string, password: string) {
+  async login(username: string, password: string) {
 
-  const user = await prisma.users.findFirst({
-  where: {
-    username: cleanText(username) ?? null },
-  });
+    const user = await prisma.users.findFirst({
+      where: {
+        username: cleanText(username) ?? null
+      },
+    });
 
-  if (!user) return null;
+    if (!user) return null;
 
-  if (!user?.password) return null;
+    if (!user?.password) return null;
 
-  if (cleanText(password) !== cleanText(user.password)) return null;
+    if (cleanText(password) !== cleanText(user.password)) return null;
 
     // Fetch Names
     const district = user.district_id
@@ -35,31 +36,41 @@ async login(username: string, password: string) {
         })
       : null;
 
-let zoneNames: string[] = [];
+    // FIXED ZONE HANDLING
+   let zoneNames: string[] = [];
 
 if (user.zone_id) {
   try {
-    const zoneIds: number[] = JSON.parse(user.zone_id);
+    // extract numbers safely (no JSON.parse)
+    const zoneIds = user.zone_id
+      .match(/\d+/g)
+      ?.map(Number) || [];
 
-    if (Array.isArray(zoneIds) && zoneIds.length > 0) {
+    console.log("ZONE IDS:", zoneIds);
+
+    if (zoneIds.length > 0) {
       const zones = await prisma.zone.findMany({
         where: {
           id: { in: zoneIds },
         },
       });
 
+      console.log("ZONES FOUND:", zones);
+
       zoneNames = zones
-        .map((z) => cleanText(z.name))
+        .map((z) => (z.name ? z.name.trim() : null))
         .filter((name): name is string => !!name);
     }
+
   } catch (err) {
-    console.log("Invalid zone_id format:", user.zone_id);
+    console.log("Zone error:", err);
   }
 }
 
+
     const accessToken = generateToken(user);
 
-    //Compute admin flag
+    // Compute admin flag
     const is_admin = user.role_id === 1;
 
     return {
@@ -80,6 +91,7 @@ if (user.zone_id) {
       department_name: cleanText(department?.name) || null,
       district_name: cleanText(district?.name) || null,
       zone_name: zoneNames.length > 0 ? zoneNames : null,
+
       accessToken,
     };
   },
