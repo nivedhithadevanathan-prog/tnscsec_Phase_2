@@ -72,6 +72,11 @@ export const form2Services = {
       })),
     };
   },
+
+  /*PDF DOWNLOAD*/
+  async getForm2Pdf(payload: any) {
+    return payload;
+  },
 };
 
 /*SERVICE GROUP 2 — WRITE (SUBMIT / CHECKBOX / EDIT)*/

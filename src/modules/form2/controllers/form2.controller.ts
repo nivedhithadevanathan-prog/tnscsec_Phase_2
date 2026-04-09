@@ -224,3 +224,36 @@ export const editForm2 = async (req: Request, res: Response) => {
     });
   }
 };
+
+/*GET FORM2 PDF*/
+export const getForm2Pdf = async (req: Request, res: Response) => {
+  try {
+    const user = (req as any).user;
+
+    if (!user?.uid || !user?.role) {
+      return res.status(401).json({
+        success: false,
+        statusCode: 401,
+        message: "Unauthorized",
+      });
+    }
+
+    await form2Usecases.getForm2PdfUsecase({
+      uid: Number(user.uid),
+      role: Number(user.role),
+      zone_id: req.query.zone_id || user.zone_id,
+      res, // ✅ important for PDF streaming
+    });
+
+    // ❗ No JSON response (PDF will be downloaded)
+
+  } catch (error: any) {
+    console.error("Form2 PDF error:", error);
+
+    return res.status(error.statusCode || 500).json({
+      success: false,
+      statusCode: error.statusCode || 500,
+      message: error.message || "Internal server error",
+    });
+  }
+};

@@ -159,6 +159,91 @@ async getForm2ListByUser(params: {
   }) {
     return form2Service.editForm2(payload);
   },
+
+/*PDF DOWNLOAD*/
+async getForm2PdfUsecase(payload: {
+  uid: number;
+  role: number;
+  zone_id?: string;
+  res: any;
+}) {
+
+  const { uid, role, zone_id, res } = payload;
+
+  /* -------------------- GET LIST -------------------- */
+  const list = await this.getForm2ListByUser({
+    uid,
+    role,
+    zone_id,
+  });
+
+  if (!list || list.length === 0) {
+    throw new Error("No data found");
+  }
+
+  /* -------------------- TITLE -------------------- */
+  const title =
+    "சங்கம் உறுப்பினர் பட்டியல் வெளியிடுதல் மற்றும் வாக்காளர் பட்டியல் அலுவலருக்கு உறுப்பினர் பட்டியல் அளித்த/அளிக்காத சங்கங்கள் விவரம்";
+
+  /* -------------------- COLUMNS -------------------- */
+  const columns = [
+    { header: "மாவட்டம்", key: "district_name", width: 70 },
+    { header: "சரகம்", key: "zone_name", width: 70 },
+    {
+      header: "உறுப்பினர் பட்டியல் தயாரிக்க வேண்டிய சங்கங்கள்",
+      key: "prepared_societies",
+      width: "*",
+    },
+    {
+      header: "உறுப்பினர் பட்டியல் அளித்த சங்கங்கள்",
+      key: "submitted_societies",
+      width: "*",
+    },
+    {
+      header: "அளிக்காத சங்கங்கள்",
+      key: "not_submitted_societies",
+      width: "*",
+    },
+    {
+      header: "எண்ணிக்கை",
+      key: "not_submitted_count",
+      width: 40,
+    },
+  ];
+
+  /* -------------------- ROWS -------------------- */
+  const rows = list.map((item: any) => {
+
+    const selectedNames = item.selected_soc
+      ?.map((s: any) => s.society_name)
+      .join("\n");
+
+    const nonSelectedNames = item.non_selected_soc
+      ?.map((s: any) => s.society_name)
+      .join("\n");
+
+    return {
+      district_name: item.district_name || "-",
+      zone_name: item.zone_name || "-",
+
+      prepared_societies: selectedNames || "-",
+      submitted_societies: selectedNames || "-",
+
+      not_submitted_societies: nonSelectedNames || "-",
+      not_submitted_count: item.non_selected_soc?.length || 0,
+    };
+  });
+
+  /* -------------------- GENERATE PDF -------------------- */
+  const { generatePDF } = await import("../../../utils/pdfGenerator");
+
+  generatePDF(res, title, columns, rows);
+
+  return true;
+},
+
+
+
 };
 
 export default form2Usecases;
