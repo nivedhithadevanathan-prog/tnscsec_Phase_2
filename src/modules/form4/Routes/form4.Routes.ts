@@ -16,6 +16,9 @@ router.get("/list",verifyToken,Form4Controller.getForm4List);
 
 router.get("/editable",verifyToken,Form4Controller.getEditableForm4);
 
+router.get("/pdf", verifyToken, Form4Controller.getForm4Pdf);
+
 router.get("/:form4_id",verifyToken,Form4Controller.getForm4Details);
+
 
 export default router;

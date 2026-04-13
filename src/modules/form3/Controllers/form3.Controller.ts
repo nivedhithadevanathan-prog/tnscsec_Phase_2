@@ -147,3 +147,34 @@ export const updateForm3 = async (req: any, res: Response) => {
     });
   }
 };
+
+/*GET FORM3 PDF*/
+export const getForm3Pdf = async (req: any, res: Response) => {
+  try {
+    const user = req.user;
+
+    if (!user?.uid || !user?.role) {
+      return res.status(400).json({
+        success: false,
+        statusCode: 400,
+        message: "User information missing",
+      });
+    }
+
+    await form3Usecases.getForm3PdfUsecase({
+      uid: Number(user.uid),
+      role: Number(user.role),
+      zone_id: req.query?.zone_id || user.zone_id,
+      res, //  required for PDF streaming
+    });
+
+    // ❗ No JSON response (PDF will be sent directly)
+
+  } catch (error: any) {
+    return res.status(500).json({
+      success: false,
+      statusCode: 500,
+      message: error.message || "Internal server error",
+    });
+  }
+};

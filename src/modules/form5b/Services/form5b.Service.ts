@@ -555,4 +555,13 @@ async editForm5B(payload: any) {
 
 },
 
+/*GET Form5B PDF*/
+async getForm5BPdf(params: { 
+  uid: number; 
+  role: number; 
+  zone_id?: string; 
+}) {
+  return this.getForm5BListByUser(params);
+},
+
 };

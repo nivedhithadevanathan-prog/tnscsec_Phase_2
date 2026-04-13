@@ -313,4 +313,10 @@ async fetchForm3ListByUser(params: {
       },
     };
   },
+
+/*PDF DOWNLOAD*/
+async getForm3Pdf(payload: any) {
+  return payload;
+},
+
 };

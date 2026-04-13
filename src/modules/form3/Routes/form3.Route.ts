@@ -7,6 +7,7 @@ import {
   getEditableForm3,
   submitForm3,
   updateForm3,
+  getForm3Pdf,
 } from "../../form3/Controllers/form3.Controller";
 
 import {
@@ -26,5 +27,7 @@ router.get("/editable",verifyToken,getEditableForm3);
 router.post("/submit",verifyToken,validate(submitForm3Validation),submitForm3);
 
 router.put("/edit",verifyToken,validate(updateForm3Validation),updateForm3);
+
+router.get("/pdf", verifyToken, getForm3Pdf);
 
 export default router;

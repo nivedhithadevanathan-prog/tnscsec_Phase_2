@@ -263,4 +263,31 @@ async editForm5B(req: Request, res: Response) {
   }
 },
 
+/*GET Form5B PDF*/
+async getForm5BPdf(req: Request, res: Response) {
+  try {
+
+    const user = (req as any).user;
+
+    if (!user?.uid || !user?.role) {
+      return sendError(res, 401, "Unauthorized");
+    }
+
+    await Form5BUsecase.getForm5BPdf({
+      uid: Number(user.uid),
+      role: Number(user.role),
+      zone_id: user.zone_id,
+      res,
+    });
+
+  } catch (err: any) {
+    return sendError(
+      res,
+      500,
+      "Error generating Form5B PDF",
+      err.message
+    );
+  }
+},
+
 };

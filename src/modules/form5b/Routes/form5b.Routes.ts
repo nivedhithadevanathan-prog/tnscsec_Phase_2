@@ -18,4 +18,6 @@ router.get("/editable",verifyToken,Form5BController.getEditableForm5B);
 
 router.put("/edit",verifyToken,Form5BController.editForm5B);
 
+router.get("/pdf", verifyToken, Form5BController.getForm5BPdf);
+
 export default router;

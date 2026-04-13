@@ -419,4 +419,48 @@ export const Form4Service = {
       ],
     };
   },
+/*PDF DOWNLOAD*/
+async getForm4Pdf(payload: any) {
+
+  const { uid, role, zone_id } = payload;
+
+  let zoneIds: number[] = [];
+
+  if (zone_id) {
+    try {
+      zoneIds = JSON.parse(zone_id);
+    } catch {}
+  }
+
+  let where: any = {};
+
+  if (role === 1) {
+    // admin → all
+  } else if (role === 4) {
+    where.zone_id = { in: zoneIds };
+  } else {
+    where.uid = uid;
+  }
+
+  const form4List = await prisma.form4.findMany({
+    where,
+    orderBy: { created_at: "desc" },
+  });
+
+  const result = [];
+
+  for (const form4 of form4List) {
+    result.push({
+      form4,
+      filedList: await prisma.form4_filed_soc_mem_count.findMany({
+        where: { form4_id: form4.id },
+      }),
+      unfiledList: await prisma.form4_unfiled_soc_mem_count.findMany({
+        where: { form4_id: form4.id },
+      }),
+    });
+  }
+
+  return result;
+},
 };

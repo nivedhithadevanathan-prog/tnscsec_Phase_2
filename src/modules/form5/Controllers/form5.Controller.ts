@@ -166,4 +166,36 @@ async getForm5List(req: Request, res: Response) {
       );
     }
   },
+
+/*GET FORM5 PDF*/
+async getForm5Pdf(req: Request, res: Response) {
+  try {
+    const user = (req as any).user;
+
+    if (!user?.uid || !user?.role) {
+      return res.status(400).json({
+        success: false,
+        statusCode: 400,
+        message: "User information missing",
+      });
+    }
+
+    await Form5Usecase.getForm5Pdf({
+      uid: Number(user.uid),
+      role: Number(user.role),
+      zone_id: req.query?.zone_id || user.zone_id,
+      res, // ✅ IMPORTANT for PDF streaming
+    });
+
+    // ❗ No JSON response (PDF will be streamed)
+
+  } catch (error: any) {
+    return res.status(500).json({
+      success: false,
+      statusCode: 500,
+      message: error.message || "Internal server error",
+    });
+  }
+},
+
 };

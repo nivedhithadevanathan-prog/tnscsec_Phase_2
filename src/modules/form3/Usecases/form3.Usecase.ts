@@ -100,4 +100,84 @@ export const form3Usecases = {
       payload
     );
   },
+
+/*PDF DOWNLOAD*/
+async getForm3PdfUsecase(payload: {
+  uid: number;
+  role: number;
+  zone_id?: string;
+  res: any;
+}) {
+
+  const { uid, role, zone_id, res } = payload;
+
+  /* -------------------- GET LIST -------------------- */
+  const list = await this.getForm3ListByUser({
+    uid,
+    role,
+    zone_id,
+  });
+
+  if (!list || list.length === 0) {
+    throw new Error("No data found");
+  }
+
+  /* -------------------- TITLE -------------------- */
+  const title =
+    "இறுதி வாக்காளர் பட்டியல் வெளியிடப்பட்ட விவரம்";
+
+  /* -------------------- COLUMNS -------------------- */
+  const columns = [
+    { header: "வ.எண்", key: "sno", width: 25 },
+    { header: "மாவட்டம்", key: "district_name", width: 60 },
+    { header: "சரகம்", key: "zone_name", width: 60 },
+    { header: "சங்கத்தின் பெயர்", key: "society_name", width: "*" },
+    { header: "உறுப்பினர் எண்ணிக்கை", key: "ass_memlist", width: 60 },
+    { header: "கோரிக்கை/மறுப்பு", key: "ero_claim", width: 60 },
+    { header: "சேர்க்கப்பட்டது", key: "jcount", width: 50 },
+    { header: "நீக்கப்பட்டது", key: "rcount", width: 50 },
+    { header: "மொத்த வாக்காளர்கள்", key: "tot_voters", width: 60 },
+  ];
+
+  /* -------------------- ROWS (FLATTEN) -------------------- */
+  const rows: any[] = [];
+  let index = 1;
+
+  for (const form of list) {
+
+    for (const soc of form.form3_societies || []) {
+
+      rows.push({
+        sno: index++,
+
+        district_name: form.district_name || "-",
+        zone_name: form.zone_name || "-",
+
+        society_name: soc.society_name || "-",
+
+        ass_memlist: soc.ass_memlist ?? "-",
+
+        ero_claim:
+          soc.ero_claim === 1
+            ? "ஆம்"
+            : soc.ero_claim === 0
+            ? "இல்லை"
+            : "-",
+
+        jcount: soc.jcount ?? 0,
+        rcount: soc.rcount ?? 0,
+
+        tot_voters: soc.tot_voters ?? 0,
+      });
+    }
+  }
+
+  /* -------------------- GENERATE PDF -------------------- */
+  const { generatePDF } = await import("../../../utils/pdfGenerator");
+
+  generatePDF(res, title, columns, rows);
+
+  return true;
+},
+
 };
