@@ -185,29 +185,49 @@ async getForm2PdfUsecase(payload: {
   const title =
     "சங்கம் உறுப்பினர் பட்டியல் வெளியிடுதல் மற்றும் வாக்காளர் பட்டியல் அலுவலருக்கு உறுப்பினர் பட்டியல் அளித்த/அளிக்காத சங்கங்கள் விவரம்";
 
-  /* -------------------- COLUMNS -------------------- */
+  /* -------------------- COLUMNS (🔥 FULL TAMIL) -------------------- */
   const columns = [
-    { header: "மாவட்டம்", key: "district_name", width: 70 },
-    { header: "சரகம்", key: "zone_name", width: 70 },
+
     {
-      header: "உறுப்பினர் பட்டியல் தயாரிக்க வேண்டிய சங்கங்கள்",
+      header: "வ.எண்",
+      key: "sno",
+      width: 25,
+    },
+
+    {
+      header: "மாவட்ட தேர்தல் அலுவலர் மாவட்டம்/மண்டலம்",
+      key: "district_name",
+      width: 90,
+    },
+
+    {
+      header: "மாவட்ட தேர்தல் அலுவலர் சரகம்",
+      key: "zone_name",
+      width: 90,
+    },
+
+    {
+      header: "உறுப்பினர் பட்டியல் தயாரித்து வெளியிட வேண்டிய சங்கங்களின் பெயர்",
       key: "prepared_societies",
       width: "*",
     },
+
     {
-      header: "உறுப்பினர் பட்டியல் அளித்த சங்கங்கள்",
+      header: "வாக்காளர் பட்டியல் அலுவலருக்கு உறுப்பினர் பட்டியல் அளித்த சங்கங்களின் பெயர்",
       key: "submitted_societies",
       width: "*",
     },
+
     {
-      header: "அளிக்காத சங்கங்கள்",
+      header: "வாக்காளர் பட்டியல் அலுவலருக்கு உறுப்பினர் பட்டியல் அளிக்காத சங்கங்களின் பெயர்",
       key: "not_submitted_societies",
       width: "*",
     },
+
     {
-      header: "எண்ணிக்கை",
+      header: "வாக்காளர் பட்டியல் அலுவலருக்கு உறுப்பினர் பட்டியல் அளிக்காத சங்கங்களின் எண்ணிக்கை",
       key: "not_submitted_count",
-      width: 40,
+      width: 80,
     },
   ];
 
@@ -237,9 +257,13 @@ async getForm2PdfUsecase(payload: {
   /* -------------------- GENERATE PDF -------------------- */
   const { generatePDF } = await import("../../../utils/pdfGenerator");
 
-  generatePDF(res, title, columns, rows);
+  return generatePDF(
+    res,
+    title,
+    columns,
+    rows,
 
-  return true;
+  );
 },
 
 

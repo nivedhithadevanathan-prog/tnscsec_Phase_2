@@ -146,6 +146,8 @@ model form2 {
   masterzone_count       Int?
   remark                 String?                  @db.VarChar(255)
   selected_soc_count     Int?
+  department_name        String?                  @db.VarChar(255)
+  zone_name              String?                  @db.VarChar(255)
   form1                  form1                    @relation(fields: [form1_id], references: [id], onUpdate: Restrict, map: "fk_form2_form1")
   form2_non_selected_soc form2_non_selected_soc[]
   form2_selected_soc     form2_selected_soc[]

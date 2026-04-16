@@ -1,5 +1,7 @@
 import { Form4Service } from "../../form4/Services/form4.Service";
-import { generatePDF } from "../../../utils/pdfGenerator";
+import fs from "fs";
+import path from "path";
+import { generateHtmlPdf } from "../../../utils/pupeteerpdfGenerator";
 export const Form4Usecase = {
 
   /*Load Form4 base data*/
@@ -47,44 +49,109 @@ export const Form4Usecase = {
   editForm4(payload: any) {
     return Form4Service.editForm4(payload);
   },
-async getForm4Pdf(params: { 
-  uid: number; 
-  role: number; 
-  zone_id?: string; 
-  res: any;
-}) {
 
-  const { uid, role, zone_id, res } = params;
 
-  const data = await Form4Service.getForm4Pdf({
-    uid,
-    role,
-    zone_id,
-  });
+  async getForm4Pdf(payload: {
+    uid: number;
+    role: number;
+    zone_id?: string;
+    res: any;
+  }) {
 
-  if (!data || data.length === 0) {
-    throw new Error("No data found");
-  }
+    const { uid, role, zone_id, res } = payload;
 
-  return generatePDF(
-    res,
-    "வேட்புமனு தாக்கல் பற்றிய விபரங்கள்",
-    [
-      { header: "வ.எண்", key: "sno" },
-      { header: "மாவட்டம்", key: "district" },
-      { header: "சங்கம்", key: "society" },
-      { header: "ப.இ./ப.கு", key: "sc_st" },
-      { header: "பெண்கள்", key: "women" },
-      { header: "பொது", key: "general" },
-    ],
-    data.map((item: any, index: number) => ({
-      sno: index + 1,
-      district: item.form4.district_name,
-      society: item.filedList?.[0]?.society_name || "-",
-      sc_st: item.filedList?.[0]?.declared_sc_st || 0,
-      women: item.filedList?.[0]?.declared_women || 0,
-      general: item.filedList?.[0]?.declared_general || 0,
-    }))
-  );
-},
+    /* -------------------- GET DATA -------------------- */
+    const list = await this.getForm4ListByUser({
+      uid,
+      role,
+      zone_id,
+    });
+
+    if (!list || list.length === 0) {
+      throw new Error("No data found");
+    }
+
+    /* -------------------- LOAD HTML TEMPLATE -------------------- */
+    const templatePath = path.join(
+      __dirname,
+      "../../../utils/templates/form4.html"
+    );
+
+    let html = fs.readFileSync(templatePath, "utf-8");
+
+    /* -------------------- REPLACE HEADER DATA -------------------- */
+    html = html.replace(
+      "{{department_name}}",
+      list[0]?.form4?.district_name || "-"
+    );
+
+    /* -------------------- BUILD ROWS -------------------- */
+    let rowsHtml = "";
+    let index = 1;
+
+    for (const item of list) {
+
+      const form = item.form4;
+      const societies = item.filedList || [];
+
+      /* ---------- CALCULATIONS ---------- */
+
+      const planned_societies = societies.length;
+
+      const planned_scst = societies.reduce((sum: number, s: any) => sum + (s.rural_sc_st || 0), 0);
+      const planned_women = societies.reduce((sum: number, s: any) => sum + (s.rural_women || 0), 0);
+      const planned_general = societies.reduce((sum: number, s: any) => sum + (s.rural_general || 0), 0);
+      const planned_scst_dlg = societies.reduce((sum: number, s: any) => sum + (s.rural_sc_st_dlg || 0), 0);
+      const planned_women_dlg = societies.reduce((sum: number, s: any) => sum + (s.rural_women_dlg || 0), 0);
+      const planned_general_dlg = societies.reduce((sum: number, s: any) => sum + (s.rural_general_dlg || 0), 0);
+
+      const filed_societies = societies.filter((s: any) => s.is_filed).length;
+
+      const filed_scst = societies.reduce((sum: number, s: any) => sum + (s.is_filed ? (s.declared_sc_st || 0) : 0), 0);
+      const filed_women = societies.reduce((sum: number, s: any) => sum + (s.is_filed ? (s.declared_women || 0) : 0), 0);
+      const filed_general = societies.reduce((sum: number, s: any) => sum + (s.is_filed ? (s.declared_general || 0) : 0), 0);
+      const filed_scst_dlg = societies.reduce((sum: number, s: any) => sum + (s.is_filed ? (s.declared_sc_st_dlg || 0) : 0), 0);
+      const filed_women_dlg = societies.reduce((sum: number, s: any) => sum + (s.is_filed ? (s.declared_women_dlg || 0) : 0), 0);
+      const filed_general_dlg = societies.reduce((sum: number, s: any) => sum + (s.is_filed ? (s.declared_general_dlg || 0) : 0), 0);
+
+      /* ---------- ROW HTML ---------- */
+
+      rowsHtml += `
+        <tr>
+          <td>${index++}</td>
+          <td>${form?.district_name || "-"}</td>
+          <td>${form?.zone_name || "-"}</td>
+
+          <td>${planned_societies}</td>
+          <td>${planned_scst}</td>
+          <td>${planned_women}</td>
+          <td>${planned_general}</td>
+          <td>${planned_scst_dlg}</td>
+          <td>${planned_women_dlg}</td>
+          <td>${planned_general_dlg}</td>
+          <td>${planned_scst + planned_women + planned_general}</td>
+
+          <td>${filed_societies}</td>
+          <td>${filed_scst}</td>
+          <td>${filed_women}</td>
+          <td>${filed_general}</td>
+          <td>${filed_scst_dlg}</td>
+          <td>${filed_women_dlg}</td>
+          <td>${filed_general_dlg}</td>
+          <td>${filed_scst + filed_women + filed_general}</td>
+        </tr>
+      `;
+    }
+
+    /* -------------------- INJECT ROWS -------------------- */
+    html = html.replace("{{rows}}", rowsHtml);
+
+    /* -------------------- GENERATE PDF -------------------- */
+    return generateHtmlPdf(
+      res,
+      html,
+      "form4-report"
+    );
+  },
+
 };

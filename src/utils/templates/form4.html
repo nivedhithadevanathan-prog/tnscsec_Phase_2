@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+
+  <!-- Tamil Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Tamil&display=swap" rel="stylesheet">
+
+  <style>
+    html, body {
+      width: 100%;
+      margin: 0;
+      padding: 0;
+      font-family: 'Noto Sans Tamil', sans-serif;
+      font-size: 10px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;   /* 🔥 important */
+    }
+
+    th, td {
+      border: 1px solid #000;
+      padding: 4px;
+      text-align: center;
+
+      word-wrap: break-word;
+      white-space: normal;
+      font-size: 9px;
+    }
+
+    .top-header {
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    .top-sub-header {
+      font-size: 11px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<body>
+
+  <table>
+
+    <thead>
+
+      <!-- Title -->
+      <tr class="top-header">
+        <th colspan="19">
+          வேட்புமனு தாக்கல் பற்றிய விபரங்கள்
+        </th>
+      </tr>
+
+      <!-- Department -->
+      <tr class="top-sub-header">
+        <th colspan="19">
+          துறை -- {{department_name}}
+        </th>
+      </tr>
+
+      <!-- Group Header -->
+      <tr class="group-header">
+        <th rowspan="3">வ.எண்</th>
+        <th rowspan="3">மாவட்ட தேர்தல் அலுவலர் மாவட்டம்/மண்டலம்</th>
+        <th rowspan="3">மாவட்ட தேர்தல் அலுவலர் சரகம்</th>
+
+        <th colspan="8">
+          தேர்தல் அறிவிப்பின்படி வேட்புமனு தாக்கல் நடைபெற வேண்டிய சங்கங்கள் மற்றும் உறுப்பினர்களின் எண்ணிக்கை
+        </th>
+
+        <th colspan="8">
+          வேட்புமனு தாக்கல் செய்யப்பட்ட சங்கங்கள் மற்றும் உறுப்பினர்களின் எண்ணிக்கை
+        </th>
+      </tr>
+
+      <!-- Mid Header -->
+      <tr class="mid-header">
+        <th rowspan="2">சங்கங்கள்</th>
+        <th colspan="7">உறுப்பினர்கள்</th>
+
+        <th rowspan="2">சங்கங்கள்</th>
+        <th colspan="7">உறுப்பினர்கள்</th>
+      </tr>
+
+      <!-- Sub Header -->
+      <tr class="sub-header">
+        <!-- Planned -->
+        <th>ப.இ./ப.கு</th>
+        <th>பெண்கள்</th>
+        <th>பொது</th>
+        <th>ப.இ./ப.கு_பிரதிநிதி</th>
+        <th>பெண்கள்_பிரதிநிதி</th>
+        <th>பொது_பிரதிநிதி</th>
+        <th>மொத்தம்</th>
+
+        <!-- Filed -->
+        <th>ப.இ./ப.கு</th>
+        <th>பெண்கள்</th>
+        <th>பொது</th>
+        <th>ப.இ./ப.கு_பிரதிநிதி</th>
+        <th>பெண்கள்_பிரதிநிதி</th>
+        <th>பொது_பிரதிநிதி</th>
+        <th>மொத்தம்</th>
+      </tr>
+
+    </thead>
+
+    <tbody>
+      {{rows}}
+    </tbody>
+
+  </table>
+
+</body>
+</html>

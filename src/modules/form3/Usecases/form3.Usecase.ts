@@ -108,7 +108,6 @@ async getForm3PdfUsecase(payload: {
   zone_id?: string;
   res: any;
 }) {
-
   const { uid, role, zone_id, res } = payload;
 
   /* -------------------- GET LIST -------------------- */
@@ -123,30 +122,72 @@ async getForm3PdfUsecase(payload: {
   }
 
   /* -------------------- TITLE -------------------- */
-  const title =
-    "இறுதி வாக்காளர் பட்டியல் வெளியிடப்பட்ட விவரம்";
+  const title = "இறுதி வாக்காளர் பட்டியல் வெளியிடப்பட்ட விவரம்";
 
-  /* -------------------- COLUMNS -------------------- */
+  /* -------------------- COLUMNS (🔥 ONLY ONE HEADER ROW) -------------------- */
   const columns = [
     { header: "வ.எண்", key: "sno", width: 25 },
-    { header: "மாவட்டம்", key: "district_name", width: 60 },
-    { header: "சரகம்", key: "zone_name", width: 60 },
-    { header: "சங்கத்தின் பெயர்", key: "society_name", width: "*" },
-    { header: "உறுப்பினர் எண்ணிக்கை", key: "ass_memlist", width: 60 },
-    { header: "கோரிக்கை/மறுப்பு", key: "ero_claim", width: 60 },
-    { header: "சேர்க்கப்பட்டது", key: "jcount", width: 50 },
-    { header: "நீக்கப்பட்டது", key: "rcount", width: 50 },
-    { header: "மொத்த வாக்காளர்கள்", key: "tot_voters", width: 60 },
+
+    {
+      header: "மாவட்ட தேர்தல் அலுவலர் மாவட்டம்/மண்டலம்",
+      key: "district_name",
+      width: 90,
+    },
+
+    {
+      header: "மாவட்ட தேர்தல் அலுவலர் சரகம்",
+      key: "zone_name",
+      width: 90,
+    },
+
+    {
+      header:
+        "உறுப்பினர் பட்டியல் தயாரித்து வெளியிட்டுள்ள சங்கங்களின் பெயர்",
+      key: "society_name",
+      width: "*",
+    },
+
+    {
+      header:
+        "சங்கத்தால் வெளியிடப்பட்ட உறுப்பினர் பட்டியலில் உள்ளபடி உறுப்பினர்களின் எண்ணிக்கை",
+      key: "ass_memlist",
+      width: 80,
+    },
+
+    {
+      header:
+        "வாக்காளர் பட்டியல் அலுவலரால் வெளியிடப்பட்ட வாக்காளர் பட்டியலுக்கு கோருரிமை அல்லது மறுப்பு தெரிவிக்கப்பட்ட விபரம் (ஆம் / இல்லை)",
+      key: "ero_claim",
+      width: 100,
+    },
+
+    /* 🔥 Instead of subHeader → directly put here */
+    {
+      header: "சேர்க்கப்பட்ட உறுப்பினர்களின் எண்ணிக்கை",
+      key: "jcount",
+      width: 60,
+    },
+
+    {
+      header: "நீக்கப்பட்ட உறுப்பினர்களின் எண்ணிக்கை",
+      key: "rcount",
+      width: 60,
+    },
+
+    {
+      header:
+        "வாக்காளர் பட்டியல் அலுவலரால் இறுதி வாக்காளர்களின் எண்ணிக்கை",
+      key: "tot_voters",
+      width: 80,
+    },
   ];
 
-  /* -------------------- ROWS (FLATTEN) -------------------- */
+  /* -------------------- ROWS -------------------- */
   const rows: any[] = [];
   let index = 1;
 
   for (const form of list) {
-
     for (const soc of form.form3_societies || []) {
-
       rows.push({
         sno: index++,
 
@@ -175,9 +216,19 @@ async getForm3PdfUsecase(payload: {
   /* -------------------- GENERATE PDF -------------------- */
   const { generatePDF } = await import("../../../utils/pdfGenerator");
 
-  generatePDF(res, title, columns, rows);
+  return generatePDF(res, title, columns, rows, {
+    extraHeader: `துறை -- ${list[0]?.district_name || "-"}`,
 
-  return true;
+    /* 🔥 ONLY GROUP HEADER (NO subHeaders) */
+    groupHeaders: [
+      { text: "", colSpan: 6 },
+      {
+        text: "வாக்காளர் பட்டியல் அலுவலரால் வெளியிடப்பட்ட வாக்காளர் பட்டியலில் திருத்தங்கள் மேற்கொள்ளப்பட்ட சங்கங்கள் மற்றும் விபரம்",
+        colSpan: 2,
+      },
+      { text: "", colSpan: 1 },
+    ],
+  });
 },
 
 };

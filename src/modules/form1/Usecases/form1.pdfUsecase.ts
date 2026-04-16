@@ -2,7 +2,7 @@ import { Response } from "express";
 import { generatePDF } from "../../../utils/pdfGenerator";
 import { getForm1ListUsecase } from "./form1.Usecase";
 
-/*GET FORM1 PDF*/
+/* ================= GET FORM1 PDF ================= */
 export const getForm1PdfUsecase = async (payload: {
   uid: number;
   role: number;
@@ -21,21 +21,62 @@ export const getForm1PdfUsecase = async (payload: {
   const title =
     "மாவட்ட தேர்தல் அலுவலரால் தேர்தல் அறிவிப்பு வழங்கப்பட்ட விவரம்";
 
+  /* ================= COLUMNS ================= */
+
   const columns = [
+
     { header: "வ.எண்", key: "sno", width: 25 },
-    { header: "மாவட்டம்", key: "district_name", width: 55 },
-    { header: "சரகம்", key: "zone_name", width: 55 },
-    { header: "திட்டமிடப்பட்ட எண்ணிக்கை", key: "planned_count", width: 40 },
-    { header: "திட்டம் வழங்கப்பட்ட சங்கங்கள்", key: "planned_societies", width: "*" },
-    { header: "அறிவிப்பு வழங்கப்பட்ட சங்கங்கள்", key: "announced_societies", width: "*" },
+
+    { header: "மாவட்டம்", key: "district_name", width: 60 },
+
+    {
+      header: "மாவட்ட தேர்தல் அலுவலர்\nசரகம்",
+      key: "zone_name",
+      width: 70,
+    },
+
+    {
+      header: "தேர்தல் அறிவிப்பதற்கு\nதிட்டமிடப்பட்ட சங்கங்களின் எண்ணிக்கை",
+      key: "planned_count",
+      width: 70,
+    },
+
+    {
+      header: "தேர்தல் ஆணையத்தால் திட்டம் வழங்கப்பட்ட\nசங்கங்களின் பெயர்",
+      key: "planned_societies",
+      width: "*",
+    },
+
+    {
+      header: "தேர்தல் அறிவிப்பு வழங்கப்பட்ட\nசங்கங்களின் பெயர்",
+      key: "announced_societies",
+      width: "*",
+    },
+
     { header: "ப.ச / ப.கு", key: "sc_st", width: 35 },
+
     { header: "மகளிர்", key: "women", width: 35 },
+
     { header: "பொது", key: "general", width: 35 },
-    { header: "மொத்தம்", key: "total", width: 35 },
-    { header: "வழங்கப்படாத சங்கங்கள்", key: "not_announced", width: "*" },
-    { header: "எண்ணிக்கை", key: "not_announced_count", width: 35 },
-    { header: "குறிப்பு", key: "remarks", width: 50 },
+
+    { header: "மொத்தம்", key: "total", width: 40 },
+
+    {
+      header: "தேர்தல் அறிவிப்பு வழங்கப்படாத\nசங்கங்களின் பெயர்",
+      key: "not_announced",
+      width: "*",
+    },
+
+    {
+      header: "வழங்கப்படாத சங்கங்களின் எண்ணிக்கை",
+      key: "not_announced_count",
+      width: 50,
+    },
+
+    { header: "குறிப்பு", key: "remarks", width: 60 },
   ];
+
+  /* ================= ROWS ================= */
 
   const rows = forms.map((form: any, index: number) => ({
 
@@ -85,7 +126,27 @@ export const getForm1PdfUsecase = async (payload: {
     remarks: form.remark || "-",
   }));
 
-  generatePDF(res, title, columns, rows);
+  /* ================= PDF ================= */
 
-  return true;
+  return generatePDF(
+    res,
+    title,
+    columns,
+    rows,
+    {
+      extraHeader: `துறை -- ${forms[0]?.department_name || "-"}`,
+
+      /*ONLY GROUP HEADER (NO DUPLICATE SUBHEADER) */
+      groupHeaders: [
+        { text: "", colSpan: 6 },
+        {
+          text: "நிர்வாகக்குழு உறுப்பினர்களின் எண்ணிக்கை",
+          colSpan: 4,
+        },
+        { text: "", colSpan: 3 },
+      ],
+
+      
+    }
+  );
 };

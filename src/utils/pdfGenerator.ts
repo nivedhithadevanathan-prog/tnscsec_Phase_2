@@ -17,14 +17,16 @@ export const generatePDF = (
     subHeaders?: string[];
   }
 ) => {
-  // 🔹 Normal Header
+
+  /* ================= HEADERS ================= */
+
   const tableHeaders = columns.map(col => ({
     text: col.header,
     style: "tableHeader",
     alignment: "center",
   }));
 
-  // Fill empty cells for colspan
+  // 🔥 GROUP HEADER (colspan fix)
   const expandedGroupHeader =
     options?.groupHeaders
       ?.map(g => [
@@ -38,7 +40,7 @@ export const generatePDF = (
       ])
       .flat() || [];
 
-  // 🔹 Sub Header Row
+  // 🔥 SUB HEADER
   const subHeaderRow =
     options?.subHeaders?.map(h => ({
       text: h,
@@ -46,40 +48,47 @@ export const generatePDF = (
       alignment: "center",
     })) || [];
 
-  // 🔹 Data Rows
+  /* ================= DATA ================= */
+
   const tableBody = data.map(row =>
     columns.map(col => ({
       text: row[col.key]?.toString() || "-",
       style: "tableCell",
       alignment: "center",
+      noWrap: false, // 🔥 IMPORTANT
     }))
   );
 
-  // 🔹 Build Body
+  /* ================= BUILD BODY ================= */
+
   const body: any[] = [];
 
   if (options?.groupHeaders) {
     body.push(expandedGroupHeader);
   }
 
+  // 🔥 ALWAYS ADD MAIN HEADERS
+  body.push(tableHeaders);
+
   if (options?.subHeaders) {
     body.push(subHeaderRow);
-  } else {
-    body.push(tableHeaders);
   }
 
   body.push(...tableBody);
 
-  // ✅ Use per-column widths if provided, else fallback to "*"
+  /* ================= WIDTHS ================= */
+
   const columnWidths = columns.map(col => col.width ?? "*");
 
-  const docDefinition: any = {
-    pageOrientation: "landscape",
-    pageMargins: [20, 40, 20, 30],
+  /* ================= DOC ================= */
 
+  const docDefinition: any = {
+    pageOrientation: "landscape", // 🔥 CRITICAL
+    pageSize: "A4",
+    pageMargins: [10, 30, 10, 20],
     defaultStyle: {
       font: "NotoSansTamil",
-      fontSize: 9,
+      fontSize: 7, // 🔥 reduced
     },
 
     content: [
@@ -99,50 +108,67 @@ export const generatePDF = (
 
       {
         table: {
-          headerRows: options?.groupHeaders ? 2 : 1,
+          headerRows:
+            (options?.groupHeaders ? 1 : 0) +
+            1 +
+            (options?.subHeaders ? 1 : 0),
+
           widths: columnWidths,
+
           body,
         },
+
         layout: {
           fillColor: (rowIndex: number) =>
-            rowIndex < (options?.groupHeaders ? 2 : 1)
+            rowIndex <
+            ((options?.groupHeaders ? 1 : 0) +
+              1 +
+              (options?.subHeaders ? 1 : 0))
               ? "#eeeeee"
               : null,
+
           hLineWidth: () => 0.5,
           vLineWidth: () => 0.5,
+
+          paddingLeft: () => 4,
+          paddingRight: () => 4,
+          paddingTop: () => 4,
+          paddingBottom: () => 4,
         },
       },
     ],
 
     styles: {
       header: {
-        fontSize: 14,
+        fontSize: 13,
         bold: true,
         alignment: "center",
       },
       subHeader: {
-        fontSize: 11,
+        fontSize: 10,
         bold: true,
         alignment: "center",
       },
       tableHeader: {
         bold: true,
-        fontSize: 9,
+        fontSize: 8,
       },
       tableCell: {
-        fontSize: 8,
+        fontSize: 7,
+        // noWrap: false,
       },
     },
   };
+
+  /* ================= CREATE ================= */
 
   const pdfDoc = printer.createPdfKitDocument(docDefinition);
 
   res.setHeader("Content-Type", "application/pdf");
 
-  // ✅ ASCII-safe filename — Tamil title stays inside PDF only
   res.setHeader(
     "Content-Disposition",
-    `attachment; filename="report.pdf"; filename*=UTF-8''${encodeURIComponent(title)}.pdf`
+    `attachment; filename="report.pdf"`
   );
 
   pdfDoc.pipe(res);

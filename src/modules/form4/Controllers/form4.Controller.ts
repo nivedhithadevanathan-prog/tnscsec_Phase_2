@@ -240,33 +240,3 @@ async getForm4Pdf(req: Request, res: Response) {
 },
 };
 
-/*GET FORM4 PDF*/
-export const getForm4Pdf = async (req: any, res: any) => {
-  try {
-    const user = req.user;
-
-    if (!user?.uid || !user?.role) {
-      return res.status(400).json({
-        success: false,
-        statusCode: 400,
-        message: "User information missing",
-      });
-    }
-
-    await Form4Usecase.getForm4Pdf({
-      uid: Number(user.uid),
-      role: Number(user.role),
-      zone_id: req.query?.zone_id || user.zone_id,
-      res, // ✅ required for PDF streaming
-    });
-
-    // ❗ No JSON response (PDF will be streamed directly)
-
-  } catch (error: any) {
-    return res.status(500).json({
-      success: false,
-      statusCode: 500,
-      message: error.message || "Internal server error",
-    });
-  }
-};

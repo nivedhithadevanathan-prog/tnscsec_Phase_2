@@ -23,6 +23,7 @@
     "nodemailer": "^8.0.4",
     "pdfmake": "^0.1.72",
     "prisma": "^6.12.0",
+    "puppeteer": "^24.41.0",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1"
   },

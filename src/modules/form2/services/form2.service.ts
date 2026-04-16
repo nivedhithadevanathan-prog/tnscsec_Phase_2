@@ -6,7 +6,7 @@ export const prisma = new PrismaClient();
 /*SERVICE GROUP 1 — READ (GET / LIST / EDITABLE)*/
 
 export const form2Services = {
-   async getForm2ListByUser(where: any) {
+  async getForm2ListByUser(where: any) {
 
     const form2List = await prisma.form2.findMany({
       where,
@@ -27,8 +27,12 @@ export const form2Services = {
       form1_id: item.form1_id,
 
       department_id: item.department_id,
+      department_name: item.department_name || null,   // ✅ added
+
       district_id: item.district_id,
+
       zone_id: item.zone_id,
+      zone_name: item.zone_name || null,               // ✅ added
 
       masterzone_count: item.masterzone_count,
       selected_soc_count: item.selected_soc_count,
@@ -47,7 +51,7 @@ export const form2Services = {
     }));
   },
 
-  async getEditableForm2(uid: number) {
+ async getEditableForm2(uid: number) {
     const data = await prisma.form2.findFirst({
       where: { uid, is_active: true },
       orderBy: { id: "desc" },
@@ -61,11 +65,17 @@ export const form2Services = {
 
     return {
       ...data,
+
+      department_name: data.department_name || null,   // ✅ added
+      zone_name: data.zone_name || null,               // ✅ added
+
       remark: cleanText(data.remark),
+
       form2_selected_soc: data.form2_selected_soc.map(s => ({
         ...s,
         society_name: cleanText(s.society_name),
       })),
+
       form2_non_selected_soc: data.form2_non_selected_soc.map(s => ({
         ...s,
         society_name: cleanText(s.society_name),
@@ -85,37 +95,56 @@ export const form2Service = {
 
   /* ---------- SUBMIT ---------- */
 
-  async createForm2Parent(payload: any) {
-    const {
+async createForm2Parent(payload: any) {
+  const {
+    uid,
+    department_id,
+    district_id,
+    zone_id,
+    form1_id,
+    masterzone_count,
+    remark,
+    is_active,
+    selected_soc_count,
+  } = payload;
+
+  if (!uid) {
+    throw new Error("uid is required to create Form2");
+  }
+
+  // ✅ Fetch names
+  const department = await prisma.department.findUnique({
+    where: { id: department_id },
+  });
+
+  const zone = await prisma.zone.findUnique({
+    where: { id: zone_id },
+  });
+
+  // // (optional - only if you added district_name column)
+  // const district = await prisma.district.findUnique({
+  //   where: { id: district_id },
+  // });
+
+  return prisma.form2.create({
+    data: {
       uid,
       department_id,
       district_id,
       zone_id,
       form1_id,
       masterzone_count,
-      remark,
+      remark: cleanText(remark),
       is_active,
       selected_soc_count,
-    } = payload;
 
-    if (!uid) {
-      throw new Error("uid is required to create Form2");
-    }
-
-    return prisma.form2.create({
-      data: {
-        uid,
-        department_id,
-        district_id,
-        zone_id,
-        form1_id,
-        masterzone_count,
-        remark: cleanText(remark),
-        is_active,
-        selected_soc_count,
-      },
-    });
-  },
+      // ✅ NEW FIELDS
+      department_name: department?.name || null,
+      zone_name: zone?.name || null,
+      // district_name: district?.name || null, // optional
+    },
+  });
+},
 
   buildSubmitResponse(form2Record: any, selectedCount: number) {
     return {
