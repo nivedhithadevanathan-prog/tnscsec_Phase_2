@@ -170,7 +170,7 @@ async getForm2PdfUsecase(payload: {
 
   const { uid, role, zone_id, res } = payload;
 
-  /* -------------------- GET LIST -------------------- */
+  /*GET LIST*/
   const list = await this.getForm2ListByUser({
     uid,
     role,
@@ -181,11 +181,11 @@ async getForm2PdfUsecase(payload: {
     throw new Error("No data found");
   }
 
-  /* -------------------- TITLE -------------------- */
+  /*TITLE*/
   const title =
     "சங்கம் உறுப்பினர் பட்டியல் வெளியிடுதல் மற்றும் வாக்காளர் பட்டியல் அலுவலருக்கு உறுப்பினர் பட்டியல் அளித்த/அளிக்காத சங்கங்கள் விவரம்";
 
-  /* -------------------- COLUMNS (🔥 FULL TAMIL) -------------------- */
+  /*COLUMNS*/
   const columns = [
 
     {
@@ -231,7 +231,7 @@ async getForm2PdfUsecase(payload: {
     },
   ];
 
-  /* -------------------- ROWS -------------------- */
+  /*ROWS*/
   const rows = list.map((item: any) => {
 
     const selectedNames = item.selected_soc
@@ -254,7 +254,7 @@ async getForm2PdfUsecase(payload: {
     };
   });
 
-  /* -------------------- GENERATE PDF -------------------- */
+  /*GENERATE PDF*/
   const { generatePDF } = await import("../../../utils/pdfGenerator");
 
   return generatePDF(

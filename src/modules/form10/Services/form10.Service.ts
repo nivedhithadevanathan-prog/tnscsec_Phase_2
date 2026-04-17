@@ -5,6 +5,9 @@ import {
   form10_society_election_type,
 } from "@prisma/client";
 
+import { PrismaClient } from "@prisma/client";
+const prisma = new PrismaClient();
+
 export const Form10Service = {
 
   /*FORM10 INIT*/
@@ -238,6 +241,237 @@ buildListResponse(params: {
   return params.societies;
 },
 
+/*FORM10 PDF*/
+
+  async getForm10Pdf(params: {
+    uid: number;
+    role: number;
+    department_id?: number;
+    district_id?: number;
+    zone_id?: string;
+    res: any;
+  }) {
+
+    const { uid, role, department_id, district_id, zone_id, res } = params;
+
+    /*GET FORM10*/
+
+    let form10;
+
+    // ADMIN
+    if (role === 1) {
+      form10 = await prisma.form10.findFirst({
+        orderBy: { id: "desc" },
+      });
+    }
+
+    // JRCS
+    else if (role === 4) {
+      const zoneIds = zone_id
+        ? zone_id.split(",").map(z => Number(z))
+        : [];
+
+      form10 = await prisma.form10.findFirst({
+        where: {
+          ...(department_id && { department_id }),
+          ...(district_id && { district_id }),
+          ...(zoneIds.length && { zone_id: { in: zoneIds } }),
+        },
+        orderBy: { id: "desc" },
+      });
+    }
+
+    // NORMAL USER
+    else {
+      form10 = await prisma.form10.findFirst({
+        where: { uid },
+        orderBy: { id: "desc" },
+      });
+    }
+
+    if (!form10) {
+      throw new Error("No Form10 data found");
+    }
+
+    /*FETCH SOCIETIES*/
+
+    const societies = await prisma.form10_society.findMany({
+      where: { form10_id: form10.id },
+      include: {
+        form4_filed_soc_mem_count: true,
+        form5: true,
+        form10_candidate_status: true,
+      },
+    });
+
+    /*BUILD TABLE*/
+
+    const body: any[] = [];
+
+    /*HEADER*/
+    body.push(
+      [
+        { text: "வ.எண்", rowSpan: 2 },
+        { text: "மாவட்ட தேர்தல் அலுவலர் மாவட்டம்/மண்டலம்", rowSpan: 2 },
+        { text: "மாவட்ட தேர்தல் அலுவலர் சரகம்", rowSpan: 2 },
+        { text: "வாக்குப்பதிவு நடைபெற்ற சங்கங்களின் பெயர்", rowSpan: 2 },
+
+        { text: "துணைத் தலைவர் தேர்தலுக்கு தாக்கல் செய்யப்பட்ட வேட்பு மனுக்கள்/உறுப்பினர்கள்", colSpan: 4, alignment: "center" },
+        {}, {}, {},
+
+        { text: "பரிசீலனையில் நிராகரிக்கப்பட்ட வேட்பு மனுக்கள்/உறுப்பினர்கள்", colSpan: 4, alignment: "center" },
+        {}, {}, {},
+
+        { text: "துணைத் தலைவர் பதவிக்கு தகுதியான இறுதி வேட்பாளர் பட்டியல் உறுப்பினர்கள்", colSpan: 4, alignment: "center" },
+        {}, {}, {},
+
+        { text: "இறுதியாக தேர்ந்தெடுக்கப்பட்ட துணைத் தலைவரின் பெயர்.", rowSpan: 2 },
+        { text: "தேர்தல் வகை", rowSpan: 2 },
+      ],
+
+      [
+        {}, {}, {}, {},
+
+        { text: "ப.இ./ப.கு" },
+        { text: "பெண்கள்" },
+        { text: "பொது" },
+        { text: "மொத்தம்" },
+
+        { text: "ப.இ./ப.கு" },
+        { text: "பெண்கள்" },
+        { text: "பொது" },
+        { text: "மொத்தம்" },
+
+        { text: "ப.இ./ப.கு" },
+        { text: "பெண்கள்" },
+        { text: "பொது" },
+        { text: "மொத்தம்" },
+
+        {},
+        {},
+      ]
+    );
+
+    /*ROWS*/
+
+    let index = 1;
+
+    for (const soc of societies) {
+
+      const counts = {
+        submitted: 0,
+        rejected: 0,
+        eligible: 0,
+      };
+
+      for (const cs of soc.form10_candidate_status) {
+
+        const status = cs.status;
+
+        // submitted = all
+        counts.submitted++;
+
+        if (status === "REJECTED") {
+          counts.rejected++;
+        }
+
+        if (status !== "REJECTED" && status !== "WITHDRAWN") {
+          counts.eligible++;
+        }
+      }
+
+      body.push([
+        index++,
+        form10.district_id ?? "-",
+        "-", // zone placeholder
+        soc.form4_filed_soc_mem_count?.society_name ?? "-",
+
+        counts.submitted,
+        0,
+        0,
+        counts.submitted,
+
+        counts.rejected,
+        0,
+        0,
+        counts.rejected,
+
+        counts.eligible,
+        0,
+        0,
+        counts.eligible,
+
+        soc.form5?.member_name ?? "-",
+        soc.election_type ?? "-",
+      ]);
+    }
+
+    /*PDF*/
+
+    const PdfPrinter = require("pdfmake");
+
+    const fonts = {
+      NotoSansTamil: {
+        normal: "src/fonts/NotoSansTamil-Regular.ttf",
+        bold: "src/fonts/NotoSansTamil-Bold.ttf",
+        italics: "src/fonts/NotoSansTamil-Regular.ttf",
+        bolditalics: "src/fonts/NotoSansTamil-Bold.ttf",
+      },
+    };
+
+    const printer = new PdfPrinter(fonts);
+
+    const docDefinition = {
+      pageOrientation: "landscape",
+      pageSize: "A4",
+
+      content: [
+        {
+          text: "வேட்புமனு திரும்ப பெறுதல் மற்றும் இறுதி போட்டியிடும் வேட்பாளர்கள் பற்றிய முழு விவரங்கள்",
+          alignment: "center",
+          bold: true,
+          fontSize: 14,
+        },
+        {
+          text: `துறை -- ${form10.department_id ?? "-"}`,
+          alignment: "center",
+          margin: [0, 5, 0, 10],
+        },
+        {
+          table: {
+            headerRows: 2,
+            widths: new Array(18).fill("auto"),
+            body,
+          },
+        },
+      ],
+
+      defaultStyle: {
+        font: "NotoSansTamil",
+        fontSize: 8,
+      },
+    };
+
+    const pdfDoc = printer.createPdfKitDocument(docDefinition);
+
+    const chunks: any[] = [];
+
+    pdfDoc.on("data", (chunk: any) => chunks.push(chunk));
+
+    pdfDoc.on("end", () => {
+      const result = Buffer.concat(chunks);
+
+      res.setHeader("Content-Type", "application/pdf");
+      res.setHeader(
+        "Content-Disposition",
+        "attachment; filename=form10.pdf"
+      );
+
+      res.send(result);
+    });
+
+    pdfDoc.end();
+  },
 
 };
 

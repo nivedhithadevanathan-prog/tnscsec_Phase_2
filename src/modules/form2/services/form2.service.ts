@@ -27,12 +27,12 @@ export const form2Services = {
       form1_id: item.form1_id,
 
       department_id: item.department_id,
-      department_name: item.department_name || null,   // ✅ added
+      department_name: item.department_name || null,   
 
       district_id: item.district_id,
 
       zone_id: item.zone_id,
-      zone_name: item.zone_name || null,               // ✅ added
+      zone_name: item.zone_name || null,               
 
       masterzone_count: item.masterzone_count,
       selected_soc_count: item.selected_soc_count,
@@ -66,8 +66,8 @@ export const form2Services = {
     return {
       ...data,
 
-      department_name: data.department_name || null,   // ✅ added
-      zone_name: data.zone_name || null,               // ✅ added
+      department_name: data.department_name || null,   
+      zone_name: data.zone_name || null,               
 
       remark: cleanText(data.remark),
 
@@ -93,7 +93,7 @@ export const form2Services = {
 
 export const form2Service = {
 
-  /* ---------- SUBMIT ---------- */
+  /*SUBMIT*/
 
 async createForm2Parent(payload: any) {
   const {
@@ -112,7 +112,7 @@ async createForm2Parent(payload: any) {
     throw new Error("uid is required to create Form2");
   }
 
-  // ✅ Fetch names
+  // Fetch names
   const department = await prisma.department.findUnique({
     where: { id: department_id },
   });
@@ -138,7 +138,7 @@ async createForm2Parent(payload: any) {
       is_active,
       selected_soc_count,
 
-      // ✅ NEW FIELDS
+      // NEW FIELDS
       department_name: department?.name || null,
       zone_name: zone?.name || null,
       // district_name: district?.name || null, // optional
@@ -153,7 +153,7 @@ async createForm2Parent(payload: any) {
     };
   },
 
-  /* ---------- CHECKBOX ---------- */
+  /*CHECKBOX*/
 
   async handleCheckboxSelection(
     uid: number,

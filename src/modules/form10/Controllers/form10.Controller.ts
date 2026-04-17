@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { sendResponse, sendError } from "../../../utils/response";
 import { Form10Usecase } from "../../form10/Usecases/form10.Usecase";
-
+import { Form10Service } from "../../form10/Services/form10.Service";
 export const Form10Controller = {
 
   /*POST FORM10 INIT*/
@@ -282,6 +282,34 @@ const data = await Form10Usecase.list({
       res,
       err.statusCode || 500,
       err.message || "Error fetching Form10 list"
+    );
+  }
+},
+
+/* GET FORM10 PDF */
+async getForm10Pdf(req: Request, res: Response) {
+  try {
+    const user = (req as any).user;
+
+    if (!user?.uid || !user?.role) {
+      return sendError(res, 401, "Unauthorized");
+    }
+
+    await Form10Service.getForm10Pdf({
+      uid: Number(user.uid),
+      role: Number(user.role),
+      department_id: user.department_id,
+      district_id: user.district_id,
+      zone_id: user.zone_id,
+      res,
+    });
+
+  } catch (err: any) {
+    return sendError(
+      res,
+      err.statusCode || 500,
+      err.message || "Error generating Form10 PDF",
+      err.details || err
     );
   }
 },

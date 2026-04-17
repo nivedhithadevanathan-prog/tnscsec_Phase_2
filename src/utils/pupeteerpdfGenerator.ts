@@ -20,7 +20,7 @@ const pdfBuffer = await page.pdf({
   landscape: true,
   printBackground: true,
 
-  scale: 1,              // 🔥 IMPORTANT
+  scale: 1,              
   margin: {
     top: "10mm",
     bottom: "10mm",

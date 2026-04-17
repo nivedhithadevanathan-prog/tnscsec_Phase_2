@@ -168,7 +168,7 @@ export const getForm3Pdf = async (req: any, res: Response) => {
       res, //  required for PDF streaming
     });
 
-    // ❗ No JSON response (PDF will be sent directly)
+    // No JSON response (PDF will be sent directly)
 
   } catch (error: any) {
     return res.status(500).json({

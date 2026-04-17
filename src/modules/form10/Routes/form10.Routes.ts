@@ -31,6 +31,7 @@ router.post("/submit",verifyToken,validate(submitForm10Schema),Form10Controller.
 
 router.get("/list",verifyToken,Form10Controller.list);
 
+router.get("/pdf", verifyToken, Form10Controller.getForm10Pdf);
 
 export default router;
 

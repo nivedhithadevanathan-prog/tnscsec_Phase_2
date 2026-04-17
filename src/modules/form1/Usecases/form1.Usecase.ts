@@ -30,7 +30,7 @@ export const getCheckpointZonesUsecase = async (
     };
   }
 
-  /* -------------------- NORMALIZE ZONE IDS -------------------- */
+  /*NORMALIZE ZONE IDS*/
   const normalizeToArray = (val: any): number[] => {
     try {
       const parsed = typeof val === "string" ? JSON.parse(val) : val;
@@ -46,7 +46,7 @@ export const getCheckpointZonesUsecase = async (
 
   const zoneIds = normalizeToArray(user.zone_id);
 
-  /* -------------------- NORMALIZE SELECTED IDS -------------------- */
+  /*NORMALIZE SELECTED IDS*/
   const selectedIdsArray: number[] = Array.isArray(selectedIds)
     ? selectedIds.map(Number)
     : selectedIds
@@ -56,7 +56,7 @@ export const getCheckpointZonesUsecase = async (
   console.log("FINAL zoneIds:", zoneIds);
   console.log("FINAL selectedIds:", selectedIdsArray);
 
-  /* -------------------- FETCH ZONES -------------------- */
+  /*FETCH ZONES*/
   const allZones = await prisma.master_zone.findMany({
     where: {
       district_id: user.district_id,
@@ -70,12 +70,12 @@ export const getCheckpointZonesUsecase = async (
     },
   });
 
-  /* -------------------- FILTER VALID ZONES -------------------- */
+  /*FILTER VALID ZONES*/
   const validZones = allZones.filter(
     (z) => z.association_name !== null
   );
 
-  /* -------------------- RESPONSE -------------------- */
+  /*RESPONSE*/
   return {
     total_zones: validZones.length,
 

@@ -319,6 +319,201 @@ export const Form8ListUsecase = {
     return Form8Service.getSubmittedForm8Details(
       user.district_id
     );
+  },
+
+async getForm8Pdf(params: {
+  uid: number;
+  role: number;
+  res: any;
+}) {
+  const { uid, role, res } = params;
+
+  const list = await Form8Service.listForm8({ uid, role });
+
+  if (!list || list.length === 0) {
+    throw new Error("No Form8 data found");
   }
+
+  const form8 = list[0];
+
+  const body: any[] = [];
+
+  /*HEADER*/
+
+  body.push(
+    [
+      { text: "வ.எண்", rowSpan: 2 },
+      { text: "மாவட்ட தேர்தல் அலுவலர் மாவட்டம்/மண்டலம்", rowSpan: 2 },
+      { text: "மாவட்ட தேர்தல் அலுவலர் சரகம்", rowSpan: 2 },
+      { text: "வாக்குப்பதிவு நடைபெற்ற சங்கங்களின் பெயர்", rowSpan: 2 },
+      { text: "மொத்த பதிவான வாக்குகள்", rowSpan: 2 },
+      {
+        text: "வாக்கு எண்ணிக்கையின் போது வாக்குப்பெட்டியில் இருந்த வாக்குகளின் எண்ணிக்கை",
+        rowSpan: 2,
+      },
+      { text: "செல்லுபடியான வாக்குகளின் எண்ணிக்கை", rowSpan: 2 },
+      { text: "செல்லுபடியாகாத வாக்குகளின் எண்ணிக்கை", rowSpan: 2 },
+
+      {
+        text: "வாக்குப்பதிவின் மூலம் தேர்ந்தெடுக்கப்பட்ட நிர்வாகக்குழு உறுப்பினர்கள் பெயர்",
+        colSpan: 3,
+        alignment: "center",
+      },
+      {}, {},
+
+      {
+        text: "வாக்குப்பதிவின் மூலம் தேர்ந்தெடுக்கப்பட்ட நிர்வாகக்குழு உறுப்பினர்கள் எண்ணிக்கை",
+        colSpan: 4,
+        alignment: "center",
+      },
+      {}, {}, {},
+
+      { text: "குறிப்பு", rowSpan: 2 },
+    ],
+
+    [
+      {}, {}, {}, {}, {}, {}, {}, {},
+
+      { text: "ப.இ./ப.கு" },
+      { text: "பெண்கள்" },
+      { text: "பொது" },
+
+      { text: "ப.இ./ப.கு" },
+      { text: "பெண்கள்" },
+      { text: "பொது" },
+      { text: "மொத்தம்" },
+
+      {},
+    ]
+  );
+
+  /*ROWS*/
+
+  let index = 1;
+
+  for (const soc of form8.societies || []) {
+    const sc = soc.categories?.SC_ST?.length || 0;
+    const women = soc.categories?.WOMEN?.length || 0;
+    const general = soc.categories?.GENERAL?.length || 0;
+
+    const total = sc + women + general;
+
+    body.push([
+      String(index++),
+      String(form8.district_name || "-"),
+      "-", // zone
+      String(soc.society_name || "-"),
+
+      String(soc.polling_details?.ballot_votes_at_counting ?? 0),
+      String(soc.polling_details?.ballot_votes_at_counting ?? 0), // keep if same field
+      String(soc.polling_details?.valid_votes ?? 0),
+      String(soc.polling_details?.invalid_votes ?? 0),
+
+      // names
+      (soc.categories?.SC_ST || []).map((m: any) => m.name).join(", "),
+      (soc.categories?.WOMEN || []).map((m: any) => m.name).join(", "),
+      (soc.categories?.GENERAL || []).map((m: any) => m.name).join(", "),
+
+      String(sc),
+      String(women),
+      String(general),
+      String(total),
+
+      String(soc.polling_details?.remarks || "-"),
+    ]);
+  }
+
+  /*PDF*/
+
+  const PdfPrinter = require("pdfmake");
+
+  const fonts = {
+    NotoSansTamil: {
+      normal: "src/fonts/NotoSansTamil-Regular.ttf",
+      bold: "src/fonts/NotoSansTamil-Bold.ttf",
+      italics: "src/fonts/NotoSansTamil-Regular.ttf",
+      bolditalics: "src/fonts/NotoSansTamil-Bold.ttf",
+    },
+  };
+
+  const printer = new PdfPrinter(fonts);
+
+  const docDefinition = {
+    pageOrientation: "landscape",
+    pageSize: "A4",
+
+    content: [
+      {
+        text:
+          "வேட்புமனு திரும்ப பெறுதல் மற்றும் இறுதி போட்டியிடும் வேட்பாளர்கள் பற்றிய முழு விவரங்கள்",
+        alignment: "center",
+        bold: true,
+        fontSize: 14,
+      },
+      {
+        text: `துறை -- ${form8.district_name || "-"}`,
+        alignment: "center",
+        margin: [0, 5, 0, 10],
+      },
+      {
+        table: {
+          headerRows: 2,
+
+          widths: [
+            30,
+            120,
+            120,
+            150,
+            90,
+            120,
+            120,
+            120,
+            120,
+            120,
+            120,
+            80,
+            80,
+            80,
+            80,
+            120,
+          ],
+
+          body,
+        },
+        layout: {
+          paddingLeft: () => 4,
+          paddingRight: () => 4,
+          paddingTop: () => 2,
+          paddingBottom: () => 2,
+        },
+      },
+    ],
+
+    defaultStyle: {
+      font: "NotoSansTamil",
+      fontSize: 8,
+    },
+  };
+
+  const pdfDoc = printer.createPdfKitDocument(docDefinition);
+
+  const chunks: any[] = [];
+
+  pdfDoc.on("data", (chunk: any) => chunks.push(chunk));
+
+  pdfDoc.on("end", () => {
+    const result = Buffer.concat(chunks);
+
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader(
+      "Content-Disposition",
+      "attachment; filename=form8.pdf"
+    );
+
+    res.send(result);
+  });
+
+  pdfDoc.end();
+},
 };
 

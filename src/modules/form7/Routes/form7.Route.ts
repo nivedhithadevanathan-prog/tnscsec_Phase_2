@@ -24,4 +24,6 @@ router.get("/editable",verifyToken,validate(editableForm7Validation),Form7Contro
 
 router.put("/edit",verifyToken,validate(editForm7Validation),Form7Controller.edit);
 
+router.get("/pdf", verifyToken, Form7Controller.getForm7Pdf);
+
 export default router;

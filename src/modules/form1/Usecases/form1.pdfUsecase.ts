@@ -2,7 +2,7 @@ import { Response } from "express";
 import { generatePDF } from "../../../utils/pdfGenerator";
 import { getForm1ListUsecase } from "./form1.Usecase";
 
-/* ================= GET FORM1 PDF ================= */
+/*GET FORM1 PDF*/
 export const getForm1PdfUsecase = async (payload: {
   uid: number;
   role: number;
@@ -21,7 +21,7 @@ export const getForm1PdfUsecase = async (payload: {
   const title =
     "மாவட்ட தேர்தல் அலுவலரால் தேர்தல் அறிவிப்பு வழங்கப்பட்ட விவரம்";
 
-  /* ================= COLUMNS ================= */
+  /*COLUMNS*/
 
   const columns = [
 
@@ -76,7 +76,7 @@ export const getForm1PdfUsecase = async (payload: {
     { header: "குறிப்பு", key: "remarks", width: 60 },
   ];
 
-  /* ================= ROWS ================= */
+  /*ROWS*/
 
   const rows = forms.map((form: any, index: number) => ({
 
@@ -126,7 +126,7 @@ export const getForm1PdfUsecase = async (payload: {
     remarks: form.remark || "-",
   }));
 
-  /* ================= PDF ================= */
+  /*PDF*/
 
   return generatePDF(
     res,
@@ -136,7 +136,7 @@ export const getForm1PdfUsecase = async (payload: {
     {
       extraHeader: `துறை -- ${forms[0]?.department_name || "-"}`,
 
-      /*ONLY GROUP HEADER (NO DUPLICATE SUBHEADER) */
+      /*ONLY GROUP HEADER (NO DUPLICATE SUBHEADER)*/
       groupHeaders: [
         { text: "", colSpan: 6 },
         {

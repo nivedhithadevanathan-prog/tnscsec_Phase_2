@@ -14,4 +14,6 @@ router.post("/submit",verifyToken,Form8Controller.submitForm8);
 
 router.get("/list",verifyToken,Form8Controller.listForm8);
 
+router.get("/pdf", verifyToken, Form8Controller.getForm8Pdf);
+
 export default router;

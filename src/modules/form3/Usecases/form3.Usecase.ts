@@ -110,7 +110,7 @@ async getForm3PdfUsecase(payload: {
 }) {
   const { uid, role, zone_id, res } = payload;
 
-  /* -------------------- GET LIST -------------------- */
+  /*GET LIST*/
   const list = await this.getForm3ListByUser({
     uid,
     role,
@@ -121,10 +121,10 @@ async getForm3PdfUsecase(payload: {
     throw new Error("No data found");
   }
 
-  /* -------------------- TITLE -------------------- */
+  /*TITLE*/
   const title = "இறுதி வாக்காளர் பட்டியல் வெளியிடப்பட்ட விவரம்";
 
-  /* -------------------- COLUMNS (🔥 ONLY ONE HEADER ROW) -------------------- */
+  /*COLUMNS*/
   const columns = [
     { header: "வ.எண்", key: "sno", width: 25 },
 
@@ -161,7 +161,7 @@ async getForm3PdfUsecase(payload: {
       width: 100,
     },
 
-    /* 🔥 Instead of subHeader → directly put here */
+    /*Instead of subHeader → directly put here*/
     {
       header: "சேர்க்கப்பட்ட உறுப்பினர்களின் எண்ணிக்கை",
       key: "jcount",
@@ -182,7 +182,7 @@ async getForm3PdfUsecase(payload: {
     },
   ];
 
-  /* -------------------- ROWS -------------------- */
+  /*ROWS*/
   const rows: any[] = [];
   let index = 1;
 
@@ -213,13 +213,13 @@ async getForm3PdfUsecase(payload: {
     }
   }
 
-  /* -------------------- GENERATE PDF -------------------- */
+  /*GENERATE PDF*/
   const { generatePDF } = await import("../../../utils/pdfGenerator");
 
   return generatePDF(res, title, columns, rows, {
     extraHeader: `துறை -- ${list[0]?.district_name || "-"}`,
 
-    /* 🔥 ONLY GROUP HEADER (NO subHeaders) */
+    /*ONLY GROUP HEADER (NO subHeaders)*/
     groupHeaders: [
       { text: "", colSpan: 6 },
       {

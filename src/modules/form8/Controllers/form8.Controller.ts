@@ -178,4 +178,29 @@ async listForm8(req: Request, res: Response) {
   }
 },
 
+/*GET Form8 PDF*/
+async getForm8Pdf(req: Request, res: Response) {
+  try {
+    const user = (req as any).user;
+
+    if (!user?.uid || !user?.role) {
+      return sendError(res, 401, "Unauthorized");
+    }
+
+    await Form8ListUsecase.getForm8Pdf({
+      uid: Number(user.uid),
+      role: Number(user.role),
+      res,
+    });
+
+  } catch (err: any) {
+    return sendError(
+      res,
+      err.statusCode || 500,
+      err.message || "Failed to generate Form8 PDF",
+      err.details || err
+    );
+  }
+},
+
 };

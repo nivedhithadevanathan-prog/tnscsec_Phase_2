@@ -31,4 +31,5 @@ router.put("/edit",verifyToken,validate(editForm6Validation),form6Controller.edi
 
 router.post("/submit",verifyToken,validate(submitForm6Validation),form6Controller.submitForm6);
 
+router.get("/pdf",verifyToken,form6Controller.getForm6Pdf);
 export default router;

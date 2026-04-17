@@ -18,7 +18,7 @@ export const generatePDF = (
   }
 ) => {
 
-  /* ================= HEADERS ================= */
+  /*HEADERS*/
 
   const tableHeaders = columns.map(col => ({
     text: col.header,
@@ -26,7 +26,7 @@ export const generatePDF = (
     alignment: "center",
   }));
 
-  // 🔥 GROUP HEADER (colspan fix)
+  // GROUP HEADER (colspan fix)
   const expandedGroupHeader =
     options?.groupHeaders
       ?.map(g => [
@@ -40,7 +40,7 @@ export const generatePDF = (
       ])
       .flat() || [];
 
-  // 🔥 SUB HEADER
+  //SUB HEADER
   const subHeaderRow =
     options?.subHeaders?.map(h => ({
       text: h,
@@ -48,18 +48,18 @@ export const generatePDF = (
       alignment: "center",
     })) || [];
 
-  /* ================= DATA ================= */
+  /*DATA*/
 
   const tableBody = data.map(row =>
     columns.map(col => ({
       text: row[col.key]?.toString() || "-",
       style: "tableCell",
       alignment: "center",
-      noWrap: false, // 🔥 IMPORTANT
+      noWrap: false, 
     }))
   );
 
-  /* ================= BUILD BODY ================= */
+  /*BUILD BODY*/
 
   const body: any[] = [];
 
@@ -67,7 +67,7 @@ export const generatePDF = (
     body.push(expandedGroupHeader);
   }
 
-  // 🔥 ALWAYS ADD MAIN HEADERS
+  // ALWAYS ADD MAIN HEADERS
   body.push(tableHeaders);
 
   if (options?.subHeaders) {
@@ -76,19 +76,19 @@ export const generatePDF = (
 
   body.push(...tableBody);
 
-  /* ================= WIDTHS ================= */
+  /*WIDTHS*/
 
   const columnWidths = columns.map(col => col.width ?? "*");
 
-  /* ================= DOC ================= */
+  /*DOC*/
 
   const docDefinition: any = {
-    pageOrientation: "landscape", // 🔥 CRITICAL
+    pageOrientation: "landscape", 
     pageSize: "A4",
     pageMargins: [10, 30, 10, 20],
     defaultStyle: {
       font: "NotoSansTamil",
-      fontSize: 7, // 🔥 reduced
+      fontSize: 7, 
     },
 
     content: [
@@ -160,7 +160,7 @@ export const generatePDF = (
     },
   };
 
-  /* ================= CREATE ================= */
+  /*CREATE*/
 
   const pdfDoc = printer.createPdfKitDocument(docDefinition);
 

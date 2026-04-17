@@ -184,10 +184,10 @@ async getForm5Pdf(req: Request, res: Response) {
       uid: Number(user.uid),
       role: Number(user.role),
       zone_id: req.query?.zone_id || user.zone_id,
-      res, // ✅ IMPORTANT for PDF streaming
+      res, // IMPORTANT for PDF streaming
     });
 
-    // ❗ No JSON response (PDF will be streamed)
+    // No JSON response (PDF will be streamed)
 
   } catch (error: any) {
     return res.status(500).json({

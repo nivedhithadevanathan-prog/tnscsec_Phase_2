@@ -640,7 +640,46 @@ async list(params: {
       is_draft_visible: form10.status === "DRAFT",
     })
   );
-}
+},
+
+async getPdf(params: {
+    uid: number;
+    role: number;
+    department_id?: number;
+    district_id?: number;
+    zone_id?: string;
+    res: any;
+  }) {
+
+    const {
+      uid,
+      role,
+      department_id,
+      district_id,
+      zone_id,
+      res,
+    } = params;
+
+    /*VALIDATION*/
+
+    if (!uid || !role) {
+      throw {
+        statusCode: 401,
+        message: "Unauthorized",
+      };
+    }
+
+    /*CALL SERVICE*/
+
+    return await Form10Service.getForm10Pdf({
+      uid,
+      role,
+      department_id,
+      district_id,
+      zone_id,
+      res,
+    });
+  },
 
 
 };

@@ -242,10 +242,10 @@ export const getForm2Pdf = async (req: Request, res: Response) => {
       uid: Number(user.uid),
       role: Number(user.role),
       zone_id: req.query.zone_id || user.zone_id,
-      res, // ✅ important for PDF streaming
+      res, // important for PDF streaming
     });
 
-    // ❗ No JSON response (PDF will be downloaded)
+    // No JSON response (PDF will be downloaded)
 
   } catch (error: any) {
     console.error("Form2 PDF error:", error);

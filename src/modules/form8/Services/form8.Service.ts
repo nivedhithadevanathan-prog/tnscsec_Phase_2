@@ -355,4 +355,74 @@ for (const fr of form8.form8_final_result) {
 
     return Form8Service.getSubmittedForm8Details(user.district_id);
   },
+
+/*PDF DATA SERVICE*/
+async getForm8PdfData(params: { uid: number; role: number }) {
+  const { uid, role } = params;
+
+  // reuse your existing list logic
+  const list = await Form8Service.listForm8({ uid, role });
+
+  if (!list || list.length === 0) {
+    return [];
+  }
+
+  const finalResult: any[] = [];
+
+  for (const form8 of list) {
+
+    const societies: any[] = [];
+
+    for (const soc of form8.societies || []) {
+
+      const scMembers = soc.categories?.SC_ST || [];
+      const womenMembers = soc.categories?.WOMEN || [];
+      const generalMembers = soc.categories?.GENERAL || [];
+
+      const scCount = scMembers.length;
+      const womenCount = womenMembers.length;
+      const generalCount = generalMembers.length;
+
+      const total = scCount + womenCount + generalCount;
+
+      societies.push({
+        society_id: soc.society_id,
+        society_name: soc.society_name,
+
+        // polling details
+        ballot_votes_at_counting:
+          soc.polling_details?.ballot_votes_at_counting ?? 0,
+
+        valid_votes: soc.polling_details?.valid_votes ?? 0,
+        invalid_votes: soc.polling_details?.invalid_votes ?? 0,
+
+        remarks: soc.polling_details?.remarks ?? null,
+
+        // names
+        selected_names: {
+          SC_ST: scMembers.map((m: any) => m.name),
+          WOMEN: womenMembers.map((m: any) => m.name),
+          GENERAL: generalMembers.map((m: any) => m.name),
+        },
+
+        // counts
+        selected_count: {
+          SC_ST: scCount,
+          WOMEN: womenCount,
+          GENERAL: generalCount,
+          TOTAL: total,
+        },
+      });
+    }
+
+    finalResult.push({
+      form8_id: form8.form8_id,
+      district_name: form8.district_name,
+      societies,
+    });
+  }
+
+  return finalResult;
+},
+
 };

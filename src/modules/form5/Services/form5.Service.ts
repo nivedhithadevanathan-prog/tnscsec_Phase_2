@@ -59,7 +59,7 @@ async submitMembers(payload: any) {
     throw new Error("Members array is required");
   }
 
-  // ✅ ALWAYS GET LATEST FORM4
+  // ALWAYS GET LATEST FORM4
   const form4 = await prisma.form4.findFirst({
     where: { uid },
     orderBy: { created_at: "desc" },
@@ -67,14 +67,14 @@ async submitMembers(payload: any) {
 
   if (!form4) throw new Error("Form4 not found");
 
-  // ✅ GET VALID filed_soc_ids for THIS form4 ONLY
+  // GET VALID filed_soc_ids for THIS form4 ONLY
   const filedSocieties = await prisma.form4_filed_soc_mem_count.findMany({
     where: { form4_id: form4.id },
   });
 
   const validFiledSocIds = filedSocieties.map((s) => s.id);
 
-  // 🚨 STRICT VALIDATION (VERY IMPORTANT)
+  // STRICT VALIDATION (VERY IMPORTANT)
   for (const m of members) {
     if (!validFiledSocIds.includes(Number(m.form4_filed_soc_id))) {
       throw new Error(

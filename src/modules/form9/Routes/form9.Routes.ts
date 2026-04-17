@@ -27,4 +27,6 @@ router.get("/list",Form9Controller.list);
 
 router.post("/submit",validate(listForm9Schema),Form9Controller.submit);
 
+router.get("/pdf", verifyToken, Form9Controller.getForm9Pdf);
+
 export default router;

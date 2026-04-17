@@ -60,7 +60,7 @@ export const Form4Usecase = {
 
     const { uid, role, zone_id, res } = payload;
 
-    /* -------------------- GET DATA -------------------- */
+    /*GET DATA*/
     const list = await this.getForm4ListByUser({
       uid,
       role,
@@ -71,7 +71,7 @@ export const Form4Usecase = {
       throw new Error("No data found");
     }
 
-    /* -------------------- LOAD HTML TEMPLATE -------------------- */
+    /*LOAD HTML TEMPLATE*/
     const templatePath = path.join(
       __dirname,
       "../../../utils/templates/form4.html"
@@ -79,13 +79,13 @@ export const Form4Usecase = {
 
     let html = fs.readFileSync(templatePath, "utf-8");
 
-    /* -------------------- REPLACE HEADER DATA -------------------- */
+    /*REPLACE HEADER DATA*/
     html = html.replace(
       "{{department_name}}",
       list[0]?.form4?.district_name || "-"
     );
 
-    /* -------------------- BUILD ROWS -------------------- */
+    /*BUILD ROWS*/
     let rowsHtml = "";
     let index = 1;
 
@@ -94,7 +94,7 @@ export const Form4Usecase = {
       const form = item.form4;
       const societies = item.filedList || [];
 
-      /* ---------- CALCULATIONS ---------- */
+      /*CALCULATIONS*/
 
       const planned_societies = societies.length;
 
@@ -114,7 +114,7 @@ export const Form4Usecase = {
       const filed_women_dlg = societies.reduce((sum: number, s: any) => sum + (s.is_filed ? (s.declared_women_dlg || 0) : 0), 0);
       const filed_general_dlg = societies.reduce((sum: number, s: any) => sum + (s.is_filed ? (s.declared_general_dlg || 0) : 0), 0);
 
-      /* ---------- ROW HTML ---------- */
+      /*ROW HTML*/
 
       rowsHtml += `
         <tr>
@@ -143,10 +143,10 @@ export const Form4Usecase = {
       `;
     }
 
-    /* -------------------- INJECT ROWS -------------------- */
+    /*INJECT ROWS*/
     html = html.replace("{{rows}}", rowsHtml);
 
-    /* -------------------- GENERATE PDF -------------------- */
+    /*GENERATE PDF*/
     return generateHtmlPdf(
       res,
       html,

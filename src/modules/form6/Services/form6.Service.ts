@@ -425,5 +425,55 @@ async listForm6(params: {
     },
     societies,
   };
+},
+
+/*FULL PDF DATA*/
+async getForm6FullPdfData(params: {
+  uid: number;
+  role: number;
+  zone_id?: string;
+}) {
+
+  const { uid } = params;
+
+  const form4 = await prisma.form4.findFirst({
+    where: { uid },
+    orderBy: { created_at: "desc" },
+  });
+
+if (!form4) {
+  return {
+    form4: null,
+    societies: [],
+    members: [],
+    events: [],
+  };
 }
+
+  const societies = await prisma.form4_filed_soc_mem_count.findMany({
+    where: {
+      form4_id: form4.id,
+      is_stopped: false,
+    },
+  });
+
+  const societyIds = societies.map(s => s.id);
+
+  const members = await prisma.form5.findMany({
+    where: {
+      form4_filed_soc_id: { in: societyIds },
+      is_active: true,
+    },
+  });
+
+  const events = await prisma.form6_candidate_event.findMany({
+    where: {
+      form5_member_id: { in: members.map(m => m.id) },
+    },
+    orderBy: { event_at: "desc" },
+  });
+
+  return { form4, societies, members, events };
+},
+
 };

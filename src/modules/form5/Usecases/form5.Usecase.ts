@@ -45,18 +45,16 @@ getForm5ListByUser(params: {
     return Form5Service.editForm5(payload);
   },
 
+
 /*PDF DOWNLOAD*/
-/*PDF DOWNLOAD*/
-async getForm5Pdf(params: { 
-  uid: number; 
-  role: number; 
-  zone_id?: string; 
+async getForm5Pdf(params: {
+  uid: number;
+  role: number;
+  zone_id?: string;
   res: any;
 }) {
-
   const { uid, role, zone_id, res } = params;
 
-  // ✅ get data from service
   const data = await Form5Service.getForm5Pdf({
     uid,
     role,
@@ -67,69 +65,163 @@ async getForm5Pdf(params: {
     throw new Error("No data found");
   }
 
-  const rows: any[] = [];
+  const body: any[] = [];
+
+  /*HEADER*/
+
+  body.push(
+    [
+      { text: "வ.எண்", rowSpan: 2, alignment: "center" },
+
+      {
+        text: "மாவட்ட தேர்தல் அலுவலர் /\nமாவட்டம்",
+        rowSpan: 2,
+        alignment: "center",
+      },
+
+      {
+        text: "மாவட்ட தேர்தல் அலுவலர்\nசரகம்",
+        rowSpan: 2,
+        alignment: "center",
+      },
+
+      {
+        text: "வேட்புமனு தாக்கல் செய்த உறுப்பினர்களின் பெயர் மற்றும் ஆதார் எண் விபரங்களை பதிவு செய்க",
+        colSpan: 4,
+        alignment: "center",
+      },
+      {}, {}, {},
+
+      {
+        text: "வேட்புமனு தாக்கல் செய்யப்பட்ட சங்கங்கள் மற்றும் உறுப்பினர்களின் எண்ணிக்கை",
+        colSpan: 3,
+        alignment: "center",
+      },
+      {},
+      {},
+    ],
+
+    [
+      {}, {}, {},
+
+      { text: "சங்கங்கள்", alignment: "center" },
+      { text: "உறுப்பினர் பெயர்", alignment: "center" },
+      { text: "ஆதார் எண்", alignment: "center" },
+      { text: "பிரிவு", alignment: "center" },
+
+      { text: "ப.இ./ப.கு", alignment: "center" },
+      { text: "பெண்கள்", alignment: "center" },
+      { text: "பொது", alignment: "center" },
+    ]
+  );
+
+  /*ROWS*/
+
   let count = 1;
 
   for (const item of data) {
-
     const district = item?.form4?.district_name || "-";
     const zone = item?.form4?.zone_name || "-";
 
     for (const soc of item.societies || []) {
-
       const societyName = soc?.society_name || "-";
       const declared = soc?.declared || {};
 
       for (const key of Object.keys(soc.members || {})) {
-
         const members = soc.members[key] || [];
 
         for (const m of members) {
-
-          rows.push({
-            sno: count++,
+          body.push([
+            count++,
             district,
             zone,
-            society: societyName,
 
-            // ✅ FIXED: ensure proper keys
-            member_name: m?.member_name || "-",
-            aadhar: m?.aadhar_no || "-",   // keep this if column key = "aadhar"
+            societyName,
+            m?.member_name || "-",
+            m?.aadhar_no || "-",
+            String(key).toUpperCase(),
 
-            // ✅ Clean category
-            category: String(key).toUpperCase(),
-
-            // ✅ Safe declared values
-            sc_st: declared?.sc_st ?? 0,
-            women: declared?.women ?? 0,
-            general: declared?.general ?? 0,
-          });
+            declared?.sc_st ?? 0,
+            declared?.women ?? 0,
+            declared?.general ?? 0,
+          ]);
         }
       }
     }
   }
 
-  if (rows.length === 0) {
+  if (body.length <= 2) {
     throw new Error("No member data found");
   }
 
-  return generatePDF(
-    res,
-    "வேட்புமனு பரிசீலனை மற்றும் செல்லத்தக்க வேட்புமனுக்கள் பட்டியல்",
-    [
-      { header: "வ.எண்", key: "sno" },
-      { header: "மாவட்டம்", key: "district" },
-      { header: "சரகம்", key: "zone" },
-      { header: "சங்கம்", key: "society" },
-      { header: "உறுப்பினர் பெயர்", key: "member_name" },
-      { header: "ஆதார் எண்", key: "aadhar" },
-      { header: "பிரிவு", key: "category" },
-      { header: "ப.இ./ப.கு", key: "sc_st" },
-      { header: "பெண்கள்", key: "women" },
-      { header: "பொது", key: "general" },
+  /*PDF*/
+
+  const docDefinition = {
+    pageOrientation: "landscape",
+    pageSize: "A4",
+
+    content: [
+      {
+        text: "வேட்புமனு பரிசீலனை மற்றும் செல்லத்தக்க வேட்புமனுக்கள் பட்டியல்",
+        style: "header",
+      },
+      {
+        text: `துறை -- ${data[0]?.form4?.district_name || "-"}`,
+        style: "subheader",
+      },
+      {
+        table: {
+          headerRows: 2,
+          widths: [
+            30,
+            140,
+            140,
+            160,
+            160,
+            120,
+            100,
+            70,
+            70,
+            70,
+          ],
+          body,
+        },
+      },
     ],
-    rows
-  );
+
+    styles: {
+      header: {
+        fontSize: 14,
+        bold: true,
+        alignment: "center",
+      },
+      subheader: {
+        fontSize: 11,
+        margin: [0, 5, 0, 10],
+        alignment: "center",
+      },
+    },
+
+    defaultStyle: {
+      fontSize: 9,
+    },
+  };
+
+  const pdfMake = require("pdfmake/build/pdfmake");
+  const pdfFonts = require("pdfmake/build/vfs_fonts");
+
+  pdfMake.vfs = pdfFonts.pdfMake.vfs;
+
+  const pdfDoc = pdfMake.createPdf(docDefinition);
+
+  pdfDoc.getBuffer((buffer: any) => {
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader(
+      "Content-Disposition",
+      "attachment; filename=form5.pdf"
+    );
+    res.send(buffer);
+  });
 },
 
 };

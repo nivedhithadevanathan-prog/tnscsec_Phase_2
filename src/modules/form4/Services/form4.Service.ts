@@ -111,7 +111,7 @@ export const Form4Service = {
       const rural_women = Number(rural.women ?? 0);
       const rural_general = Number(rural.general ?? 0);
 
-      // ✅ DLG FROM RESERVATION
+      //DLG FROM RESERVATION
       const rural_sc_st_dlg = Number(rural.sc_st_dlg ?? 0);
       const rural_women_dlg = Number(rural.women_dlg ?? 0);
       const rural_general_dlg = Number(rural.general_dlg ?? 0);
@@ -125,7 +125,7 @@ export const Form4Service = {
         rural_women,
         rural_general,
 
-        // ✅ added
+        //added
         rural_sc_st_dlg,
         rural_women_dlg,
         rural_general_dlg,
@@ -210,7 +210,7 @@ export const Form4Service = {
         rural_tot_voters:
           rural_sc_st + rural_women + rural_general,
 
-        // ✅ rural dlg from reservation
+        // rural dlg from reservation
         rural_sc_st_dlg: item.rural_sc_st_dlg ?? 0,
         rural_women_dlg: item.rural_women_dlg ?? 0,
         rural_general_dlg: item.rural_general_dlg ?? 0,

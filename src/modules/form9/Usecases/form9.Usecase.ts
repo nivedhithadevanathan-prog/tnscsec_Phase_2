@@ -536,5 +536,192 @@ async list(params: {
       is_draft_visible: form9.status === form9_status.DRAFT,
     })
   );
-}
+},
+
+async getForm9Pdf(params: {
+  uid: number;
+  role: number;
+  res: any;
+}) {
+  const { uid, role, res } = params;
+
+  const list = await Form9Usecase.list({
+    uid,
+    role,
+  });
+
+  if (!list || list.length === 0) {
+    throw new Error("No Form9 data found");
+  }
+
+  const body: any[] = [];
+
+  /*HEADER*/
+
+  body.push(
+    [
+      { text: "வ.எண்", rowSpan: 2 },
+      { text: "மாவட்ட தேர்தல் அலுவலர் மாவட்டம்/மண்டலம்", rowSpan: 2 },
+      { text: "மாவட்ட தேர்தல் அலுவலர் சரகம்", rowSpan: 2 },
+      { text: "தலைவர் தேர்தல் நடைபெற வேண்டிய சங்கத்தின் பெயர்", rowSpan: 2 },
+
+      { text: "தலைவர் தேர்தலுக்கு தாக்கல் செய்யப்பட்ட வேட்பு மனுக்கள்/உறுப்பினர்கள்", colSpan: 4, alignment: "center" },
+      {}, {}, {},
+
+      { text: "பரிசீலனையில் நிராகரிக்கப்பட்ட வேட்பு மனுக்கள்/உறுப்பினர்கள்", colSpan: 4, alignment: "center" },
+      {}, {}, {},
+
+      { text: "தலைவர் பதவிக்கு தகுதியான இறுதி வேட்பாளர் பட்டியல் உறுப்பினர்கள்", colSpan: 4, alignment: "center" },
+      {}, {}, {},
+
+      { text: "இறுதியாக தேர்ந்தெடுக்கப்பட்ட தலைவரின் பெயர்.", rowSpan: 2 },
+      { text: "தேர்தல் வகை", rowSpan: 2 },
+    ],
+
+    [
+      {}, {}, {}, {},
+
+      { text: "ப.இ./ப.கு" },
+      { text: "பெண்கள்" },
+      { text: "பொது" },
+      { text: "மொத்தம்" },
+
+      { text: "ப.இ./ப.கு" },
+      { text: "பெண்கள்" },
+      { text: "பொது" },
+      { text: "மொத்தம்" },
+
+      { text: "ப.இ./ப.கு" },
+      { text: "பெண்கள்" },
+      { text: "பொது" },
+      { text: "மொத்தம்" },
+
+      {}, {},
+    ]
+  );
+
+  /*ROWS*/
+
+  let index = 1;
+
+  for (const soc of list) {
+
+    // Since your current list only gives winner → others = 0 for now
+    // (Later we can enhance if needed)
+
+    body.push([
+      String(index++),
+      "-", // district (if available, replace)
+      "-", // zone
+      String(soc.society_name || "-"),
+
+      // SUBMITTED (dummy for now)
+      "0", "0", "0", "0",
+
+      // REJECTED
+      "0", "0", "0", "0",
+
+      // FINAL ELIGIBLE
+      soc.president_winner ? "1" : "0",
+      "0",
+      "0",
+      soc.president_winner ? "1" : "0",
+
+      // PRESIDENT NAME
+      soc.president_winner?.member_name || "-",
+
+      // ELECTION TYPE
+      String(soc.election_type || "-"),
+    ]);
+  }
+
+  /*PDF*/
+
+  const PdfPrinter = require("pdfmake");
+
+  const fonts = {
+    NotoSansTamil: {
+      normal: "src/fonts/NotoSansTamil-Regular.ttf",
+      bold: "src/fonts/NotoSansTamil-Bold.ttf",
+      italics: "src/fonts/NotoSansTamil-Regular.ttf",
+      bolditalics: "src/fonts/NotoSansTamil-Bold.ttf",
+    },
+  };
+
+  const printer = new PdfPrinter(fonts);
+
+  const docDefinition = {
+    pageOrientation: "landscape",
+    pageSize: "A4",
+
+    content: [
+      {
+        text:
+          "வேட்புமனு திரும்ப பெறுதல் மற்றும் இறுதி போட்டியிடும் வேட்பாளர்கள் பற்றிய முழு விவரங்கள்",
+        alignment: "center",
+        bold: true,
+        fontSize: 14,
+      },
+      {
+        text: "துறை -- -",
+        alignment: "center",
+        margin: [0, 5, 0, 10],
+      },
+      {
+        table: {
+          headerRows: 2,
+
+          //EXACT 18 COLUMNS
+          widths: [
+            30,   // sno
+            120,
+            120,
+            150,
+
+            70, 70, 70, 70,
+            70, 70, 70, 70,
+            70, 70, 70, 70,
+
+            150,
+            100
+          ],
+
+          body,
+        },
+        layout: {
+          paddingLeft: () => 4,
+          paddingRight: () => 4,
+          paddingTop: () => 2,
+          paddingBottom: () => 2,
+        },
+      },
+    ],
+
+    defaultStyle: {
+      font: "NotoSansTamil",
+      fontSize: 8,
+    },
+  };
+
+  const pdfDoc = printer.createPdfKitDocument(docDefinition);
+
+  const chunks: any[] = [];
+
+  pdfDoc.on("data", (chunk: any) => chunks.push(chunk));
+
+  pdfDoc.on("end", () => {
+    const result = Buffer.concat(chunks);
+
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader(
+      "Content-Disposition",
+      "attachment; filename=form9.pdf"
+    );
+
+    res.send(result);
+  });
+
+  pdfDoc.end();
+},
+
 };

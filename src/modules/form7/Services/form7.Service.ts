@@ -260,4 +260,119 @@ export const Form7Service = {
       return form7 ? [form7] : [];
     }
   },
+
+/* ================= FORM7 PDF DATA ================= */
+
+async getForm7PdfData(params: {
+  uid: number;
+  role: number;
+  zone_id?: string;
+}) {
+  const { uid, role, zone_id } = params;
+
+  let zoneIds: number[] = [];
+
+  if (zone_id) {
+    try {
+      zoneIds = JSON.parse(zone_id);
+    } catch {}
+  }
+
+  let form7List: any[] = [];
+
+  /* ================= ROLE LOGIC ================= */
+
+  // ADMIN
+  if (role === 1) {
+    const latest = await prisma.form7.findFirst({
+      orderBy: { created_at: "desc" },
+    });
+    if (latest) form7List = [latest];
+  }
+
+  // JRCS
+  else if (role === 4) {
+    const districts = await prisma.district.findMany({
+      where: {
+        zone_id: { in: zoneIds },
+      },
+      select: { id: true },
+    });
+
+    const districtIds = districts.map((d) => d.id);
+
+    form7List = await prisma.form7.findMany({
+      where: {
+        district_id: { in: districtIds },
+      },
+      orderBy: { created_at: "desc" },
+    });
+  }
+
+  // NORMAL USER
+  else {
+    const user = await this.getUserDistrict(uid);
+
+    if (user?.district_id == null) {
+      throw new Error("User district not found");
+    }
+
+    const latest = await prisma.form7.findFirst({
+      where: { district_id: user.district_id },
+      orderBy: { created_at: "desc" },
+    });
+
+    if (latest) form7List = [latest];
+  }
+
+  if (!form7List.length) {
+    return [];
+  }
+
+  /* ================= BUILD RESPONSE ================= */
+
+  const finalResult: any[] = [];
+
+  for (const form7 of form7List) {
+    const societies = await prisma.form7_societies.findMany({
+      where: { form7_id: form7.id },
+      orderBy: { id: "asc" },
+    });
+
+    finalResult.push({
+      form7: {
+        id: form7.id,
+        district_id: form7.district_id,
+        district_name: cleanText(form7.district_name),
+      },
+      societies: societies.map((s) => ({
+        society_id: s.society_id,
+        society_name: cleanText(s.society_name),
+
+        final_sc_st_count: s.final_sc_st_count,
+        final_women_count: s.final_women_count,
+        final_general_count: s.final_general_count,
+
+        final_sc_st_dlg_count: s.final_sc_st_dlg_count,
+        final_women_dlg_count: s.final_women_dlg_count,
+        final_general_dlg_count: s.final_general_dlg_count,
+
+        form3_total: s.form3_total,
+        casted_votes_count: s.casted_votes_count,
+        voting_percentage: s.voting_percentage,
+
+        ballot_box_count: s.ballot_box_count,
+        stamp_count: s.stamp_count,
+        polling_stations_count: s.polling_stations_count,
+        election_officers_count: s.election_officers_count,
+
+        polling_suspension_count: s.polling_suspension_count,
+      })),
+    });
+  }
+
+  return finalResult;
+},
+
+
 };

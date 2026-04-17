@@ -225,10 +225,10 @@ async getForm4Pdf(req: Request, res: Response) {
       uid: Number(user.uid),
       role: Number(user.role),
       zone_id: req.query?.zone_id || user.zone_id,
-      res, // ✅ same as form3
+      res, // same as form3
     });
 
-    // ❗ No JSON response (PDF streamed)
+    // No JSON response (PDF streamed)
 
   } catch (error: any) {
     return res.status(500).json({

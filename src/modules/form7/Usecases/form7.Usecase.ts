@@ -1,6 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import { Form7Service } from "../../form7/Services/form7.Service";
-
+// import { generatePDF } from "../../../utils/pdfGenerator"
+// import { tamilFont } from "../../../utils/tamilFonts";
 
 
 export const prisma = new PrismaClient();
@@ -354,4 +355,202 @@ async list(params: {
       societies_count: inputSocieties.length,
     };
   },
+
+async getForm7Pdf(params: {
+  uid: number;
+  role: number;
+  zone_id?: string;
+  res: any;
+}) {
+  const { uid, role, zone_id, res } = params;
+
+  const list = await Form7Usecase.list({ uid, role, zone_id });
+
+  if (!list || list.length === 0) {
+    throw new Error("No Form7 data found");
+  }
+
+  const form7 = list[0];
+
+  const societies = await Form7Service.getForm7Societies(form7.id);
+
+  const body: any[] = [];
+
+  /*HEADER*/
+
+  body.push(
+    [
+      { text: "வ.எண்", rowSpan: 2 },
+      { text: "மாவட்ட தேர்தல் அலுவலர் மாவட்டம்/மண்டலம்", rowSpan: 2 },
+      { text: "மாவட்ட தேர்தல் அலுவலர் சரகம்", rowSpan: 2 },
+      { text: "மாவட்ட தேர்தல் அலுவலர் சரகம்", rowSpan: 2 },
+
+      {
+        text: "தேர்ந்தெடுக்கப்பட வேண்டிய நிர்வாகக்குழு இயக்குநர்களின் எண்ணிக்கை",
+        colSpan: 4,
+        alignment: "center",
+      },
+      {}, {}, {},
+
+      {
+        text: "நிர்வாகக்குழு இயக்குநர் பதவிக்கு போட்டியிடும் இயக்குநர்களின் எண்ணிக்கை",
+        colSpan: 4,
+        alignment: "center",
+      },
+      {}, {}, {},
+
+      { text: "வாக்குப்பதிவு நடைபெற்ற சங்கங்களின் பெயர்", rowSpan: 2 },
+      { text: "மொத்த வாக்காளர்களின் எண்ணிக்கை", rowSpan: 2 },
+      { text: "பதிவான ஓட்டுகளின் எண்ணிக்கை", rowSpan: 2 },
+      { text: "வாக்குப்பதிவு (%)", rowSpan: 2 },
+      { text: "பயன்படுத்தப்பட்ட வாக்குப்பெட்டிகளின் எணிக்கை", rowSpan: 2 },
+      { text: "முத்திரைத் தாள்களின் எண்ணிக்கை", rowSpan: 2 },
+      { text: "வாக்குப்பதிவு நடைபெற்ற இடங்களின் எண்ணிக்கை", rowSpan: 2 },
+      {
+        text: "வாக்குப்பதிவின் போது பயன்படுத்தப்பட்ட தேர்தல் அலுவலர் / உதவியாளர் எண்ணிக்கை",
+        rowSpan: 2,
+      },
+      {
+        text: "வாக்குப்பதிவின் போது தேர்தல் நிறுத்தப்பட்ட சங்கங்களின் பெயர்",
+        rowSpan: 2,
+      },
+    ],
+
+    [
+      {}, {}, {}, {},
+
+      { text: "ப.இ./ப.கு" },
+      { text: "பெண்கள்" },
+      { text: "பொது" },
+      { text: "மொத்தம்" },
+
+      { text: "ப.இ./ப.கு" },
+      { text: "பெண்கள்" },
+      { text: "பொது" },
+      { text: "மொத்தம்" },
+
+      {}, {}, {}, {}, {}, {}, {}, {}, {}
+    ]
+  );
+
+  /*ROWS*/
+
+  let index = 1;
+
+  for (const s of societies) {
+    const total1 =
+      (s.final_sc_st_count || 0) +
+      (s.final_women_count || 0) +
+      (s.final_general_count || 0);
+
+    const total2 =
+      (s.final_sc_st_dlg_count || 0) +
+      (s.final_women_dlg_count || 0) +
+      (s.final_general_dlg_count || 0);
+
+body.push([
+  String(index++),
+  String(form7.district_name || "-"),
+  "-",
+  "-",
+
+  String(s.final_sc_st_count ?? 0),
+  String(s.final_women_count ?? 0),
+  String(s.final_general_count ?? 0),
+  String(total1),
+
+  String(s.final_sc_st_dlg_count ?? 0),
+  String(s.final_women_dlg_count ?? 0),
+  String(s.final_general_dlg_count ?? 0),
+  String(total2),
+
+  String(s.society_name || "-"),
+  String(s.form3_total ?? 0),
+  String(s.casted_votes_count ?? 0),
+  String(s.voting_percentage ?? 0),  
+  String(s.ballot_box_count ?? 0),
+  String(s.stamp_count ?? 0),
+  String(s.polling_stations_count ?? 0),
+  String(s.election_officers_count ?? 0),
+  String(s.polling_suspension_count || "-"),
+]);
+  }
+
+  /*PDF*/
+
+  const docDefinition = {
+    pageOrientation: "landscape",
+    pageSize: "A4",
+
+    content: [
+      {
+        text:
+          "வேட்புமனு திரும்ப பெறுதல் மற்றும் இறுதி போட்டியிடும் வேட்பாளர்கள் பற்றிய முழு விவரங்கள்",
+        alignment: "center",
+        bold: true,
+        fontSize: 14,
+      },
+      {
+        text: `துறை -- ${form7.district_name || "-"}`,
+        alignment: "center",
+        margin: [0, 5, 0, 10],
+      },
+      {
+        table: {
+          headerRows: 2,
+          widths: new Array(21).fill("auto"),
+          body,
+        },
+        layout: {
+          paddingLeft: () => 4,
+          paddingRight: () => 4,
+          paddingTop: () => 2,
+          paddingBottom: () => 2,
+        },
+      },
+    ],
+
+    defaultStyle: {
+      fontSize: 8,
+      // font: "NotoSansTamil" // if configured
+    },
+  };
+
+  const pdfMake = require("pdfmake/build/pdfmake");
+const pdfFonts = require("pdfmake/build/vfs_fonts");
+
+// attach default fonts (Roboto)
+pdfMake.vfs = pdfFonts.pdfMake.vfs;
+
+// ADD THIS BLOCK HERE
+pdfMake.fonts = {
+  Roboto: {
+    normal: "Roboto-Regular.ttf",
+    bold: "Roboto-Medium.ttf",
+    italics: "Roboto-Italic.ttf",
+    bolditalics: "Roboto-MediumItalic.ttf",
+  },
+  NotoSansTamil: {
+    normal: "NotoSansTamil-Regular.ttf",
+    bold: "NotoSansTamil-Regular.ttf",
+    italics: "NotoSansTamil-Regular.ttf",
+    bolditalics: "NotoSansTamil-Regular.ttf",
+  },
+};
+  const pdfDoc = pdfMake.createPdf(docDefinition);
+
+  pdfDoc.getBuffer((buffer: any) => {
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader(
+      "Content-Disposition",
+      "attachment; filename=form7.pdf"
+    );
+    res.send(buffer);
+  });
+},
+defaultStyle: {
+  font: "NotoSansTamil",
+  fontSize: 8,
+},
+
 };

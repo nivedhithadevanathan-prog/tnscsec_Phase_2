@@ -207,4 +207,33 @@ async listForm6(req: Request, res: Response) {
     }
   },
 
+
+  /*GET FORM-6 PDF*/
+async getForm6Pdf(req: Request, res: Response) {
+  try {
+
+    const user = (req as any).user;
+
+    if (!user?.uid || !user?.role) {
+      return sendError(res, 401, "Unauthorized");
+    }
+
+    // 🔥 IMPORTANT → no sendResponse here (PDF stream)
+    await Form6Usecase.getForm6Pdf({
+      uid: Number(user.uid),
+      role: Number(user.role),
+      zone_id: user.zone_id,
+      res,
+    });
+
+  } catch (error: any) {
+    return sendError(
+      res,
+      500,
+      "Error generating Form6 PDF",
+      error.message
+    );
+  }
+},
+
 };

@@ -149,4 +149,31 @@ async list(req: Request, res: Response) {
       );
     }
   },
+
+/* GET Form7 PDF */
+async getForm7Pdf(req: Request, res: Response) {
+  try {
+    const user = (req as any).user;
+
+    if (!user?.uid || !user?.role) {
+      return sendError(res, 401, "Unauthorized");
+    }
+
+    await Form7Usecase.getForm7Pdf({
+      uid: Number(user.uid),
+      role: Number(user.role),
+      zone_id: user.zone_id,
+      res, //VERY IMPORTANT (for pdf stream)
+    });
+
+  } catch (err: any) {
+    return sendError(
+      res,
+      err.statusCode || 500,
+      err.message || "Error generating Form7 PDF",
+      err.details || err
+    );
+  }
+},
+
 };

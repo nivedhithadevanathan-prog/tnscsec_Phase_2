@@ -257,10 +257,10 @@ export const getForm1Pdf = async (req: Request, res: Response) => {
       uid: Number(user.uid),
       role: Number(user.role),
       zone_id: req.query.zone_id || user.zone_id,
-      res, // ✅ IMPORTANT for PDF streaming
+      res, // IMPORTANT for PDF streaming
     });
 
-    // ❗ No JSON response because PDF is streamed
+    // No JSON response because PDF is streamed
 
   } catch (err: any) {
     return res.status(err.statusCode || 500).json({
