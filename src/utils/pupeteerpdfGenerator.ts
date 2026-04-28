@@ -5,9 +5,16 @@ export const generateHtmlPdf = async (
   html: string,
   fileName: string
 ) => {
-  const browser = await puppeteer.launch({
-    headless: true,
-  });
+const browser = await puppeteer.launch({
+  headless: true,
+
+  args: [
+    "--no-sandbox",
+    "--disable-setuid-sandbox",
+    "--disable-dev-shm-usage",
+    "--disable-gpu",
+  ],
+});
 
   const page = await browser.newPage();
 

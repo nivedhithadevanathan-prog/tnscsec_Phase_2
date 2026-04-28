@@ -465,6 +465,10 @@ async getForm5Pdf(payload: any) {
           sc_st: soc.declared_sc_st,
           women: soc.declared_women,
           general: soc.declared_general,
+          sc_st_dlg: soc.declared_sc_st_dlg,
+          women_dlg: soc.declared_women_dlg,
+          general_dlg: soc.declared_general_dlg,
+
         },
         members: {
           sc_st: [],

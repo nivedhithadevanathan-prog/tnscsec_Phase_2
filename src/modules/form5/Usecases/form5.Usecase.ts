@@ -1,6 +1,7 @@
 import { Form5Service } from "../../form5/Services/form5.Service";
-import { generatePDF } from "../../../utils/pdfGenerator";
-
+import fs from "fs";
+import path from "path";
+import { generateHtmlPdf } from "../../../utils/pupeteerpdfGenerator";
 export const Form5Usecase = {
   /*GET Eligible societies for Form5*/
   getEligibleSocietiesByUser(uid: number) {
@@ -53,6 +54,7 @@ async getForm5Pdf(params: {
   zone_id?: string;
   res: any;
 }) {
+
   const { uid, role, zone_id, res } = params;
 
   const data = await Form5Service.getForm5Pdf({
@@ -65,163 +67,79 @@ async getForm5Pdf(params: {
     throw new Error("No data found");
   }
 
-  const body: any[] = [];
-
-  /*HEADER*/
-
-  body.push(
-    [
-      { text: "வ.எண்", rowSpan: 2, alignment: "center" },
-
-      {
-        text: "மாவட்ட தேர்தல் அலுவலர் /\nமாவட்டம்",
-        rowSpan: 2,
-        alignment: "center",
-      },
-
-      {
-        text: "மாவட்ட தேர்தல் அலுவலர்\nசரகம்",
-        rowSpan: 2,
-        alignment: "center",
-      },
-
-      {
-        text: "வேட்புமனு தாக்கல் செய்த உறுப்பினர்களின் பெயர் மற்றும் ஆதார் எண் விபரங்களை பதிவு செய்க",
-        colSpan: 4,
-        alignment: "center",
-      },
-      {}, {}, {},
-
-      {
-        text: "வேட்புமனு தாக்கல் செய்யப்பட்ட சங்கங்கள் மற்றும் உறுப்பினர்களின் எண்ணிக்கை",
-        colSpan: 3,
-        alignment: "center",
-      },
-      {},
-      {},
-    ],
-
-    [
-      {}, {}, {},
-
-      { text: "சங்கங்கள்", alignment: "center" },
-      { text: "உறுப்பினர் பெயர்", alignment: "center" },
-      { text: "ஆதார் எண்", alignment: "center" },
-      { text: "பிரிவு", alignment: "center" },
-
-      { text: "ப.இ./ப.கு", alignment: "center" },
-      { text: "பெண்கள்", alignment: "center" },
-      { text: "பொது", alignment: "center" },
-    ]
+  /* LOAD TEMPLATE */
+  const templatePath = path.join(
+    __dirname,
+    "../../../utils/templates/form5.html"
   );
 
-  /*ROWS*/
+  let html = fs.readFileSync(templatePath, "utf-8");
 
+  /* HEADER */
+  html = html.replace(
+    "{{department_name}}",
+    data[0]?.form4?.district_name || "-"
+  );
+
+  /* CATEGORY MAP (🔥 IMPORTANT) */
+  const categoryMap: any = {
+    sc_st: "ப.இ./ப.கு",
+    women: "பெண்கள்",
+    general: "பொது",
+    sc_st_dlg: "ப.இ./ப.கு_பிரதிநிதி",
+    women_dlg: "பெண்கள்_பிரதிநிதி",
+    general_dlg: "பொது_பிரதிநிதி",
+  };
+
+  /* BUILD ROWS */
+  let rows = "";
   let count = 1;
 
   for (const item of data) {
-    const district = item?.form4?.district_name || "-";
-    const zone = item?.form4?.zone_name || "-";
+    const district = item.form4?.district_name || "-";
+    const zone = item.form4?.zone_name || "-";
 
     for (const soc of item.societies || []) {
-      const societyName = soc?.society_name || "-";
-      const declared = soc?.declared || {};
+      const declared = soc.declared || {};
 
       for (const key of Object.keys(soc.members || {})) {
         const members = soc.members[key] || [];
 
         for (const m of members) {
-          body.push([
-            count++,
-            district,
-            zone,
 
-            societyName,
-            m?.member_name || "-",
-            m?.aadhar_no || "-",
-            String(key).toUpperCase(),
+          const categoryTamil = categoryMap[key] || "-";
 
-            declared?.sc_st ?? 0,
-            declared?.women ?? 0,
-            declared?.general ?? 0,
-          ]);
+          rows += `
+            <tr>
+              <td>${count++}</td>
+              <td>${district}</td>
+              <td>${zone}</td>
+              <td>${soc.society_name}</td>
+              <td>${m.member_name}</td>
+              <td>${m.aadhar_no}</td>
+
+              <!-- ✅ SINGLE CATEGORY -->
+              <td>${categoryTamil}</td>
+
+              <!-- COUNTS -->
+              <td>${declared.sc_st ?? 0}</td>
+              <td>${declared.women ?? 0}</td>
+              <td>${declared.general ?? 0}</td>
+            </tr>
+          `;
         }
       }
     }
   }
 
-  if (body.length <= 2) {
-    throw new Error("No member data found");
+  if (!rows) {
+    throw new Error("No rows to render");
   }
 
-  /*PDF*/
+  html = html.replace("{{rows}}", rows);
 
-  const docDefinition = {
-    pageOrientation: "landscape",
-    pageSize: "A4",
-
-    content: [
-      {
-        text: "வேட்புமனு பரிசீலனை மற்றும் செல்லத்தக்க வேட்புமனுக்கள் பட்டியல்",
-        style: "header",
-      },
-      {
-        text: `துறை -- ${data[0]?.form4?.district_name || "-"}`,
-        style: "subheader",
-      },
-      {
-        table: {
-          headerRows: 2,
-          widths: [
-            30,
-            140,
-            140,
-            160,
-            160,
-            120,
-            100,
-            70,
-            70,
-            70,
-          ],
-          body,
-        },
-      },
-    ],
-
-    styles: {
-      header: {
-        fontSize: 14,
-        bold: true,
-        alignment: "center",
-      },
-      subheader: {
-        fontSize: 11,
-        margin: [0, 5, 0, 10],
-        alignment: "center",
-      },
-    },
-
-    defaultStyle: {
-      fontSize: 9,
-    },
-  };
-
-  const pdfMake = require("pdfmake/build/pdfmake");
-  const pdfFonts = require("pdfmake/build/vfs_fonts");
-
-  pdfMake.vfs = pdfFonts.pdfMake.vfs;
-
-  const pdfDoc = pdfMake.createPdf(docDefinition);
-
-  pdfDoc.getBuffer((buffer: any) => {
-    res.setHeader("Content-Type", "application/pdf");
-    res.setHeader(
-      "Content-Disposition",
-      "attachment; filename=form5.pdf"
-    );
-    res.send(buffer);
-  });
+  /* GENERATE PDF */
+  return generateHtmlPdf(res, html, "form5-report");
 },
 
 };
