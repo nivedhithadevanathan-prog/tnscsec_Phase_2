@@ -1,5 +1,8 @@
-import { Form5BService } from "../../form5b/Services/form5b.Service";
-import { generatePDF } from "../../../utils/pdfGenerator"
+import fs from "fs";
+import path from "path";
+import { generateHtmlPdf } from "../../../utils/pupeteerpdfGenerator";
+import { Form5BService } from "../Services/form5b.Service";
+
 export const Form5BUsecase = {
 
   /*GET Form5B Preview*/
@@ -61,10 +64,10 @@ editForm5B(payload: {
   return Form5BService.editForm5B(payload);
 },
 
-async getForm5BPdf(params: { 
-  uid: number; 
-  role: number; 
-  zone_id?: string; 
+async getForm5BPdf(params: {
+  uid: number;
+  role: number;
+  zone_id?: string;
   res: any;
 }) {
 
@@ -80,8 +83,8 @@ async getForm5BPdf(params: {
     throw new Error("No data found");
   }
 
-  const rows: any[] = [];
   let count = 1;
+  let rows = "";
 
   for (const item of data) {
 
@@ -90,62 +93,58 @@ async getForm5BPdf(params: {
 
     for (const soc of item.societies || []) {
 
-      rows.push({
-        sno: count++,
-        district,
-        zone,
+      const sc = soc.members?.sc_st || [];
+      const women = soc.members?.women || [];
+      const general = soc.members?.general || [];
 
-        total_societies: 1,
+      const activeSc = sc.filter((m: any) => m.is_active);
+      const activeWomen = women.filter((m: any) => m.is_active);
+      const activeGeneral = general.filter((m: any) => m.is_active);
 
-        sc_st: soc.members?.sc_st?.length || 0,
-        women: soc.members?.women?.length || 0,
-        general: soc.members?.general?.length || 0,
+      rows += `
+        <tr>
+          <td>${count++}</td>
+          <td>${district}</td>
+          <td>${zone}</td>
 
-        remaining_sc_st: soc.members?.sc_st?.filter((m: any) => m.is_active).length || 0,
-        remaining_women: soc.members?.women?.filter((m: any) => m.is_active).length || 0,
-        remaining_general: soc.members?.general?.filter((m: any) => m.is_active).length || 0,
+          <!-- Declared -->
+          <td>1</td>
+          <td>${sc.length}</td>
+          <td>${women.length}</td>
+          <td>${general.length}</td>
+          <td>${sc.length}</td>
+          <td>${women.length}</td>
+          <td>${general.length}</td>
 
-        stopped_society: soc.is_stopped ? soc.society_name : "-",
-      });
+          <!-- Remaining -->
+          <td>${activeSc.length}</td>
+          <td>${activeWomen.length}</td>
+          <td>${activeGeneral.length}</td>
+          <td>${activeSc.length}</td>
+          <td>${activeWomen.length}</td>
+          <td>${activeGeneral.length}</td>
 
+          <!-- Stopped -->
+          <td>${soc.is_stopped ? soc.society_name : "-"}</td>
+        </tr>
+      `;
     }
   }
 
-  return generatePDF(
-  res,
-  "வேட்புமனு பரிசீலனை மற்றும் செல்லத்தக்க வேட்புமனுக்கள் பட்டியல்",
-  [
-    { header: "வ.எண்", key: "sno" },
-    { header: "மாவட்டம்", key: "district" },
-    { header: "சரகம்", key: "zone" },
+  const htmlPath = path.join(
+    process.cwd(),
+    "src",
+    "utils",
+    "templates",
+    "form5b.html"
+  );
 
-    { header: "சங்கங்கள்", key: "total_societies" },
-    { header: "ப.இ./ப.கு", key: "sc_st" },
-    { header: "பெண்கள்", key: "women" },
-    { header: "பொது", key: "general" },
+  let html = fs.readFileSync(htmlPath, "utf-8");
 
-    { header: "ப.இ./ப.கு", key: "remaining_sc_st" },
-    { header: "பெண்கள்", key: "remaining_women" },
-    { header: "பொது", key: "remaining_general" },
+  html = html
+    .replace("{{rows}}", rows)
+    .replace("{{department_name}}", "Cooperative Department");
 
-    { header: "சங்கத்தின் பெயர்", key: "stopped_society" },
-  ],
-  rows,
-  {
-    extraHeader: "துறை -- ",
-
-groupHeaders: [
-  { text: "வ.எண்", colSpan: 1 },
-  { text: "மாவட்டம்", colSpan: 1 },
-  { text: "சரகம்", colSpan: 1 },
-
-  { text: "தகுதி பெற்ற சங்கங்கள் எண்ணிக்கை", colSpan: 4 },
-  { text: "தள்ளுபடி / நிறுத்தல் பின்னர் எண்ணிக்கை", colSpan: 3 },
-  { text: "தேர்தல் நிறுத்தப்பட்ட சங்கங்கள்", colSpan: 1 },
-]
-
-    //  REMOVE subHeaders completely
-  }
-);
+  return generateHtmlPdf(res, html, "Form5B_Report");
 },
 };
